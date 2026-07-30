@@ -7,6 +7,9 @@ chain差、経済式、phase条件、boss設定をコード分岐ではなくver
 
 ## Root
 
+製品全体へ拡張した将来schemaは次を目標とする。first playable の実装済み
+`contentVersion = 1` は、後述する小さいprofileだけを受理する。
+
 ```jsonc
 {
   "schemaVersion": 1,
@@ -21,6 +24,32 @@ chain差、経済式、phase条件、boss設定をコード分岐ではなくver
 ```
 
 必須key欠落時は起動時にfail-fastする。黙ってhard-coded defaultやstubへ落とさない。
+
+## First playable profile v1
+
+`data/content/first-playable.json` は次のtop-level keyだけを持つ。
+
+| key | v1 契約 |
+|---|---|
+| `schemaVersion` | `1` |
+| `contentVersion` | `1` |
+| `simulation` | `ticksPerSecond = 10`、`economyPeriodTicks = 10`、`randomAlgorithm = "splitmix64-counter-v1"` |
+| `population` | `basePopulation = 50`、`randomPopulationCount = 101`、`randomStream = "FP_POPULATION"` |
+| `startingStoreEquivalent` | `5` |
+| `chains` | 下表の3 chainを `ChainId` index順にちょうど1件ずつ |
+
+| id | displayName | buildCostCredits | zocRadiusMeters | revenueMilliCreditsPerPerson |
+|---|---|---:|---:|---:|
+| `losan` | ローサン | 1000 | 18 | 500 |
+| `famoma` | ファモマ | 1250 | 24 | 450 |
+| `seban_ileban` | セバンイレバン | 800 | 18 | 400 |
+
+loader はunknown key、欠落、重複chain、非finite値、canonicalな10進整数表現でない
+整数field、整数範囲外、baseline不一致を例外として拒否する。
+programmaticに構築したcontentもauthoritative simulationへ
+渡す前に同じvalidationを通す。将来schemaの `economy`、`phases`、`triangle`、
+`dimensions`、`boss` はv1で黙って無視せず、対応するcontent versionを追加してから
+受理する。
 
 ## Simulation
 

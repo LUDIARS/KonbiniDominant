@@ -1,8 +1,9 @@
 ---
 task_id: KD-FP-001
 title: First playable vertical slice
-status: blocked
-blocked_by: [KD-FG-001]
+status: in_progress
+blocked_by: []
+figmentum_revision: 3ee998f487d984f54003c4ec3c4f7ba00b53eec3
 ---
 
 # KD-FP-001 — First playable vertical slice
@@ -33,9 +34,9 @@ Boss、production規模の最適化はこのtaskに含めない。
 
 ## Prerequisite
 
-[KD-FG-001](figmentum-city-plan.md) がFigmentumへmergeされ、KonbiniDominantで
-使用するcommitが確定するまで着手しない。着手時にfront matterを`ready`へ更新し、
-そのFigmentum commitをdependency revisionとして固定する。
+[KD-FG-001](figmentum-city-plan.md) はFigmentumへmerge済みで、
+KonbiniDominantは revision
+`3ee998f487d984f54003c4ec3c4f7ba00b53eec3` を固定する。
 
 ## In scope
 

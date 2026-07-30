@@ -3,8 +3,13 @@ add_library(
   STATIC
     commands/command_queue.cpp
     commands/structural_command_buffer.cpp
+    content/first_playable_content.cpp
+    content/json_document.cpp
+    content/json_document.h
     counter_rng.cpp
     economy/revenue_math.cpp
+    first_playable_simulation.cpp
+    snapshots/canonical_snapshot.cpp
     snapshots/render_snapshot.cpp
     storage/chain_economy_table.cpp
     storage/facility_table.cpp
@@ -17,6 +22,7 @@ add_library(
     systems/zoc_system.cpp
     "${PROJECT_SOURCE_DIR}/include/konbini/sim/chain_id.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/sim/chain_economy_table.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/sim/canonical_snapshot.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/sim/command_queue.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/sim/counter_rng.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/sim/dense_column.h"
@@ -25,6 +31,7 @@ add_library(
     "${PROJECT_SOURCE_DIR}/include/konbini/sim/facility_table.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/sim/figmentum_facility_key.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/sim/first_playable_content.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/sim/first_playable_simulation.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/sim/game_state.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/sim/math_types.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/sim/placement_system.h"

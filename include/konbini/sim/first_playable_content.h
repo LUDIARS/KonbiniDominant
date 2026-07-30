@@ -64,10 +64,11 @@ inline const ChainContent& FirstPlayableContent::chain(const ChainId id) const {
     return content;
 }
 
-// TBD-CONTENT-LOADER: content 読み込みは後続 task で実装する。宣言だけが
-// 先行しているので、現時点で呼ぶと link error になる。実装時は
-// content-schema.md#Validation の全項目を parse 時に検証し、未検証の
-// `FirstPlayableContent` を table 群へ渡さないこと。
+// Programmatically constructed content must pass the same baseline checks as
+// parsed content before it is admitted to authoritative simulation state.
+// @implements spec/data/content-schema.md Validation
+void validateFirstPlayableContent(const FirstPlayableContent& content);
+
 // @implements spec/data/content-schema.md Validation
 [[nodiscard]] FirstPlayableContent parseFirstPlayableContent(std::string_view json);
 [[nodiscard]] FirstPlayableContent loadFirstPlayableContent(

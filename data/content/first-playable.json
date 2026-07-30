@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": 1,
+  "simulation": {
+    "ticksPerSecond": 10,
+    "economyPeriodTicks": 10,
+    "randomAlgorithm": "splitmix64-counter-v1"
+  },
+  "population": {
+    "basePopulation": 50,
+    "randomPopulationCount": 101,
+    "randomStream": "FP_POPULATION"
+  },
+  "startingStoreEquivalent": 5,
+  "chains": [
+    {
+      "id": "losan",
+      "displayName": "ローサン",
+      "buildCostCredits": 1000,
+      "zocRadiusMeters": 18,
+      "revenueMilliCreditsPerPerson": 500
+    },
+    {
+      "id": "famoma",
+      "displayName": "ファモマ",
+      "buildCostCredits": 1250,
+      "zocRadiusMeters": 24,
+      "revenueMilliCreditsPerPerson": 450
+    },
+    {
+      "id": "seban_ileban",
+      "displayName": "セバンイレバン",
+      "buildCostCredits": 800,
+      "zocRadiusMeters": 18,
+      "revenueMilliCreditsPerPerson": 400
+    }
+  ]
+}
