@@ -4,48 +4,12 @@
 #include <stdexcept>
 #include <utility>
 
+#include "konbini/sim/revenue_math.h"
+
 // @implements spec/interface/pictor-rendering.md `RenderSnapshot`
 // @implements spec/feature/ui-ux.md Common HUD
 
 namespace konbini::sim {
-
-namespace {
-
-// population は千人単位ではなく人単位、rate は milli-credit / 人なので、
-// 積を 1000 で割る前に 64bit を溢れさせないよう商と剰余へ分解する。
-// @implements spec/feature/economy-and-population.md 収益
-std::int64_t predictedRevenue(const std::uint64_t population,
-                              const std::int64_t milliCreditsPerPerson) {
-    if (milliCreditsPerPerson < 0) {
-        throw std::invalid_argument("revenue rate must be non-negative");
-    }
-    constexpr std::uint64_t kMilliScale = 1000;
-    const std::uint64_t rate =
-        static_cast<std::uint64_t>(milliCreditsPerPerson);
-    constexpr std::uint64_t kMaxCredits =
-        static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max());
-    const std::uint64_t whole = population / kMilliScale;
-    const std::uint64_t remainder = population % kMilliScale;
-    if (rate != 0 && whole > kMaxCredits / rate) {
-        throw std::overflow_error(
-            "predicted economy income exceeds credit range");
-    }
-    const std::uint64_t wholeRevenue = whole * rate;
-    // Decompose the fractional product before multiplication. `remainder` and
-    // the rate remainder are both below kMilliScale, so neither term can
-    // overflow even when the accepted rate is INT64_MAX.
-    const std::uint64_t rateWhole = rate / kMilliScale;
-    const std::uint64_t rateRemainder = rate % kMilliScale;
-    const std::uint64_t fractionRevenue =
-        remainder * rateWhole +
-        (remainder * rateRemainder) / kMilliScale;
-    if (wholeRevenue > kMaxCredits - fractionRevenue) {
-        throw std::overflow_error("predicted economy income exceeds credit range");
-    }
-    return static_cast<std::int64_t>(wholeRevenue + fractionRevenue);
-}
-
-}  // namespace
 
 // @implements spec/interface/pictor-rendering.md `RenderSnapshot`
 std::uint64_t RenderSnapshot::completedTicks() const noexcept {
@@ -125,9 +89,9 @@ std::shared_ptr<const RenderSnapshot> makeRenderSnapshot(
             if (store.chain != *state.playerChain) {
                 continue;
             }
-            const std::int64_t revenue =
-                predictedRevenue(store.capturedPopulation,
-                                 rules.revenueMilliCreditsPerPerson);
+            const std::int64_t revenue = calculateRevenueCredits(
+                store.capturedPopulation,
+                rules.revenueMilliCreditsPerPerson);
             if (snapshot->hud_.predictedEconomyIncomeCredits >
                 std::numeric_limits<std::int64_t>::max() - revenue) {
                 throw std::overflow_error(
