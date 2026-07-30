@@ -2,12 +2,21 @@
 /.vscode/
 /.idea/
 
-/build/
+# Anatomia recognizes simple directory entries when pruning generated sources.
+build/
+build-revisor/
 /build-*/
 /out/
 /CMakeFiles/
 /CMakeCache.txt
 /cmake_install.cmake
+
+# Anatomia's production graph prunes this bare directory name. The negation
+# re-includes the directory for git, so test sources stay versioned and
+# available to CMake. Do not add `!tests/**` here: it would also win over the
+# `build/` rule above and start tracking build output under tests/.
+tests/
+!tests/
 
 /data/generated/
 /data/cache/

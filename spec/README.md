@@ -21,6 +21,8 @@ KonbiniDominant の設計仕様。AIFormat `FORMAT_SPEC.md` の標準分類を�
 - [setup/](setup/) — native 開発環境
 - [test/](test/) — 将来の検証戦略
 - [faq/](faq/) — 原資料の分析、設計背景、未決事項
+- [tasks/](tasks/) — 実施済み作業単位の記録。`plan/tasks/` が「これから渡す
+  作業仕様」であるのに対し、こちらは完了した実装 PR の結果を残す
 
 `knowledge/` は問題・障害が実際に発生した時点で追加する。
 

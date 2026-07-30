@@ -63,6 +63,15 @@ pathを個人絶対pathへhard-codeしない。CMake cache / presetで解決し�
 
 `konbini_sim`からPictor / Vulkan / Figmentumへlinkしない。
 
+現在repositoryに存在するのは`konbini_sim`と、その決定的primitiveを検証する
+`konbini_sim_tests`だけ。`konbini_city` / `konbini_app`はKD-FP-001で追加する。
+
+## Options
+
+| option | 既定 | 意味 |
+|---|---|---|
+| `KONBINI_BUILD_TESTS` | `OFF` | headless testのbuildと`ctest`登録 |
+
 ## Compiler
 
 - MSVC consumer targetへ `/utf-8`
@@ -102,12 +111,14 @@ generated meshはsaveの正本ではない。削除してもseed/recipeから再
 実装後の形:
 
 ```powershell
-cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DKONBINI_BUILD_TESTS=ON
 cmake --build build --config Debug
 ctest --test-dir build -C Debug --output-on-failure
 ```
 
-実際のoption / presetを追加したら、この文書を同じPRで更新する。
+現時点ではVulkan / Pictor / Ergo / Figmentumへ依存しないため、上のcommandは
+headless build専用として成立する。実際のoption / presetを追加したら、この文書を
+同じPRで更新する。
 
 ## Runtime
 

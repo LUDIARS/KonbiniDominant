@@ -15,8 +15,25 @@ Unity DOTS という製品/APIへの依存は持たない。元資料の「DOTS�
 stable ID、system pass、tick 境界の deferred command といった DoD 要件として
 読み替える。
 
-現在の成果物は実装前の仕様一式。入口は [spec/README.md](spec/README.md)、
+成果物の中心は仕様一式。入口は [spec/README.md](spec/README.md)、
 全体設計は [spec/design.md](spec/design.md) を参照。
+
+## Build
+
+現在buildできるのは、Vulkan / Pictor / Ergo / Figmentum へ依存しない
+headless の `konbini_sim` と、その test target だけ。
+
+```powershell
+cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DKONBINI_BUILD_TESTS=ON
+cmake --build build --config Debug
+ctest --test-dir build -C Debug --output-on-failure
+```
+
+Visual Studio generator は multi-config なので、`--config` / `-C` を省くと
+`ctest` が test を見つけられない。single-config generator (Ninja 等) を使う
+場合のみ省略できる。
+
+setup contract は [spec/setup/native-development.md](spec/setup/native-development.md)。
 
 ## Source
 
@@ -28,6 +45,7 @@ stable ID、system pass、tick 境界の deferred command といった DoD 要�
 
 ## Status
 
-仕様策定段階。実装、ビルド、テスト、ゲーム起動はまだ行っていない。
+仕様策定段階。simulation の決定的 primitive (ID / RNG / bounds validation) と
+その headless test のみ実装済みで、ゲーム本体の起動経路はまだ無い。
 
 ライセンスは未決定のため、この初期リポジトリには追加していない。
