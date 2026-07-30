@@ -24,14 +24,14 @@
 | 都市形成 | Figmentum | 別の独立 city generator を正本にしない |
 | simulation | KonbiniDominant 固有 DoD core | ECS 製品の採用自体は要件にしない |
 
-調査時の参照点は次の `origin/main`。
+実装で固定する参照点は次の commit。
 
 - Pictor `c088e8d1b7b9e2625b7a8d923c89d4d684566c16`
 - Ergo `771b027f0e5492015b27f54c3bab1fd5c1ae4790`
-- Figmentum `719af466c6f821fc2e518f652de162a8b9ebb3bd`
+- Figmentum `3ee998f487d984f54003c4ec3c4f7ba00b53eec3`
 - AIFormat `0cb32320e496c85576c5687786835127bd4c8609`
 
-実装開始時は改めて dependency revision を固定し、API drift を確認する。
+dependency は configure 時に exact revision を検証し、API drift をfail-fastする。
 
 ## 3. レイヤ
 

@@ -2,8 +2,8 @@
 
 ## Status
 
-設計時点のsetup contract。実装開始時にexact version / commandをrepository実体へ
-同期する。
+first playable のsetup contract。実装済みdependencyはexact revisionをCMakeで
+検証し、未実装dependencyは導入するstageで同じ方式へ同期する。
 
 ## Required
 
@@ -13,21 +13,23 @@
 - Vulkan SDK
 - `glslc`
 - Git
-- siblingまたは明示pathで解決したPictor / Ergo / Figmentum source
+- pinned `FetchContent` または検証付きsource overrideで解決した
+  Pictor / Ergo / Figmentum source
 
 required toolが無ければconfigureでfail-fastする。headless simulation targetだけは
 Vulkan非依存でbuildできる設計にする。
 
-## Dependency revisions at design time
+## Dependency revisions
 
 | dependency | inspected `origin/main` |
 |---|---|
 | Pictor | `c088e8d1b7b9e2625b7a8d923c89d4d684566c16` |
 | Ergo | `771b027f0e5492015b27f54c3bab1fd5c1ae4790` |
-| Figmentum | `719af466c6f821fc2e518f652de162a8b9ebb3bd` |
+| Figmentum | `3ee998f487d984f54003c4ec3c4f7ba00b53eec3` |
 
-実装branchではfloating `main`ではなく、submodule / lock metadata等の
-再現可能な方法を選ぶ。方式は `TBD-DEPS-01`。
+floating `main` は使わない。Figmentum は `FetchContent` でpopulateした後、
+exact HEADとclean worktreeを検証してからdependency CMakeを評価する。
+Pictor / Ergoも導入stageで同じfail-fast契約に従う。
 
 ## CMake order
 
@@ -41,10 +43,15 @@ add_subdirectory("${KONBINI_PICTOR_DIR}" "${CMAKE_BINARY_DIR}/_pictor")
 # 必要なERGO_BUILD_*だけON、testはhost側方針に合わせる
 add_subdirectory("${KONBINI_ERGO_DIR}" "${CMAKE_BINARY_DIR}/_ergo")
 
-# Figmentum CLI/testsをdefault buildへ巻き込まない
+# Figmentumは未検証sourceのCMakeを実行しない
+FetchContent_Populate(figmentum)
+konbini_verify_exact_git_source(
+  "${figmentum_SOURCE_DIR}"
+  "3ee998f487d984f54003c4ec3c4f7ba00b53eec3"
+)
 add_subdirectory(
-  "${KONBINI_FIGMENTUM_DIR}"
-  "${CMAKE_BINARY_DIR}/_figmentum"
+  "${figmentum_SOURCE_DIR}"
+  "${figmentum_BINARY_DIR}"
   EXCLUDE_FROM_ALL
 )
 ```
@@ -63,13 +70,15 @@ pathを個人絶対pathへhard-codeしない。CMake cache / presetで解決し�
 
 `konbini_sim`からPictor / Vulkan / Figmentumへlinkしない。
 
-現在repositoryに存在するのは`konbini_sim`と、その決定的primitiveを検証する
-`konbini_sim_tests`だけ。`konbini_city` / `konbini_app`はKD-FP-001で追加する。
+現在repositoryには`konbini_sim`、`konbini_city`、
+`konbini_figmentum_adapter`、`konbini_sim_tests`が存在する。
+`konbini_app`はKD-FP-001の後続stageで追加する。
 
 ## Options
 
 | option | 既定 | 意味 |
 |---|---|---|
+| `KONBINI_BUILD_FIGMENTUM_ADAPTER` | `ON` | 固定revisionのFigmentum city adapterをbuild |
 | `KONBINI_BUILD_TESTS` | `OFF` | headless testのbuildと`ctest`登録 |
 
 ## Compiler
@@ -111,14 +120,15 @@ generated meshはsaveの正本ではない。削除してもseed/recipeから再
 実装後の形:
 
 ```powershell
-cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DKONBINI_BUILD_TESTS=ON
+cmake -S . -B build -G "Visual Studio 17 2022" -A x64 `
+  -DKONBINI_BUILD_FIGMENTUM_ADAPTER=OFF -DKONBINI_BUILD_TESTS=ON
 cmake --build build --config Debug
 ctest --test-dir build -C Debug --output-on-failure
 ```
 
-現時点ではVulkan / Pictor / Ergo / Figmentumへ依存しないため、上のcommandは
-headless build専用として成立する。実際のoption / presetを追加したら、この文書を
-同じPRで更新する。
+上のcommandはFigmentum adapterを明示的に無効化したheadless build。
+既定構成はGitで固定revisionのFigmentumを取得するが、Vulkan / Pictor / Ergoには
+まだ依存しない。Pictor / Ergo導入stageで同じexact-source contractとoptionを追加する。
 
 ## Runtime
 

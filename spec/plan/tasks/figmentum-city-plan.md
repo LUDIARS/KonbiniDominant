@@ -1,8 +1,9 @@
 ---
 task_id: KD-FG-001
 title: Figmentum semantic CityPlan
-status: ready
+status: done
 target_repository: LUDIARS/Figmentum
+merged_revision: 3ee998f487d984f54003c4ec3c4f7ba00b53eec3
 ---
 
 # KD-FG-001 — Figmentum semantic CityPlan

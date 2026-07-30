@@ -66,7 +66,8 @@ Notion connectorで2026-07-31に取得。page viewが返したcontent snapshot�
 
 - Pictor `origin/main` `c088e8d...`
 - Ergo `origin/main` `771b027...`
-- Figmentum `origin/main` `719af46...`
+- Figmentumの初回調査点 `origin/main` `719af46...`
+- first playableで固定したsemantic CityPlan revision `3ee998f...`
 - AIFormat `origin/main` `0cb3232...`
 
 主な発見:
@@ -76,8 +77,8 @@ Notion connectorで2026-07-31に取得。page viewが返したcontent snapshot�
 - Ergo renderはPictor data integrationをgame側に残す
 - Ergo inputのOS pollはno-opでcallback adapterが必要
 - Figmentumは`1 unit=1m`、city/building/roadのSDF生成を持つ
-- Figmentumのcity一括結果にはstable facility semanticsが無い
-- interactive破壊にはsemantic plan APIと施設単位geometryが必要
+- 初回調査点のcity一括結果にはstable facility semanticsが無かった
+- 固定revision `3ee998f...` のsemantic CityPlanと施設単位geometryを利用する
 
 詳細は各`interface/`文書を正本とする。
 

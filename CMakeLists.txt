@@ -1,7 +1,19 @@
 cmake_minimum_required(VERSION 3.28)
 
+if(POLICY CMP0169)
+  cmake_policy(SET CMP0169 OLD)
+endif()
+
 project(KonbiniDominant VERSION 0.1.0 LANGUAGES CXX)
 
+include(FetchContent)
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/VerifyExactGitSource.cmake")
+
+option(
+  KONBINI_BUILD_FIGMENTUM_ADAPTER
+  "Build the pinned Figmentum city-generation adapter"
+  ON
+)
 option(KONBINI_BUILD_TESTS "Build KonbiniDominant tests" OFF)
 
 set(CMAKE_CXX_STANDARD 20)

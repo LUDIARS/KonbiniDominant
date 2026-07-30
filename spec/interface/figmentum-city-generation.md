@@ -7,10 +7,13 @@ KonbiniDominantが独立した別city generatorを持たない。
 
 ## Current upstream
 
-調査対象: `LUDIARS/Figmentum@719af466c6f821fc2e518f652de162a8b9ebb3bd`
+利用revision:
+`LUDIARS/Figmentum@3ee998f487d984f54003c4ec3c4f7ba00b53eec3`
 
 利用可能な主API:
 
+- `fg::CityPlanParams + seed` → `fg::planCity()`
+- `fg::CityPlan` → station anchor、stable facility identity、building recipe
 - `fg::CityParams` → `fg::generateCity()` / `fg::buildCity()`
 - `fg::BuildingParams` → `fg::generateBuilding()` / `fg::buildingBounds()`
 - `fg::RoadNetwork + RoadCityParams` → `fg::generateRoadCity()`
@@ -22,18 +25,26 @@ KonbiniDominantが独立した別city generatorを持たない。
 
 ## Required game-side boundary
 
-KonbiniDominantは次の抽象interfaceへ依存する。型名は概念契約。
+first playable の KonbiniDominant は次の game-owned 抽象 interface へ依存する。
+この境界に Figmentum / Pictor の型を公開しない。
 
 ```cpp
 class ICityGenerator {
 public:
-  virtual CityManifest plan_city(const NkxiRecipe&) = 0;
-  virtual FacilityGeometry build_facility(const FacilityRecipe&) = 0;
-  virtual DistantChunkGeometry build_distant_chunk(const ChunkRecipe&) = 0;
+  virtual CityManifest planFirstPlayableCity(
+      GenerationalIdPool<FacilityId>& facilityIds) const = 0;
+  virtual shared_ptr<const FacilityGeometry> buildFacility(
+      const ManifestFacility& facility) const = 0;
+  virtual GeneratedCity generateFirstPlayableCity(
+      GenerationalIdPool<FacilityId>& facilityIds) const = 0;
 };
 ```
 
-具象`FigmentumCityGenerator`だけがFigmentumをincludeする。
+具象 `FigmentumCityAdapter` と、その private projection / meshing units だけが
+Figmentumをincludeする。将来の `NkxiRecipe`、distant chunk、dimension ordinal
+はこの first-playable interface を暗黙に拡張せず、version付き契約として追加する。
+world load composition は atomic な `generateFirstPlayableCity()` を使う。plan単体APIは
+geometryを生成しない用途に限り、全geometry生成失敗時のID rollback契約は持たない。
 
 ## Input: `NkxiRecipe`
 
@@ -111,23 +122,18 @@ term順が変わってもstableでなければならない。
 
 破壊可能施設を1都市1meshへ結合しない。
 
-## Upstream gap: semantic planning
+## Semantic planning dependency
 
-現行Figmentumには`CityManifest`、station anchor、facility stable IDを返す公開APIが無い。
-REQ-CITY-GAP-01として、実装前にFigmentumへsemantic city-plan APIを追加する。
+REQ-CITY-GAP-01 は Figmentum
+`3ee998f487d984f54003c4ec3c4f7ba00b53eec3` の `planCity()` /
+`CityPlan` で解消した。KonbiniDominant はこの exact revision を固定し、
+`FigmentumCityAdapter` が plan を game-owned `CityManifest` へ変換する。
 
-許容される解決:
-
-1. Figmentumに`planCity()` / `CityPlan`を追加し、本作adapterが変換する
-2. Figmentum repositoryが所有する再利用可能plan moduleを公開する
-
-不許容:
+引き続き次は禁止する。
 
 - KonbiniDominant側へplacement algorithmを複製し、Figmentumは単棟meshだけにする
 - SDF termを後解析して施設を推測する
 - random meshの座標順にIDを付ける
-
-このgap解消は別repository変更になるため、実装roadmapで独立gateとする。
 
 ## Geometry generation
 
@@ -173,7 +179,8 @@ Phase 3 / Bossのdimensionも同じcontractを使う。
 
 ## Error contract
 
-`plan_city` / build APIは次を区別して失敗する。
+`planFirstPlayableCity()` / `generateFirstPlayableCity()` /
+`buildFacility()` は次を区別して失敗する。
 
 - invalid recipe
 - unsupported generator revision

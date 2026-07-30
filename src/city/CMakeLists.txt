@@ -1,6 +1,7 @@
 add_library(
   konbini_city
   STATIC
+    building_recipe_fingerprint.cpp
     canonical_bytes.cpp
     canonical_bytes.h
     city_manifest.cpp
@@ -10,6 +11,7 @@ add_library(
     "${PROJECT_SOURCE_DIR}/include/konbini/city/city_manifest.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/city/city_manifest_canonical.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/city/city_manifest_projection.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/city/building_recipe_fingerprint.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/city/facility_geometry.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/city/facility_geometry_cache.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/city/i_city_generator.h"
