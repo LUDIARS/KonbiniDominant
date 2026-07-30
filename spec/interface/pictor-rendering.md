@@ -18,6 +18,26 @@ effectを描画する。
 
 Pictor ObjectIdをsimulation/saveのIDとして使わない。
 
+## Game-owned render domain
+
+Pictor / Ergo / Vulkanの所有型はcamera、picking、overlay geometryへ漏らさない。
+first playableは次のgame-owned valueを境界にする。
+
+- `ViewportExtent` — pixel幅と高さ
+- `WorldRay` — meter単位のoriginと正規化可能なdirection
+- `WorldVertex` — position、deterministic normal、presentation color
+- `FacilityPick` — stable Figmentum key、runtime FacilityId、ray distance
+
+cameraとpickerは同じ`ViewportExtent`を使い、等距離pickはstable Figmentum keyで
+決定する。ZOC geometryはsnapshot順と固定segment順から決定的に生成する。
+
+camera行列はcolumn-major (index = `col * 4 + row`)、右手系view空間、
+Vulkan clip空間 (depth 0..1、Y下向き) のorthographicとする。この規約はGPU側
+shaderと共有する正本であり、game domainとPictor adapterの双方が従う。
+
+BASE-FP-PALETTE-01: 原案はchain色とfacility state色を定めていない。first
+playableの間はgame側のpresentation値として固定し、gameplay分岐には使わない。
+
 ## `RenderSnapshot`
 
 tick終端にimmutable snapshotをpublishする。
