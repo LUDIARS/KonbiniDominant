@@ -4,6 +4,10 @@
 baseline changes must increment `contentVersion` and update canonical snapshot
 expectations in the same change.
 
+Content version `2` adds the required `residentPresentation` profile used only
+to derive ambient resident render snapshots. It does not add residents to the
+authoritative population/economy model or to save state.
+
 The Phase 1 city integration is deliberately fixed to:
 
 - Figmentum revision `3ee998f487d984f54003c4ec3c4f7ba00b53eec3`

@@ -10,6 +10,9 @@
 #include "konbini/sim/facility_table.h"
 #include "konbini/sim/first_playable_content.h"
 #include "konbini/sim/game_state.h"
+#include "konbini/sim/population_cell_table.h"
+#include "konbini/sim/resident_presentation.h"
+#include "konbini/sim/render_store_placement_cue.h"
 #include "konbini/sim/store_table.h"
 
 // @implements spec/interface/pictor-rendering.md `RenderSnapshot`
@@ -55,22 +58,30 @@ public:
     [[nodiscard]] std::uint64_t completedTicks() const noexcept;
     [[nodiscard]] std::span<const RenderFacility> facilities() const noexcept;
     [[nodiscard]] std::span<const RenderStore> stores() const noexcept;
+    [[nodiscard]] std::span<const ResidentPresentation> residents() const noexcept;
+    [[nodiscard]] std::span<const RenderStorePlacementCue>
+    placementCues() const noexcept;
     [[nodiscard]] const HudViewModel& hud() const noexcept;
 
 private:
     friend std::shared_ptr<const RenderSnapshot> makeRenderSnapshot(
         const GameState&, const FirstPlayableContent&, const FacilityTable&,
-        const StoreTable&, const ChainEconomyTable&);
+        const StoreTable&, const PopulationCellTable&, const ChainEconomyTable&,
+        std::span<const RenderStorePlacementCue>);
 
     std::uint64_t completedTicks_ = 0;
     std::vector<RenderFacility> facilities_;
     std::vector<RenderStore> stores_;
+    std::vector<ResidentPresentation> residents_;
+    std::vector<RenderStorePlacementCue> placementCues_;
     HudViewModel hud_;
 };
 
 [[nodiscard]] std::shared_ptr<const RenderSnapshot> makeRenderSnapshot(
     const GameState& state, const FirstPlayableContent& content,
     const FacilityTable& facilities, const StoreTable& stores,
-    const ChainEconomyTable& economy);
+    const PopulationCellTable& populationCells,
+    const ChainEconomyTable& economy,
+    std::span<const RenderStorePlacementCue> placementCues);
 
 }  // namespace konbini::sim

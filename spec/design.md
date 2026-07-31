@@ -160,5 +160,6 @@ canonical stateを変えない。
 - 現実のOS、位置情報、外部店舗データを侵略する機能
 - 実在の西葛西をそのまま再現すること
 - Unity互換APIやUnity asset pipelineの再現
-- individual resident AI の先行実装
+- gameplayへ書き戻すauthoritativeなindividual resident AIの先行実装
+  （`PopulationCellTable`から派生する非権威のambient resident sampleは許可）
 - 仕様未決の数値をコードの既定値で事実上固定すること

@@ -8,12 +8,13 @@ chain差、経済式、phase条件、boss設定をコード分岐ではなくver
 ## Root
 
 製品全体へ拡張した将来schemaは次を目標とする。first playable の実装済み
-`contentVersion = 1` は、後述する小さいprofileだけを受理する。
+`contentVersion = 2` は、後述する小さいprofileだけを受理する。
 
 ```jsonc
 {
   "schemaVersion": 1,
   "simulation": {},
+  "residentPresentation": {},
   "chains": [],
   "economy": {},
   "phases": {},
@@ -25,16 +26,17 @@ chain差、経済式、phase条件、boss設定をコード分岐ではなくver
 
 必須key欠落時は起動時にfail-fastする。黙ってhard-coded defaultやstubへ落とさない。
 
-## First playable profile v1
+## First playable profile v2
 
 `data/content/first-playable.json` は次のtop-level keyだけを持つ。
 
-| key | v1 契約 |
+| key | v2 契約 |
 |---|---|
 | `schemaVersion` | `1` |
-| `contentVersion` | `1` |
+| `contentVersion` | `2` |
 | `simulation` | `ticksPerSecond = 10`、`economyPeriodTicks = 10`、`randomAlgorithm = "splitmix64-counter-v1"` |
 | `population` | `basePopulation = 50`、`randomPopulationCount = 101`、`randomStream = "FP_POPULATION"` |
+| `residentPresentation` | 下記の非権威ambient resident baseline |
 | `startingStoreEquivalent` | `5` |
 | `chains` | 下表の3 chainを `ChainId` index順にちょうど1件ずつ |
 
@@ -44,12 +46,34 @@ chain差、経済式、phase条件、boss設定をコード分岐ではなくver
 | `famoma` | ファモマ | 1250 | 24 | 450 |
 | `seban_ileban` | セバンイレバン | 800 | 18 | 400 |
 
+`residentPresentation`:
+
+| key | v2 baseline |
+|---|---:|
+| `samplesPerPopulationCell` | 1 |
+| `walkingSpeedMetersPerSecond` | 1.5 |
+| `homeDwellTicks` | 30 |
+| `storeDwellTicks` | 40 |
+| `speechDurationTicks` | 30 |
+| `bubbleHeightMeters` | 2.2 |
+| `bubbleMaxDistanceMeters` | 220 |
+| `remarks` | `NICE AND CLOSE`、`EASY TO REACH`、`HANDY LOCATION`の3件 |
+
+resident値はrender snapshotへ派生するpresentationだけを制御し、canonicalな人口、
+収益、店舗割当を変更しない。`speechDurationTicks`は`storeDwellTicks`以下でなければ
+ならない。dummy remarkは1〜24文字のASCII `A`〜`Z`とspaceだけを受理し、
+spaceだけのlineも拒否する。
+
 loader はunknown key、欠落、重複chain、非finite値、canonicalな10進整数表現でない
 整数field、整数範囲外、baseline不一致を例外として拒否する。
 programmaticに構築したcontentもauthoritative simulationへ
 渡す前に同じvalidationを通す。将来schemaの `economy`、`phases`、`triangle`、
-`dimensions`、`boss` はv1で黙って無視せず、対応するcontent versionを追加してから
+`dimensions`、`boss` はv2で黙って無視せず、対応するcontent versionを追加してから
 受理する。
+
+`contentVersion = 1`はresident contractを持たないため、v2 loaderは明示的に拒否する。
+過去save対応が必要になった時はversion別parserとmigrationを追加し、v2既定値を
+黙って注入しない。
 
 ## Simulation
 

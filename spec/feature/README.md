@@ -9,6 +9,7 @@
 - [boss-aion.md](boss-aion.md)
 - [opponent-ai.md](opponent-ai.md)
 - [ui-ux.md](ui-ux.md)
+- [npc-conversations-and-placement-feedback.md](npc-conversations-and-placement-feedback.md) — 住民の来店・発話と店舗着地feedback
 
 各fileはプレイヤーから見た振る舞いを正本とし、data layoutや外部APIの詳細は
 `data/`、`interface/`へ委譲する。

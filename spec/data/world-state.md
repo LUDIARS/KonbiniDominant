@@ -123,7 +123,7 @@ simulation hot pathの中心。各streamは同じdense indexを共有する。
 
 ### `PopulationCellTable`
 
-DEC-DATA-01: 原案が個別住民AIを要求していないため、人口は施設/街区単位で集約する。
+DEC-DATA-01: 人口、需要、収益の正本は施設/街区単位で集約する。
 
 | stream | 意味 |
 |---|---|
@@ -134,8 +134,21 @@ DEC-DATA-01: 原案が個別住民AIを要求していないため、人口は�
 | `loyalty[]` | influenceのヒステリシス |
 | `demand[]` | 収益へ渡す需要 |
 
-個別住民の描画はpresentation側のsampleであり、simulation entityにしない。
+個別住民の描画は`PopulationCellTable`、割当店舗、completed tickから決定的に派生する
+presentation sampleであり、simulation entityにしない。sampleの歩行phase、発話、
+Visia IDはcanonical snapshot / saveへ保存せず、人口・収益へ書き戻さない。
 将来、個人行動がgame ruleに必要になった時だけ `CitizenTable` を追加する。
+
+### Presentation-derived records
+
+`RenderSnapshot`はauthoritative tableの参照を保持せず、次の一時recordを値で公開できる。
+
+| record | source | lifetime |
+|---|---|---|
+| `ResidentPresentation` | population cell + assigned store + tick + counter RNG | snapshot |
+| `RenderStorePlacementCue` | 成功した`PlacementResult::placedStore` | 成功tickのsnapshot |
+
+placement cueは店舗配置eventの再通知であり、店舗の存在やpositionの正本ではない。
 
 ### `DominantTriangleTable`
 

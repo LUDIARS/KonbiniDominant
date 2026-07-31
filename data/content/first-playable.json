@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "contentVersion": 1,
+  "contentVersion": 2,
   "simulation": {
     "ticksPerSecond": 10,
     "economyPeriodTicks": 10,
@@ -10,6 +10,20 @@
     "basePopulation": 50,
     "randomPopulationCount": 101,
     "randomStream": "FP_POPULATION"
+  },
+  "residentPresentation": {
+    "samplesPerPopulationCell": 1,
+    "walkingSpeedMetersPerSecond": 1.5,
+    "homeDwellTicks": 30,
+    "storeDwellTicks": 40,
+    "speechDurationTicks": 30,
+    "bubbleHeightMeters": 2.2,
+    "bubbleMaxDistanceMeters": 220,
+    "remarks": [
+      "NICE AND CLOSE",
+      "EASY TO REACH",
+      "HANDY LOCATION"
+    ]
   },
   "startingStoreEquivalent": 5,
   "chains": [

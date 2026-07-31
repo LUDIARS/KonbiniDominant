@@ -13,7 +13,7 @@
 
 #include "json_document.h"
 
-// @implements spec/data/content-schema.md First playable profile v1
+// @implements spec/data/content-schema.md First playable profile v2
 
 namespace konbini::sim {
 
@@ -75,6 +75,16 @@ std::uint32_t requireUint32(const json::Value& value,
     return static_cast<std::uint32_t>(number);
 }
 
+std::uint32_t requirePositiveUint32(const json::Value& value,
+                                    const std::string_view fieldName) {
+    const std::uint32_t number = requireUint32(value, fieldName);
+    if (number == 0) {
+        throw std::invalid_argument(std::string(fieldName) +
+                                    " must be a positive integer");
+    }
+    return number;
+}
+
 double requirePositiveNumber(const json::Value& value,
                              const std::string_view fieldName) {
     if (!value.isNumber() || !std::isfinite(value.number()) ||
@@ -111,6 +121,56 @@ PopulationContent parsePopulation(const json::Value& value) {
     };
 }
 
+ResidentPresentationContent parseResidentPresentation(
+    const json::Value& value) {
+    const Object& object = value.object();
+    requireOnlyKeys(object,
+                    {"samplesPerPopulationCell",
+                     "walkingSpeedMetersPerSecond",
+                     "homeDwellTicks",
+                     "storeDwellTicks",
+                     "speechDurationTicks",
+                     "bubbleHeightMeters",
+                     "bubbleMaxDistanceMeters",
+                     "remarks"});
+
+    ResidentPresentationContent content{
+        .samplesPerPopulationCell = requirePositiveUint32(
+            requireField(object, "samplesPerPopulationCell"),
+            "samplesPerPopulationCell"),
+        .walkingSpeedMetersPerSecond = requirePositiveNumber(
+            requireField(object, "walkingSpeedMetersPerSecond"),
+            "walkingSpeedMetersPerSecond"),
+        .homeDwellTicks = requirePositiveUint32(
+            requireField(object, "homeDwellTicks"), "homeDwellTicks"),
+        .storeDwellTicks = requirePositiveUint32(
+            requireField(object, "storeDwellTicks"), "storeDwellTicks"),
+        .speechDurationTicks = requirePositiveUint32(
+            requireField(object, "speechDurationTicks"),
+            "speechDurationTicks"),
+        .bubbleHeightMeters = requirePositiveNumber(
+            requireField(object, "bubbleHeightMeters"),
+            "bubbleHeightMeters"),
+        .bubbleMaxDistanceMeters = requirePositiveNumber(
+            requireField(object, "bubbleMaxDistanceMeters"),
+            "bubbleMaxDistanceMeters"),
+    };
+
+    const json::Value::Array& remarks = requireField(object, "remarks").array();
+    if (remarks.size() != kResidentRemarkCount) {
+        throw std::invalid_argument(
+            "residentPresentation.remarks must contain exactly three lines");
+    }
+    for (std::size_t index = 0; index < remarks.size(); ++index) {
+        content.remarks[index] = remarks[index].string();
+        if (content.remarks[index].empty()) {
+            throw std::invalid_argument(
+                "residentPresentation remarks must not be empty");
+        }
+    }
+    return content;
+}
+
 ChainContent parseChain(const json::Value& value) {
     const Object& object = value.object();
     requireOnlyKeys(object,
@@ -140,24 +200,91 @@ ChainContent parseChain(const json::Value& value) {
     };
 }
 
-void requireBaselineV1(const FirstPlayableContent& content) {
-    if (content.schemaVersion != 1 || content.contentVersion != 1) {
+[[nodiscard]] bool isSupportedResidentRemark(
+    const std::string_view remark) noexcept {
+    constexpr std::size_t kMaximumRemarkCharacters = 24;
+    if (remark.empty() || remark.size() > kMaximumRemarkCharacters) {
+        return false;
+    }
+    bool hasLetter = false;
+    for (const char character : remark) {
+        if (character == ' ') {
+            continue;
+        }
+        if (character < 'A' || character > 'Z') {
+            return false;
+        }
+        hasLetter = true;
+    }
+    return hasLetter;
+}
+
+void validateResidentPresentationShape(
+    const ResidentPresentationContent& content) {
+    if (content.samplesPerPopulationCell == 0 ||
+        !std::isfinite(content.walkingSpeedMetersPerSecond) ||
+        content.walkingSpeedMetersPerSecond <= 0.0 ||
+        content.homeDwellTicks == 0 || content.storeDwellTicks == 0 ||
+        content.speechDurationTicks == 0 ||
+        content.speechDurationTicks > content.storeDwellTicks ||
+        !std::isfinite(content.bubbleHeightMeters) ||
+        content.bubbleHeightMeters <= 0.0 ||
+        !std::isfinite(content.bubbleMaxDistanceMeters) ||
+        content.bubbleMaxDistanceMeters <= 0.0) {
+        throw std::invalid_argument(
+            "residentPresentation contains an invalid range or non-finite value");
+    }
+    for (const std::string& remark : content.remarks) {
+        if (!isSupportedResidentRemark(remark)) {
+            throw std::invalid_argument(
+                "residentPresentation remarks require 1-24 "
+                "ASCII A-Z/space characters");
+        }
+    }
+}
+
+void requireBaselineV2(const FirstPlayableContent& content) {
+    if (content.schemaVersion != 1 || content.contentVersion != 2) {
         throw std::invalid_argument(
             "unsupported first-playable schemaVersion/contentVersion");
     }
     if (content.simulation.ticksPerSecond != 10 ||
         content.simulation.economyPeriodTicks != 10 ||
         content.simulation.randomAlgorithm != "splitmix64-counter-v1") {
-        throw std::invalid_argument("simulation values do not match contentVersion 1");
+        throw std::invalid_argument("simulation values do not match contentVersion 2");
     }
     if (content.population.basePopulation != 50 ||
         content.population.randomPopulationCount != 101 ||
         content.population.randomStream != "FP_POPULATION") {
-        throw std::invalid_argument("population values do not match contentVersion 1");
+        throw std::invalid_argument("population values do not match contentVersion 2");
+    }
+    validateResidentPresentationShape(content.residentPresentation);
+    constexpr std::array<std::string_view, kResidentRemarkCount> expectedRemarks{
+        "NICE AND CLOSE",
+        "EASY TO REACH",
+        "HANDY LOCATION",
+    };
+    const ResidentPresentationContent& residents =
+        content.residentPresentation;
+    if (residents.samplesPerPopulationCell != 1 ||
+        residents.walkingSpeedMetersPerSecond != 1.5 ||
+        residents.homeDwellTicks != 30 || residents.storeDwellTicks != 40 ||
+        residents.speechDurationTicks != 30 ||
+        residents.bubbleHeightMeters != 2.2 ||
+        residents.bubbleMaxDistanceMeters != 220.0) {
+        throw std::invalid_argument(
+            "residentPresentation values do not match contentVersion 2");
+    }
+    for (std::size_t index = 0; index < expectedRemarks.size(); ++index) {
+        if (std::string_view(residents.remarks[index]) !=
+            expectedRemarks[index]) {
+            throw std::invalid_argument(
+                "residentPresentation remarks do not match contentVersion 2");
+        }
     }
     if (content.startingStoreEquivalent != 5) {
         throw std::invalid_argument(
-            "startingStoreEquivalent does not match contentVersion 1");
+            "startingStoreEquivalent does not match contentVersion 2");
     }
 
     struct ExpectedChain {
@@ -181,19 +308,25 @@ void requireBaselineV1(const FirstPlayableContent& content) {
             actual.zocRadiusMeters != expectedChain.radius ||
             actual.revenueMilliCreditsPerPerson != expectedChain.revenueMilli) {
             throw std::invalid_argument(
-                "chain values do not match first-playable contentVersion 1");
+                "chain values do not match first-playable contentVersion 2");
         }
     }
 }
 
 }  // namespace
 
-// @implements spec/data/content-schema.md Validation
-void validateFirstPlayableContent(const FirstPlayableContent& content) {
-    requireBaselineV1(content);
+// @implements spec/feature/npc-conversations-and-placement-feedback.md Ambient resident baseline
+void validateResidentPresentationContent(
+    const ResidentPresentationContent& content) {
+    validateResidentPresentationShape(content);
 }
 
-// @implements spec/data/content-schema.md First playable profile v1
+// @implements spec/data/content-schema.md Validation
+void validateFirstPlayableContent(const FirstPlayableContent& content) {
+    requireBaselineV2(content);
+}
+
+// @implements spec/data/content-schema.md First playable profile v2
 // @implements spec/data/content-schema.md Validation
 FirstPlayableContent parseFirstPlayableContent(const std::string_view input) {
     const json::Value document = json::parseDocument(input);
@@ -203,6 +336,7 @@ FirstPlayableContent parseFirstPlayableContent(const std::string_view input) {
                      "contentVersion",
                      "simulation",
                      "population",
+                     "residentPresentation",
                      "startingStoreEquivalent",
                      "chains"});
 
@@ -213,6 +347,8 @@ FirstPlayableContent parseFirstPlayableContent(const std::string_view input) {
         requireUint32(requireField(root, "contentVersion"), "contentVersion");
     content.simulation = parseSimulation(requireField(root, "simulation"));
     content.population = parsePopulation(requireField(root, "population"));
+    content.residentPresentation = parseResidentPresentation(
+        requireField(root, "residentPresentation"));
     content.startingStoreEquivalent = requireUint32(
         requireField(root, "startingStoreEquivalent"), "startingStoreEquivalent");
 
@@ -236,7 +372,7 @@ FirstPlayableContent parseFirstPlayableContent(const std::string_view input) {
     return content;
 }
 
-// @implements spec/data/content-schema.md First playable profile v1
+// @implements spec/data/content-schema.md First playable profile v2
 FirstPlayableContent loadFirstPlayableContent(const std::filesystem::path& path) {
     std::ifstream input(path, std::ios::binary);
     if (!input) {

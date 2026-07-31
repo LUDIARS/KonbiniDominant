@@ -8,6 +8,8 @@
 
 // @implements spec/interface/pictor-rendering.md `RenderSnapshot`
 // @implements spec/feature/ui-ux.md Common HUD
+// @implements spec/feature/npc-conversations-and-placement-feedback.md Determinism and ownership
+// @implements spec/interface/visia-presentation.md Pictor integration boundary
 
 namespace konbini::sim {
 
@@ -26,6 +28,17 @@ std::span<const RenderStore> RenderSnapshot::stores() const noexcept {
     return stores_;
 }
 
+// @implements spec/feature/npc-conversations-and-placement-feedback.md Ambient resident baseline
+std::span<const ResidentPresentation> RenderSnapshot::residents() const noexcept {
+    return residents_;
+}
+
+// @implements spec/feature/npc-conversations-and-placement-feedback.md Store placement choreography
+std::span<const RenderStorePlacementCue>
+RenderSnapshot::placementCues() const noexcept {
+    return placementCues_;
+}
+
 // @implements spec/feature/ui-ux.md Common HUD
 const HudViewModel& RenderSnapshot::hud() const noexcept {
     return hud_;
@@ -37,7 +50,9 @@ const HudViewModel& RenderSnapshot::hud() const noexcept {
 std::shared_ptr<const RenderSnapshot> makeRenderSnapshot(
     const GameState& state, const FirstPlayableContent& content,
     const FacilityTable& facilities, const StoreTable& stores,
-    const ChainEconomyTable& economy) {
+    const PopulationCellTable& populationCells,
+    const ChainEconomyTable& economy,
+    const std::span<const RenderStorePlacementCue> placementCues) {
     if (content.simulation.economyPeriodTicks == 0) {
         throw std::invalid_argument("economy period must be positive");
     }
@@ -70,6 +85,15 @@ std::shared_ptr<const RenderSnapshot> makeRenderSnapshot(
             .capturedPopulation = row.capturedPopulation,
         });
     }
+    snapshot->residents_ = projectResidentPresentations(
+        state.completedTicks,
+        state.worldSeed,
+        content.simulation.ticksPerSecond,
+        content.residentPresentation,
+        populationCells,
+        stores);
+    snapshot->placementCues_.assign(
+        placementCues.begin(), placementCues.end());
     snapshot->hud_.completedTicks = state.completedTicks;
     snapshot->hud_.playerChain = state.playerChain;
     const std::uint32_t remainder = static_cast<std::uint32_t>(

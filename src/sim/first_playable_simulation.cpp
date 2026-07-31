@@ -8,11 +8,13 @@
 #include <utility>
 
 #include "konbini/sim/economy_system.h"
+#include "konbini/sim/placement_cue_projection.h"
 #include "konbini/sim/structural_command_buffer.h"
 #include "konbini/sim/zoc_system.h"
 
 // @implements spec/design.md 5. Tick と決定性
 // @implements spec/plan/tasks/first-playable.md Simulation
+// @implements spec/feature/npc-conversations-and-placement-feedback.md Determinism and ownership
 
 namespace konbini::sim {
 
@@ -136,11 +138,18 @@ CompletedTick FirstPlayableSimulation::completeNextTick() {
                                              stagedStores,
                                              stagedPopulationCells,
                                              stagedEconomy);
+    const std::vector<RenderStorePlacementCue> placementCues =
+        projectStorePlacementCues(
+            stagedState.completedTicks,
+            stagedStores,
+            result.placements);
     result.render = makeRenderSnapshot(stagedState,
                                        content_,
                                        stagedFacilities,
                                        stagedStores,
-                                       stagedEconomy);
+                                       stagedPopulationCells,
+                                       stagedEconomy,
+                                       placementCues);
 
     static_assert(
         std::is_nothrow_move_assignable_v<GameState> &&

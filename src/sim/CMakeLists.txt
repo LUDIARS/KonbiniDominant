@@ -10,6 +10,8 @@ add_library(
     economy/revenue_math.cpp
     first_playable_simulation.cpp
     snapshots/canonical_snapshot.cpp
+    snapshots/placement_cue_projection.cpp
+    snapshots/resident_presentation.cpp
     snapshots/render_snapshot.cpp
     storage/chain_economy_table.cpp
     storage/facility_table.cpp
@@ -35,10 +37,13 @@ add_library(
     "${PROJECT_SOURCE_DIR}/include/konbini/sim/game_state.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/sim/math_types.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/sim/placement_system.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/sim/placement_cue_projection.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/sim/player_command.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/sim/population_cell_table.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/sim/population_initializer.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/sim/render_snapshot.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/sim/render_store_placement_cue.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/sim/resident_presentation.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/sim/revenue_math.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/sim/select_chain_system.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/sim/store_table.h"

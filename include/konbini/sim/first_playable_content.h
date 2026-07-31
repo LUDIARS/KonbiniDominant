@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <cstddef>
 #include <cstdint>
 #include <filesystem>
 #include <stdexcept>
@@ -13,6 +14,8 @@
 // @implements spec/data/content-schema.md Chain
 
 namespace konbini::sim {
+
+inline constexpr std::size_t kResidentRemarkCount = 3;
 
 // @implements spec/data/content-schema.md Chain
 struct ChainContent {
@@ -36,12 +39,31 @@ struct PopulationContent {
     std::string randomStream;
 };
 
+// Ambient residents are a presentation-only projection of PopulationCellTable.
+// These values may change what is shown, but never population, economy, save,
+// or canonical simulation state.
+// @implements spec/feature/npc-conversations-and-placement-feedback.md Ambient resident baseline
+struct ResidentPresentationContent {
+    std::uint32_t samplesPerPopulationCell = 0;
+    double walkingSpeedMetersPerSecond = 0.0;
+    std::uint32_t homeDwellTicks = 0;
+    std::uint32_t storeDwellTicks = 0;
+    std::uint32_t speechDurationTicks = 0;
+    double bubbleHeightMeters = 0.0;
+    double bubbleMaxDistanceMeters = 0.0;
+    std::array<std::string, kResidentRemarkCount> remarks{};
+};
+
+void validateResidentPresentationContent(
+    const ResidentPresentationContent& content);
+
 // @implements spec/data/content-schema.md Root
 struct FirstPlayableContent {
     std::uint32_t schemaVersion = 0;
     std::uint32_t contentVersion = 0;
     SimulationContent simulation;
     PopulationContent population;
+    ResidentPresentationContent residentPresentation;
     std::uint32_t startingStoreEquivalent = 0;
     std::array<ChainContent, kFirstPlayableChainCount> chains{};
 

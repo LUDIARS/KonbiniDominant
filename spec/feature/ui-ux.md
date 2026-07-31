@@ -46,6 +46,15 @@ invalid placementは色だけでなくreason textを出す。
 - candidate / active Dominant Triangleを別style
 - encircled rivalへ予兆表示
 
+### Ambient residents and placement feedback
+
+- ZOC内で店舗へ割り当てられたpopulation cellからresident dummyを表示する
+- residentは施設中心と店舗中心を往復し、来店中だけ短い吹き出しを頭上に表示する
+- 吹き出しはcameraから離れると非表示にし、都市俯瞰の可読性を優先する
+- 店舗配置成功時は上空で短く溜め、270度回転しながらeasingで着地する
+- 着地時はVisiaで定義した短命ring effectを表示する
+- animation中もcash、店舗数、placement結果はsimulationの確定値を表示する
+
 ## Phase 2
 
 - facility選択時にvertical stack columnを開く

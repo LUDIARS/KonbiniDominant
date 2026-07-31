@@ -27,6 +27,8 @@ first playableは次のgame-owned valueを境界にする。
 - `WorldRay` — meter単位のoriginと正規化可能なdirection
 - `WorldVertex` — position、deterministic normal、presentation color
 - `FacilityPick` — stable Figmentum key、runtime FacilityId、ray distance
+- `VisiaDefinition` / `VisiaInstance` — resident / effectのgame-owned visual recipe
+- `SpeechBubbleRequest` — world anchor、dummy text、distance visibility
 
 cameraとpickerは同じ`ViewportExtent`を使い、等距離pickはstable Figmentum keyで
 決定する。ZOC geometryはsnapshot順と固定segment順から決定的に生成する。
@@ -49,6 +51,8 @@ RenderSnapshot
   cameraHints
   facilities[]
   stores[]
+  residents[]
+  placementCues[]
   triangles[]
   populationVisuals[]
   effects[]
@@ -65,6 +69,17 @@ RenderSnapshot
 - presentation parameter（chain色、faith、damage state等）
 
 render threadはsnapshotをconsumeするだけでsimulation tableへ書き戻さない。
+
+`residents[]`は`PopulationCellTable`から派生する非権威sampleで、position、yaw、
+trip phase、任意のtarget store、来店中の任意speechを値で持つ。
+`placementCues[]`はそのtickで成功した配置だけを持ち、target position、first playableの
+最終yaw 0度、completed tickからrendererのwall-clock animationを開始する。
+どちらもcanonical stateではない。
+
+resident primitive、speech bubble glyph、landing effectのCPU geometry契約は
+[visia-presentation.md](visia-presentation.md)を正本とする。Pictor adapterは
+VisiaをVisus／text atlas／effect resourceへ解決し、未解決resourceを別種primitiveへ
+silent fallbackしない。
 
 ## Object lifecycle
 

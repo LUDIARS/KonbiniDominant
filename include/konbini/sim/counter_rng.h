@@ -13,6 +13,11 @@ inline constexpr std::uint64_t kRandomAlgorithmId = 0x53504C49544D4958ull;
 
 enum class RandomStreamId : std::uint64_t {
     FirstPlayablePopulation = 0x46505F504F50554Cull,
+    // Presentation-only streams still use stable IDs so replayed ticks show
+    // the same resident schedule and line without advancing RNG state.
+    // @implements spec/feature/npc-conversations-and-placement-feedback.md Determinism and ownership
+    FirstPlayableResidentSchedule = 0x46505F5253434844ull,
+    FirstPlayableResidentRemark = 0x46505F524D524B31ull,
 };
 
 struct RandomCounter {

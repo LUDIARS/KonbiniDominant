@@ -138,6 +138,7 @@ Acceptance:
 - 2 opponent AI
 - phase transition
 - HUD / placement preview
+- population cell由来のambient resident、来店発話、Visia placement feedback
 
 Acceptanceは [phase-1-dominant-triangle.md](../feature/phase-1-dominant-triangle.md)
 の全不変条件とfuture tests。

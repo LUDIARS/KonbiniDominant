@@ -9,10 +9,11 @@ KonbiniDominant の設計仕様。AIFormat `FORMAT_SPEC.md` の標準分類を�
 3. [data/world-state.md](data/world-state.md) — runtime state と system tick
 4. [interface/figmentum-city-generation.md](interface/figmentum-city-generation.md)
 5. [interface/pictor-rendering.md](interface/pictor-rendering.md)
-6. [interface/ergo-runtime.md](interface/ergo-runtime.md)
-7. [interface/mobile-platform.md](interface/mobile-platform.md)
-8. [setup/mobile-development.md](setup/mobile-development.md)
-9. [faq/open-questions.md](faq/open-questions.md) — 実装前に残る判断
+6. [interface/visia-presentation.md](interface/visia-presentation.md)
+7. [interface/ergo-runtime.md](interface/ergo-runtime.md)
+8. [interface/mobile-platform.md](interface/mobile-platform.md)
+9. [setup/mobile-development.md](setup/mobile-development.md)
+10. [faq/open-questions.md](faq/open-questions.md) — 実装前に残る判断
 
 ## 分類
 
