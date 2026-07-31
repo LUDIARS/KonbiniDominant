@@ -15,6 +15,9 @@ kind: design
 | `TBD-AI-PLAYERMODE-01` | player mode | 1人 + 残り2chain AI | neco |
 | `TBD-NKXI-PROFILE-01` | 西葛西らしさの要素 | 中央駅+density bandのみ確定 | neco / design |
 | `TBD-PERF-01` | target規模 / FPS / tick / memory | 未設定 | tech |
+| `TBD-MOBILE-OS-01` | Android / iOSの最低OS、device tier | 未設定 | tech |
+| `TBD-MOBILE-PERF-01` | mobile FPS / frame time / GPU memory / thermal budget | 30 FPS、10 TPSをfirst probe baseline | tech |
+| `TBD-MOBILE-ORIENTATION-01` | portraitを製品要件に含めるか | first mobileはlandscape | neco / design |
 | `TBD-DIM-COORD-01` | 別dimensionの同位置 | explicit anchor map | design |
 | `TBD-TRI-CAPTURE-01` | 囲み破壊 | Encircled後の発火方式未決 | neco |
 | `TBD-DEPS-01` | dependency pin方式 | reproducible pin必須 | tech |
@@ -73,3 +76,4 @@ baselineが書かれていることをowner確定とみなさない。
 | 2026-07-31 | initial repositoryはprivate、license未指定 |
 | 2026-07-31 | N-KXi表記を標準化（原文の`N-Kxi`揺れを統一） |
 | 2026-07-31 | 個別住民でなくPopulationCell集約をbaseline |
+| 2026-07-31 | neco指示によりsmartphone対応を製品要件へ追加。Android先行、iOS後続 |

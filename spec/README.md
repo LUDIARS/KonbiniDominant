@@ -10,7 +10,9 @@ KonbiniDominant の設計仕様。AIFormat `FORMAT_SPEC.md` の標準分類を�
 4. [interface/figmentum-city-generation.md](interface/figmentum-city-generation.md)
 5. [interface/pictor-rendering.md](interface/pictor-rendering.md)
 6. [interface/ergo-runtime.md](interface/ergo-runtime.md)
-7. [faq/open-questions.md](faq/open-questions.md) — 実装前に残る判断
+7. [interface/mobile-platform.md](interface/mobile-platform.md)
+8. [setup/mobile-development.md](setup/mobile-development.md)
+9. [faq/open-questions.md](faq/open-questions.md) — 実装前に残る判断
 
 ## 分類
 
@@ -18,13 +20,16 @@ KonbiniDominant の設計仕様。AIFormat `FORMAT_SPEC.md` の標準分類を�
 - [feature/](feature/) — プレイヤーから見たゲーム機能
 - [interface/](interface/) — Pictor / Ergo / Figmentum との境界
 - [plan/](plan/) — 実装計画と委託可能な作業単位
+- [plan/problem_logs/](plan/problem_logs/) — 実際に発生した問題・障害の記録と
+  upstream への修正要求
 - [setup/](setup/) — native 開発環境
 - [test/](test/) — 将来の検証戦略
 - [faq/](faq/) — 原資料の分析、設計背景、未決事項
-- [tasks/](tasks/) — 実施済み作業単位の記録。`plan/tasks/` が「これから渡す
-  作業仕様」であるのに対し、こちらは完了した実装 PR の結果を残す
+- [tasks/](tasks/) — task-workflow 2.1形式の作業単位。`pending` は残作業、
+  `done` は完了した実装 / 設計結果を記録する
 
-`knowledge/` は問題・障害が実際に発生した時点で追加する。
+個別の問題・障害は [plan/problem_logs/](plan/problem_logs/) に1件1ファイルで残す。
+`knowledge/` は、そこから再発防止の恒久知見を切り出す必要が出た時点で追加する。
 
 ## 記法
 

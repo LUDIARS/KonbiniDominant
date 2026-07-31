@@ -13,6 +13,7 @@
 3. game rule と描画・都市メッシュ生成を分離すること
 4. Phase が次元を増やしても、同じ rule/system をデータ追加で再利用できること
 5. 原案の未決事項を実装上の偶然で確定しないこと
+6. Windows / Android / iOSで同じsimulation、content、save契約を共有すること
 
 ## 2. 採用スタック
 
@@ -23,6 +24,7 @@
 | 共通 runtime | Ergo | mass entity storage として `ergo_actor` は使わない |
 | 都市形成 | Figmentum | 別の独立 city generator を正本にしない |
 | simulation | KonbiniDominant 固有 DoD core | ECS 製品の採用自体は要件にしない |
+| platform | Windows desktop、Android、iOS | platform host以外へOS APIを漏らさない |
 
 実装で固定する参照点は次の commit。
 
@@ -128,7 +130,21 @@ Ergo は入力イベント、frame clock、render host、UI/audio等の共通機
 
 詳細は [interface/ergo-runtime.md](interface/ergo-runtime.md)。
 
-## 9. 技術メモ中のアルゴリズム
+## 9. Smartphone platform 境界
+
+REQ-PLATFORM-01: Windows版に加えてスマートフォンでも同じgameplayを
+プレイ可能にする。Androidを最初のmobile実装対象とし、共通境界を確立した後に
+iOSへ接続する。現行Windows first playableの完了条件へmobile packagingや実機確認を
+混ぜず、後続taskとして進める。
+
+mobile差分はsurface、input、app lifecycle、asset / writable path、packageに閉じ込める。
+`konbini_sim`、Figmentum `CityPlan`、content schema、canonical save / replayは
+platform間で共通とする。描画品質のcapability別変更は許容するが、game ruleや
+canonical stateを変えない。
+
+詳細は [interface/mobile-platform.md](interface/mobile-platform.md)。
+
+## 10. 技術メモ中のアルゴリズム
 
 | 候補 | 扱い |
 |---|---|
@@ -139,7 +155,7 @@ Ergo は入力イベント、frame clock、render host、UI/audio等の共通機
 | 空間充填 | 目的が未定義のため採用保留 |
 | minimax | 相手AIのaction/state/evaluationが定義されるまで採用保留 |
 
-## 10. 非目標
+## 11. 非目標
 
 - 現実のOS、位置情報、外部店舗データを侵略する機能
 - 実在の西葛西をそのまま再現すること

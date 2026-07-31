@@ -82,6 +82,31 @@ off-screen dimensionで重大eventが起きた場合はqueue表示し、camera�
 [game-flow.md](game-flow.md)の統計を表示し、New Game / Titleへ戻れる。
 victory/loseの判定理由を明示する。
 
+## Smartphone interaction
+
+REQ-MOBILE-UX-01: mobile版はhover、right click、keyboard shortcutがなくても
+全gameplay操作を完結できること。raw touchをsimulationへ直接渡さず、
+gestureをsemanticなinput actionへ変換してから`PlayerCommand`を生成する。
+
+first mobile baseline:
+
+| gesture / UI | action |
+|---|---|
+| single tap | facility / UIを選択 |
+| 選択後の明示`Place` action | store配置を確定 |
+| drag | camera移動。tapとの判定thresholdを持つ |
+| pinch | camera zoom |
+| `Cancel` / platform back | 選択解除、上位screenへ戻る |
+| pause action | simulation pauseとrule説明 |
+
+- hover previewはselection previewへ置き換える
+- accidental placementを避けるため、tapだけで即時購入しない
+- safe area、display density、UI scaleをlayout inputとして扱う
+- rotation / resize後もselected facilityとsimulation stateを失わない
+- touch targetの最小値は対象OSのaccessibility guidelineに従い、実機taskで検証する
+- landscapeをfirst mobile baselineとし、portrait対応は
+  `TBD-MOBILE-ORIENTATION-01`で確定する
+
 ## Accessibility
 
 - chain / ZOC / Triangleを色だけで区別しない
@@ -91,4 +116,4 @@ victory/loseの判定理由を明示する。
 - input remap
 - pause中にrule説明を読める
 
-具体的なplatform input schemeとlocalizationは `TBD-ACCESS-01`。
+desktop / controllerの追加input schemeとlocalizationは `TBD-ACCESS-01`。

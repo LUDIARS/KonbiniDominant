@@ -3,7 +3,8 @@
 ## Goal
 
 Notion原案に含まれるPhase 1〜Bossまでを、Pictor / Ergo / Figmentumと
-DoD simulationで実装・配線し、決定的save/replayと検証を完成させる。
+DoD simulationで実装・配線し、Windows / Android / iOSで共有する
+決定的save/replayと検証を完成させる。
 途中gateは品質確認点であり、部分版を完成扱いしない。
 
 初回の実装委託では、複数gateを薄く縦断する
@@ -163,6 +164,32 @@ Acceptance:
 - repeated create/destroyでresource leakなし
 - missing shader / bufferをplaceholderで隠さない
 - target規模でdraw/memory budget内
+
+## Gate 5M — Smartphone first playable
+
+現行Windows first playableを基線に、Androidを先行して共通mobile contractを
+実装し、その境界をiOSへ接続する。mobile対応を既存KD-FP-001へ混ぜず、
+[mobile-platform contract](../interface/mobile-platform.md)と
+[KD-MOB-000](../tasks/2026-07-31-kd-mob-000-smartphone-contract.md)から始まる
+task-workflowを作業単位とする。
+
+- Ergo render contextをGLFW具象型からPictor `ISurfaceProvider`へ一般化
+- Pictor / Ergo / gameのVulkan build contractをdesktop SDKとmobile runtimeへ分離
+- app lifecycle、surface loss、asset reader、writable pathをplatform adapter化
+- touch / safe area / density-aware HUD
+- Android native host、package、Figmentum geometry cache
+- iOS native host、MoltenVK portability、package
+- actual deviceでresume、memory / thermal pressure、性能を検証
+
+Acceptance:
+
+- Windows first playableのruleとcanonical stateを変更しない
+- 同じseedと正規化command列でplatform間のcanonical snapshotが一致
+- Android / iOSともPictor経由でFigmentum都市を描画する
+- background中はfixed tickとGPU submissionを進めない
+- surface再生成でsimulation stateを失わない
+- capability profile変更は観測可能で、silent fallbackしない
+- 実機証跡をTestWorkflowへ記録する
 
 ## Gate 6 — Phase 2
 
