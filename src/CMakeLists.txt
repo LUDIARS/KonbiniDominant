@@ -1,5 +1,8 @@
 add_subdirectory(sim)
 add_subdirectory(city)
+if(KONBINI_BUILD_RENDER)
+  add_subdirectory(adapters/pictor)
+endif()
 add_subdirectory(render)
 if(KONBINI_BUILD_FIGMENTUM_ADAPTER)
   add_subdirectory(adapters/figmentum)
@@ -17,4 +20,11 @@ add_dependencies(
 )
 if(KONBINI_BUILD_FIGMENTUM_ADAPTER)
   add_dependencies(konbini_review konbini_figmentum_adapter)
+endif()
+if(KONBINI_BUILD_RENDER)
+  add_dependencies(
+    konbini_review
+    konbini_pictor_scene_targets
+    konbini_world_composite
+  )
 endif()

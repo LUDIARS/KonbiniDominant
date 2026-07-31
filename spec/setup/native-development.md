@@ -71,14 +71,16 @@ pathを個人絶対pathへhard-codeしない。CMake cache / presetで解決し�
 `konbini_sim`からPictor / Vulkan / Figmentumへlinkしない。
 
 現在repositoryには`konbini_sim`、`konbini_city`、
-`konbini_figmentum_adapter`、`konbini_sim_tests`が存在する。
-`konbini_app`はKD-FP-001の後続stageで追加する。
+`konbini_figmentum_adapter`、`konbini_render_domain`、
+`konbini_pictor_scene_targets`、`konbini_world_composite`、
+`konbini_sim_tests`が存在する。`konbini_app`はKD-FP-001の後続stageで追加する。
 
 ## Options
 
 | option | 既定 | 意味 |
 |---|---|---|
 | `KONBINI_BUILD_FIGMENTUM_ADAPTER` | `ON` | 固定revisionのFigmentum city adapterをbuild |
+| `KONBINI_BUILD_RENDER` | `ON` | 固定revisionのPictor / ErgoとVulkan GPU境界をbuild |
 | `KONBINI_BUILD_TESTS` | `OFF` | headless testのbuildと`ctest`登録 |
 
 ## Compiler
@@ -92,7 +94,7 @@ pathを個人絶対pathへhard-codeしない。CMake cache / presetで解決し�
 
 ```text
 data/content/     tracked
-data/shaders/     tracked source
+shaders/          tracked source
 data/ui/          tracked
 data/generated/   ignored; Figmentum mesh/cache
 data/cache/       ignored
@@ -121,14 +123,16 @@ generated meshはsaveの正本ではない。削除してもseed/recipeから再
 
 ```powershell
 cmake -S . -B build -G "Visual Studio 17 2022" -A x64 `
-  -DKONBINI_BUILD_FIGMENTUM_ADAPTER=OFF -DKONBINI_BUILD_TESTS=ON
+  -DKONBINI_BUILD_FIGMENTUM_ADAPTER=OFF -DKONBINI_BUILD_RENDER=OFF `
+  -DKONBINI_BUILD_TESTS=ON
 cmake --build build --config Debug
 ctest --test-dir build -C Debug --output-on-failure
 ```
 
 上のcommandはFigmentum adapterを明示的に無効化したheadless build。
-既定構成はGitで固定revisionのFigmentumを取得するが、Vulkan / Pictor / Ergoには
-まだ依存しない。Pictor / Ergo導入stageで同じexact-source contractとoptionを追加する。
+既定構成はGitで固定revisionのFigmentum / Pictor / Ergoを取得し、各sourceの
+exact HEADとclean worktreeを検証してからdependency CMakeを評価する。
+Vulkan非依存のheadless構成は`KONBINI_BUILD_RENDER=OFF`で明示する。
 
 ## Runtime
 

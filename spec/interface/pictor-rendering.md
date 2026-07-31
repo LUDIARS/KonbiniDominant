@@ -159,6 +159,52 @@ vertex layout / winding / coordinate handednessはPictor pipelineと一致させ
 
 これらが実装・統合されるまで「Pictor描画完了」としない。
 
+## Offscreen world composition
+
+depth付きworld描画をPictor既定swapchain passへ直接記録しない。first playableは
+次の二段passを固定する。
+
+```text
+pass 0: per-flight RGBA16F + D32 framebuffer
+        WorldRenderLayer
+barrier: active-flight color write → fragment shader read
+pass 1: Pictor default swapchain framebuffer
+        WorldCompositeLayer → HUD
+```
+
+`WorldSceneTargets`はflightごとのcolor image/view、depth image/view、
+framebufferを所有する。`FrameComposer`から渡されるswapchain image indexを
+flight indexとして使わず、記録中の`VulkanContext::current_frame()`で選ぶ。
+Pictor `AttachmentRegistry`の固定上限に合わせ、flight countは1以上4以下を
+初期化時に検証する。
+
+color attachmentは`R16G16B16A16_SFLOAT`、最終layoutは
+`SHADER_READ_ONLY_OPTIMAL`、depth attachmentは`D32_SFLOAT`とする。Pictorの
+registryが生成する依存はexternal→subpassのみなので、pass 0終了後に同一layoutの
+image barrierで`COLOR_ATTACHMENT_WRITE / COLOR_ATTACHMENT_OUTPUT`から
+`SHADER_READ / FRAGMENT_SHADER`へのmemory dependencyを補う。
+
+composite layerはflightごとにscene color viewを指す
+`COMBINED_IMAGE_SAMPLER` descriptorを持つ。samplerはnormalized coordinate、
+nearest、clamp-to-edgeとし、vertex/index bufferを持たないfullscreen triangleを
+既定render passへ1回drawする。pipelineはPictorの現在の既定render passと
+一致しなければならない。HDR colorはlinearのままsamplingするため、swapchain
+formatはsRGBであることを初期化時に検証し、UNORM fallbackを暗黙に許可しない。
+
+resizeではdevice idle後、scene viewを参照するcomposite descriptor / pipelineを
+先に破棄する。scene targetは新しいattachment / render pass / framebufferを
+一時bundleへすべて生成し、成功後に入れ替えてから旧bundleを逆順破棄する。
+生成失敗時は旧bundleの所有を保つ。最終shutdownもcomposer / layer、
+scene target、`VulkanContext`の順を守る。zero extent、flight count変化、
+null handle、resource再生成失敗をsilent fallbackしない。
+
+`WorldSceneTargets`はimage/view bundleのgenerationを公開する。initialize /
+resizeの成功ごとにgenerationは単調増加し、未初期化は0とする。scene viewを
+cacheするborrower (composite descriptor等) は初期化時のgenerationを保持し、
+記録前に一致を検証する。extentとflight countが変わらないresizeでは他のguardが
+すべて通過するため、破棄済みviewのsamplingはこのgeneration比較だけがfail-fastで
+捕捉できる。
+
 ## StageRendererの扱い
 
 Ergo `StageRenderer`はFigmentum単棟のintegration probeに利用できるが、

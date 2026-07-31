@@ -20,12 +20,17 @@ stable ID、system pass、tick 境界の deferred command といった DoD 要�
 
 ## Build
 
-現在buildできるのは、Vulkan / Pictor / Ergo / Figmentum へ依存しない
-headless の `konbini_sim` と、その test target だけ。
+simulation / city / Figmentum adapterに加え、Pictor / Ergoを使うGPU composition
+foundationまでbuildできる。native game executableは後続stageで追加する。
+
+既定構成はVulkan SDKと固定revisionの3依存を必要とする。Vulkan非依存の
+headless reviewはrender / Figmentum adapterを明示的に無効化する。
 
 ```powershell
-cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DKONBINI_BUILD_TESTS=ON
-cmake --build build --config Debug
+cmake -S . -B build -G "Visual Studio 17 2022" -A x64 `
+  -DKONBINI_BUILD_RENDER=OFF -DKONBINI_BUILD_FIGMENTUM_ADAPTER=OFF `
+  -DKONBINI_BUILD_TESTS=ON
+cmake --build build --config Debug --target konbini_review
 ctest --test-dir build -C Debug --output-on-failure
 ```
 
@@ -45,7 +50,8 @@ setup contract は [spec/setup/native-development.md](spec/setup/native-developm
 
 ## Status
 
-仕様策定段階。simulation の決定的 primitive (ID / RNG / bounds validation) と
-その headless test のみ実装済みで、ゲーム本体の起動経路はまだ無い。
+決定的simulation / city model、Figmentum city adapter、CPU render domain、
+Pictorのper-flight world targetとswapchain composite foundationまで実装済み。
+ゲーム本体の起動経路はまだ無い。
 
 ライセンスは未決定のため、この初期リポジトリには追加していない。
