@@ -169,8 +169,26 @@ pass 0: per-flight RGBA16F + D32 framebuffer
         WorldRenderLayer
 barrier: active-flight color write → fragment shader read
 pass 1: Pictor default swapchain framebuffer
-        WorldCompositeLayer → HUD
+        WorldCompositeLayer → HudOverlayLayer
 ```
+
+pass 0のframebufferはswapchain image indexではなく記録中の
+`VulkanContext::current_frame()`で選ぶ。`FrameComposer`の
+framebuffer providerとpass間hookがそれぞれflight framebufferとbarrierを供給する。
+
+`HudOverlayLayer`はPictor既定render pass以外を拒否する。offscreen world passへ
+HUDを記録するとcomposite前のHDR targetへ焼き込まれ、画面には出ないまま「描いた
+つもり」になる。HUD geometryはpixel空間で組み、NDC変換はpush constantの
+viewport sizeを読むshaderが行う。vertex layoutはworld passと同じ`WorldVertex`
+で、per-flight bufferは`WorldOverlayBuffers`を共有する。
+
+HUD passのshaderは`konbini_hud.vert` / `konbini_hud.frag`で、world passの
+`konbini_world.vert` / `konbini_world.frag`、composite passの
+`konbini_composite.vert` / `konbini_composite.frag`と同じ生成targetが出す。
+
+BASE-FP-HUD-ASCII-01: 5x7 bitmap fontはASCII (A-Z / 0-9 / 空白 / `-:/.+`) だけを
+持つ。HUDのchain表記はcontentの日本語`displayName`ではなくslug由来のASCII
+ラベルを使い、日本語表示はtext atlasを持つまで扱わない。
 
 `WorldSceneTargets`はflightごとのcolor image/view、depth image/view、
 framebufferを所有する。`FrameComposer`から渡されるswapchain image indexを
@@ -192,7 +210,9 @@ nearest、clamp-to-edgeとし、vertex/index bufferを持たないfullscreen tri
 formatはsRGBであることを初期化時に検証し、UNORM fallbackを暗黙に許可しない。
 
 resizeではdevice idle後、scene viewを参照するcomposite descriptor / pipelineを
-先に破棄する。scene targetは新しいattachment / render pass / framebufferを
+先に破棄する。hostがframebuffer extentの不一致を検出した場合は、
+Pictor swapchainを明示再生成してそのframeをskipする。scene targetは新しい
+attachment / render pass / framebufferを
 一時bundleへすべて生成し、成功後に入れ替えてから旧bundleを逆順破棄する。
 生成失敗時は旧bundleの所有を保つ。最終shutdownもcomposer / layer、
 scene target、`VulkanContext`の順を守る。zero extent、flight count変化、
@@ -204,6 +224,54 @@ cacheするborrower (composite descriptor等) は初期化時のgenerationを保
 記録前に一致を検証する。extentとflight countが変わらないresizeでは他のguardが
 すべて通過するため、破棄済みviewのsamplingはこのgeneration比較だけがfail-fastで
 捕捉できる。
+
+## World pass recording
+
+pass 0の記録は`WorldRenderLayer`が行う。`set_render_pass()`は
+`WorldSceneTargets::renderPass()`と一致しないrender passを拒否し、Pictor既定
+swapchain render passを渡された場合も失敗させる。既定passはdepth attachmentを
+持たないため、記録できてしまうとdepth無しで都市が描かれる。
+
+pipelineは2本で、layoutとshaderを共有する。
+
+| pipeline | depth test | depth write | blend | cull |
+|---|---|---|---|---|
+| base | 有効 | 有効 | 無効 | none |
+| overlay | 有効 | 無効 | src alpha | none |
+
+Figmentum marching-cubesのwindingを仮定しないので双方cull noneとする。
+overlayがdepth writeを行うとoverlay同士が互いを消すため、depthはbaseだけが
+書く。Pictorの`build_graphics_pipeline()`はblend非対応かつdepth testと
+depth writeが連動するので、この2本はgame側で組む。
+
+記録順は`baseFacilities` → `overlayFacilities` → `overlayMesh`で固定する。
+`overlayMesh`はZOC → store marker → selectionの順に結合し、snapshot内の順序を
+そのまま使う。
+
+push constantはvertex stageのみが読み、`viewProjection` (mat4) と`tint` (vec4)
+の80 byte。`viewProjection`の正本は`IsometricCamera::viewProjection`。
+
+BASE-FP-DESTROYED-01: base passはblendを持たないので、palette alphaが1未満に
+なるfacility (現状は`Destroyed`のみ) をbaseへ入れると半透明指定が無視される。
+alpha < 1のfacilityだけを`overlayFacilities`へ回し、depth testあり /
+depth writeなしで合成する。破壊済みfacilityのdraw policyはこの分類が正本で、
+alpha値自体は`facilityColor()`が持つ。
+
+### Geometry ownership
+
+`WorldGeometryCache`はFigmentum stable keyからGPU常駐geometryを引く。keyは
+geometryの同一性だけを表し、facility stateやchain色は含まない。色はdraw単位の
+tintで与えるので、state変化でupload をやり直さない。未登録keyは例外とし、
+missing geometryをsilentに飛ばさない。
+
+`WorldGeometryBuffer`はvertex / index bufferをHOST_VISIBLE | HOST_COHERENTで
+所有し、capacity超過とvertex範囲外indexをupload前に弾く。解放はindex →
+vertexの逆順。pinned Pictorの`VertexDataUploader`はstaging copyが未実装なので、
+first playableはこのhost-driven uploadで代替する。
+
+overlay geometryは毎フレーム作り直すため`WorldOverlayBuffers`がflightごとに
+1本持つ。書き込んでよいのは`acquire_next_image()`が該当flightのfenceを待った
+後の`current_frame()`だけ。
 
 ## StageRendererの扱い
 

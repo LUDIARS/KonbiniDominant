@@ -17,6 +17,17 @@
 - finite / range validation
 - content missing keyのfail-fast
 
+実装済みのtest binaryとsource:
+
+| binary | source | 対象 |
+|---|---|---|
+| `konbini_sim_tests` | `deterministic_primitives_test.cpp` | ID / bounds / counter RNG |
+| `konbini_app_tests` | `first_playable_app_test.cpp` | fixed step、camera、選択、command、HUD |
+| `konbini_render_adapter_tests` | `swapchain_recovery_test.cpp` | swapchain分類、layer初期化rollback |
+
+`konbini_render_adapter_tests`はVulkanの型を使うがdeviceを作らない。実行は
+セッションのユーザ指示に従い、起動testとは分けて扱う。
+
 ## 2. Deterministic simulation
 
 同じworld seed、content hash、command streamで次を比較する。

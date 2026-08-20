@@ -1,20 +1,17 @@
 #pragma once
 
-#include <cstdint>
-#include <vector>
-
 #include "konbini/render/visia.h"
-#include "konbini/render/world_vertex.h"
+#include "konbini/render/world_mesh.h"
 
 // @implements spec/interface/visia-presentation.md CPU primitive geometry
 // @implements spec/feature/npc-conversations-and-placement-feedback.md Visia dummy
 
 namespace konbini::render {
 
-struct VisiaGeometry {
-    std::vector<WorldVertex> vertices;
-    std::vector<std::uint32_t> indices;
-};
+// Visia の primitive も world geometry と同じ vertex/index の組なので、専用
+// struct を持たず `WorldMesh` を使う。名前は「Visia を解決した結果」という
+// 意図を残すための alias。
+using VisiaGeometry = WorldMesh;
 
 // Resolve a validated game-owned Visia instance to its current primitive
 // dummy. The ID selects the definition explicitly; unknown IDs and fields

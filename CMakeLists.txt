@@ -72,15 +72,17 @@ if(KONBINI_BUILD_RENDER)
   set(ERGO_BUILD_DUMMY OFF CACHE BOOL "" FORCE)
   set(ERGO_BUILD_BENCHMARKS OFF CACHE BOOL "" FORCE)
   set(ERGO_BUILD_RENDER ON CACHE BOOL "" FORCE)
+  # GLFW callback を受ける input adapter と frame clock は KD-FP-000J で
+  # 使うので有効にする (spec/interface/ergo-runtime.md#利用候補module)。
+  set(ERGO_BUILD_INPUT ON CACHE BOOL "" FORCE)
+  set(ERGO_BUILD_FRAME ON CACHE BOOL "" FORCE)
   foreach(
     ergo_module
-    INPUT
     PARTICLE
     GPU_PARTICLE
     BIND
     ACTOR
     SOUND
-    FRAME
     PROFILE
     LOG
     IO
@@ -107,6 +109,7 @@ if(KONBINI_BUILD_RENDER)
   )
     set("ERGO_BUILD_${ergo_module}" OFF CACHE BOOL "" FORCE)
   endforeach()
+  set(ERGO_BUILD_LOG ON CACHE BOOL "" FORCE)
   set(ERGO_PARTICLE_HAS_RENDERER OFF CACHE BOOL "" FORCE)
   set(ERGO_GPU_PARTICLE_COMPILE_SHADERS OFF CACHE BOOL "" FORCE)
   FetchContent_Declare(

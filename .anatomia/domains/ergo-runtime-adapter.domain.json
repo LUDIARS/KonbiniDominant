@@ -1,0 +1,19 @@
+{
+  "name": "ergo-runtime-adapter",
+  "description": "Ergo/Pictor runtime adapter: GLFW input injection, window and Vulkan device ownership, the FrameComposer pass graph, layer initialization rollback, and swapchain recovery classification.",
+  "presetRules": [],
+  "templateRules": [],
+  "membership": [
+    { "pathPattern": "(^|/)include/konbini/adapters/ergo/[^/]+\\.h$" },
+    { "pathPattern": "(^|/)src/adapters/ergo/[^/]+\\.(cpp|h)$" },
+    { "pathPattern": "(^|/)tests/adapters/[^/]+\\.cpp$" }
+  ],
+  "cardTemplate": "Summarise the ergo-runtime-adapter domain: how pinned Ergo/Pictor gaps (no initialize rollback, folded acquire results, no rebuild notification) are contained behind game-owned owners.",
+  "source": "spec",
+  "specRefs": [
+    "spec/interface/ergo-runtime.md#input-adapter",
+    "spec/interface/ergo-runtime.md#render-host",
+    "spec/interface/pictor-rendering.md#offscreen-world-composition"
+  ],
+  "updatedAt": "2026-08-21T00:00:00.000Z"
+}

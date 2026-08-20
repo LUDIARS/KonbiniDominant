@@ -1,15 +1,14 @@
 #include "konbini/render/world_composite_layer.h"
 
-#include <cstddef>
 #include <cstdint>
 #include <exception>
 #include <filesystem>
-#include <fstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
 #include "ergo/render/render_context.h"
+#include "konbini/adapters/pictor/spirv_module.h"
 #include "konbini/adapters/pictor/world_scene_targets.h"
 #include "pictor/shader/graphics_pipeline_builder.h"
 #include "pictor/surface/vulkan_context.h"
@@ -36,67 +35,6 @@ namespace {
     throw std::runtime_error(
         std::string(operation) + " failed with VkResult " +
         std::to_string(static_cast<int>(result)));
-}
-
-std::vector<std::uint32_t> readSpirv(
-    const std::filesystem::path& path) {
-    std::ifstream stream(path, std::ios::binary | std::ios::ate);
-    if (!stream) {
-        throw std::runtime_error(
-            "required SPIR-V shader is missing: " + path.string());
-    }
-    const std::streamoff byteCount = stream.tellg() - std::streampos(0);
-    constexpr std::streamoff kMaxShaderBytes = 64 * 1024 * 1024;
-    if (byteCount <= 0 || byteCount > kMaxShaderBytes ||
-        byteCount % static_cast<std::streamoff>(
-                        sizeof(std::uint32_t)) != 0) {
-        throw std::runtime_error(
-            "invalid SPIR-V shader size: " + path.string());
-    }
-
-    std::vector<std::uint32_t> words(
-        static_cast<std::size_t>(byteCount) /
-        sizeof(std::uint32_t));
-    stream.seekg(0, std::ios::beg);
-    stream.read(
-        reinterpret_cast<char*>(words.data()),
-        static_cast<std::streamsize>(byteCount));
-    if (!stream) {
-        throw std::runtime_error(
-            "failed to read SPIR-V shader: " + path.string());
-    }
-
-    // `shader_dir` is runtime configuration, so the bytes are not trusted to
-    // be SPIR-V. vkCreateShaderModule has no validation of its own and a
-    // driver fed arbitrary bytes is undefined behaviour, not a clean error.
-    constexpr std::uint32_t kSpirvMagic = 0x07230203U;
-    if (words.front() != kSpirvMagic) {
-        throw std::runtime_error(
-            "file is not SPIR-V (bad magic word): " + path.string());
-    }
-    return words;
-}
-
-VkShaderModule createShaderModule(
-    const VkDevice device,
-    const std::vector<std::uint32_t>& words) {
-    if (device == VK_NULL_HANDLE || words.empty()) {
-        throw std::invalid_argument(
-            "shader module requires a Vulkan device and SPIR-V");
-    }
-
-    const VkShaderModuleCreateInfo info{
-        .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-        .codeSize = words.size() * sizeof(std::uint32_t),
-        .pCode = words.data(),
-    };
-    VkShaderModule module = VK_NULL_HANDLE;
-    const VkResult result =
-        vkCreateShaderModule(device, &info, nullptr, &module);
-    if (result != VK_SUCCESS) {
-        failVulkan("vkCreateShaderModule", result);
-    }
-    return module;
 }
 
 }  // namespace
@@ -160,10 +98,10 @@ void WorldCompositeLayer::initialize(
     impl_->device = context.vk->device();
     try {
         const std::filesystem::path shaderDirectory(context.shader_dir);
-        impl_->vertexShader =
-            readSpirv(shaderDirectory / "konbini_composite.vert.spv");
-        impl_->fragmentShader =
-            readSpirv(shaderDirectory / "konbini_composite.frag.spv");
+        impl_->vertexShader = adapters::pictor::readSpirv(
+            shaderDirectory / "konbini_composite.vert.spv");
+        impl_->fragmentShader = adapters::pictor::readSpirv(
+            shaderDirectory / "konbini_composite.frag.spv");
 
         VkSamplerCreateInfo samplerInfo{};
         samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -312,10 +250,10 @@ void WorldCompositeLayer::set_render_pass(
     VkShaderModule fragmentModule = VK_NULL_HANDLE;
     VkPipeline replacement = VK_NULL_HANDLE;
     try {
-        vertexModule =
-            createShaderModule(impl_->device, impl_->vertexShader);
-        fragmentModule =
-            createShaderModule(impl_->device, impl_->fragmentShader);
+        vertexModule = adapters::pictor::createShaderModule(
+            impl_->device, impl_->vertexShader);
+        fragmentModule = adapters::pictor::createShaderModule(
+            impl_->device, impl_->fragmentShader);
 
         ::pictor::GraphicsPipelineDesc pipelineDescription;
         pipelineDescription.vert = vertexModule;

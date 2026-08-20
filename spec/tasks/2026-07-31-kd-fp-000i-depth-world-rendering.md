@@ -2,7 +2,7 @@
 task: kd-fp-000i-depth-world-rendering
 project: KonbiniDominant
 kind: 実装
-status: pending
+status: done
 created: 2026-07-31
 source_session: lictor-c88f9672-9413-4e04-ad20-19980c021698
 memoria_task_id: 668
@@ -52,3 +52,24 @@ KD-FP-000Jへ分離する。
 - pinned Pictorのhost-driven upload責務をgame側buffer ownerで補う
 - Figmentum marching-cubes windingを仮定せず、base pipelineはcull noneとする
 - destroyed facilityのalpha / draw policyを明示する
+
+## 実装結果 (2026-08-03)
+
+- `render::WorldMesh`を追加し、`ZocOverlayGeometry` / `VisiaGeometry`をその
+  aliasへ寄せてmesh型の重複を解消
+- `buildFacilityWorldMesh()`でFigmentum geometryを`WorldVertex`へ射影。色は
+  vertexへ焼かず中立色にし、facility stateはdraw単位のtintで表現
+- `WorldGeometryBuffer` / `WorldGeometryCache` / `WorldOverlayBuffers`で
+  vertex / index bufferの所有、host-driven upload、capacityとindex範囲の検証、
+  逆順解放、facility key cacheを実装。未登録keyは例外
+- store marker / selection overlay geometry builderを追加し、
+  `buildWorldDrawList()`がbase / overlay / overlay meshを固定順で組む
+- `WorldPipelines`がbase (depth write) とoverlay (blend / depth writeなし) の
+  2本を生成。両方cull none、push constantはviewProjection + tint
+- `WorldRenderLayer`を追加。`WorldSceneTargets`のoffscreen render pass以外を
+  拒否し、Pictor既定render passも拒否する
+- `konbini_shaders`へworld shaderを追加し、`konbini_review`が
+  `konbini_pictor_world_geometry` / `konbini_world_render` / shaderを含むよう更新
+- SPIR-V読み込みを`adapters/pictor/spirv_module`へ集約し、composite layerの
+  重複実装を解消
+- build / unit / integration / behavior / startup testは未実行

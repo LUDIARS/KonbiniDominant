@@ -46,6 +46,19 @@ adapterの責務:
 
 raw callbackからsimulation stateを直接変更しない。
 
+first playableの実装 (`adapters/ergo/ergo_input_bridge`) は次を固定する。
+
+- window user pointerはPictor `GlfwSurfaceProvider`が占有しているので、bridgeは
+  自前のwindow→bridge登録表を使う。framebuffer size callbackは奪わない。
+- `MouseDevice::injectPosition()`はdeltaを直前injectとの差で上書きするため、
+  1 frame内の複数moveが畳まれる。pointerのposition / delta / scrollはbridgeが
+  frame単位で累積した値を正本にし、Ergoへは真値として反映する。button / keyの
+  状態とedge判定はErgo deviceが正本。
+- `DoubleBuffer::swap()`はwrite bufferへ現在値を複製するので、scrollは
+  frame終端で0をinjectして持ち越さない。
+- focus lossでinject済みkey / buttonをすべてupへ戻し、そのframeの操作入力を
+  捨てる。
+
 ## Frame / simulation
 
 render frameの`dt`をsimulationへ直接積算せず、fixed-step accumulatorをapp層に置く。
@@ -64,6 +77,12 @@ poll input
 catch-up上限とpause時の扱いは `TBD-RUNTIME-01`。tick dropが必要な場合はlogし、
 結果をsilentに変えない。
 
+first playableの `app::FixedStepDriver` はrender dtを0.25秒でclampし、1 frameで
+消化するtickを `maxTicksPerFrame` (既定5) までに制限する。超過分はaccumulatorへ
+残さず捨て、捨てた数をHUDとstderrへ出す。accumulatorへ残すと以後のframeが上限に
+張り付いて復帰できない。最小化中はtickもGPU submissionも進めず、溜まった時間を
+drainする。
+
 ## Render host
 
 `ergo_render`はPictorの上でframe lifecycleを共通化するが、game-specificな
@@ -78,6 +97,31 @@ origin/main調査では`FrameComposer`のlayer initializationとrender pass設�
 3. PictorFrameBridgeのHDR / overlay passを統合
 
 問題をadapterの呼出順偶然で隠さない。必要ならErgoへupstream fixをPRする。
+
+### pinned Ergo / Pictorのgapに対するgame-owned owner
+
+upstreamのtyped result / rebuild通知が入るまで、game側が次の3つを所有する。
+いずれも回避策であり、upstream修正で削除できるよう1箇所へ閉じ込める。
+
+1. `LayerInitializationScope` + `TrackedRenderLayer` —
+   `FrameComposer::initialize()`は全layer成功後にしか`initialized_`を立てず、
+   途中例外ではdestructorの`shutdown()`がno-opになる。初期化済みlayerをscopeが
+   登録順で覚え、失敗時に逆順で`shutdown()`する。
+2. `SwapchainIdentity` / `classifyFrameOutcome()` —
+   `acquire_next_image()`はout-of-date (内部で再生成済み) とdevice / surface
+   lostを同じ`UINT32_MAX`へ畳み、`present()`も戻り値を見ずに再生成し、
+   `run_frame()`はどちらでもtrueを返す。frame前後のswapchain / render pass /
+   image view / extentの同一性と`frame_count()`の進み、そして
+   `vkDeviceWaitIdle`のVkResultから、presented / rebuild / minimized /
+   device lost / surface lostを復元する。lostは回復させずhostへ返す。
+3. `WorldFrameGraph::rebuild()` — `FrameComposer`は`add_pass()`時の
+   `VkRenderPass`を差し替えられないので、swapchain再生成ではcomposerごと作り
+   直す。順序はdevice idle → composer破棄 (layerが逆順にshutdown) →
+   `WorldSceneTargets::resize()` → 同順で再初期化。extent 0のときは再構築を
+   保留し、scene targetを作らない。window framebufferとswapchainの
+   extent不一致をhostが検出した場合は、input / presentation publishより前に
+   device idle → composer破棄 → `VulkanContext::recreate_swapchain()` →
+   scene target / composer再構築を行い、そのframeはskipする。
 
 ## Ergoを使わない領域
 

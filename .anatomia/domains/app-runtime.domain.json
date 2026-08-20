@@ -1,0 +1,20 @@
+{
+  "name": "app-runtime",
+  "description": "Native application layer: content and city bootstrap, fixed-step clock, camera, selection, command issuance, HUD text model, and the frame loop composition root.",
+  "presetRules": [],
+  "templateRules": [],
+  "membership": [
+    { "pathPattern": "(^|/)include/konbini/app/[^/]+\\.h$" },
+    { "pathPattern": "(^|/)src/app/[^/]+\\.(cpp|h)$" },
+    { "pathPattern": "(^|/)tests/app/[^/]+\\.cpp$" }
+  ],
+  "cardTemplate": "Summarise the app-runtime domain: how the native executable wires content, city generation, fixed ticks, input intents, camera, selection, HUD and presentation without a god class.",
+  "source": "spec",
+  "specRefs": [
+    "spec/plan/tasks/first-playable.md#build-and-process-boundary",
+    "spec/plan/tasks/first-playable.md#minimal-controls",
+    "spec/interface/ergo-runtime.md#frame--simulation",
+    "spec/feature/ui-ux.md#common-hud"
+  ],
+  "updatedAt": "2026-08-21T00:00:00.000Z"
+}

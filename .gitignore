@@ -18,6 +18,14 @@ build-revisor/
 tests/
 !tests/
 
+# Anatomia の生成物 (解析キャッシュ / retune 状態) は commit しない。
+# ドメイン宣言 (.anatomia/domains/) だけが正本。
+/.anatomia/cache/
+/.anatomia/link-stability.json
+/.anatomia/projects.json
+/.anatomia/retune-state.json
+/.anatomia/retune.log
+
 /data/generated/
 /data/cache/
 /logs/

@@ -43,8 +43,11 @@ WorldColor facilityColor(
 }
 
 // @implements spec/interface/pictor-rendering.md Game-owned render domain
-WorldColor selectedFacilityColor() noexcept {
-    return {1.0F, 0.72F, 0.16F, 1.0F};
+WorldColor selectedFacilityColor(const float alpha) {
+    if (!std::isfinite(alpha) || alpha < 0.0F || alpha > 1.0F) {
+        throw std::invalid_argument("invalid selection highlight alpha");
+    }
+    return {1.0F, 0.72F, 0.16F, alpha};
 }
 
 }  // namespace konbini::render

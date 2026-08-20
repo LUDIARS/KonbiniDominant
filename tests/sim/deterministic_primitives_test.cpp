@@ -230,6 +230,8 @@ void testCounterRandomSeparatesNeighbours() {
 
 }  // namespace
 
+// @implements spec/test/verification-strategy.md 1. Data / ID unit tests
+// @spec 1. Data / ID unit tests
 int main() {
     testBoundsValidation();
     testRandomAlgorithmIsPinned();
