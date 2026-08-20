@@ -1,0 +1,14 @@
+{
+  "name": "platform-adapters",
+  "description": "外部との接続。 OS/ライブラリ差を吸収するアダプタ層。",
+  "presetRules": [],
+  "templateRules": [],
+  "membership": [
+    {
+      "pathPattern": "(^|/)src/adapters/(?:.*/)?[^/]+$"
+    },
+    {
+      "pathPattern": "(^|/)include/(?:.*/)?adapters/(?:.*/)?[^/]+$"
+    }
+  ]
+}

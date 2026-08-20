@@ -1,0 +1,14 @@
+{
+  "name": "simulation",
+  "description": "シミュレーションの中核。 街の状態遷移と固定ステップの進行。",
+  "presetRules": [],
+  "templateRules": [],
+  "membership": [
+    {
+      "pathPattern": "(^|/)src/sim/(?:.*/)?[^/]+$"
+    },
+    {
+      "pathPattern": "(^|/)include/(?:.*/)?sim/(?:.*/)?[^/]+$"
+    }
+  ]
+}

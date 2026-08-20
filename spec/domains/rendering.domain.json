@@ -1,0 +1,14 @@
+{
+  "name": "rendering",
+  "description": "描画。 画面への出力と表示要素の構成。",
+  "presetRules": [],
+  "templateRules": [],
+  "membership": [
+    {
+      "pathPattern": "(^|/)src/render/(?:.*/)?[^/]+$"
+    },
+    {
+      "pathPattern": "(^|/)include/(?:.*/)?render/(?:.*/)?[^/]+$"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "name": "city-model",
+  "description": "都市のモデル。 区画・店舗・住民といった盤面の構造。",
+  "presetRules": [],
+  "templateRules": [],
+  "membership": [
+    {
+      "pathPattern": "(^|/)src/city/(?:.*/)?[^/]+$"
+    },
+    {
+      "pathPattern": "(^|/)include/(?:.*/)?city/(?:.*/)?[^/]+$"
+    }
+  ]
+}

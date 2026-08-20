@@ -1,0 +1,23 @@
+{
+  "name": "app-entry",
+  "description": "実行体の入口。 起動、 カメラ操作、 HUD、 入力の受け取り、 ビルド定義、 自動テスト。",
+  "presetRules": [],
+  "templateRules": [],
+  "membership": [
+    {
+      "pathPattern": "(^|/)src/app/(?:.*/)?[^/]+$"
+    },
+    {
+      "pathPattern": "(^|/)include/(?:.*/)?app/(?:.*/)?[^/]+$"
+    },
+    {
+      "pathPattern": "(^|/)src/[^/]+$"
+    },
+    {
+      "pathPattern": "(^|/)tests?/(?:.*/)?[^/]+$"
+    },
+    {
+      "pathPattern": "(^|/)third_party/(?:.*/)?[^/]+$"
+    }
+  ]
+}
