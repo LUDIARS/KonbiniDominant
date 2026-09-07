@@ -29,21 +29,21 @@
   "chains": [
     {
       "id": "losan",
-      "displayName": "ローサン",
+      "displayName": "MOONPANTRY",
       "buildCostCredits": 1000,
       "zocRadiusMeters": 18,
       "revenueMilliCreditsPerPerson": 500
     },
     {
       "id": "famoma",
-      "displayName": "ファモマ",
+      "displayName": "SUNFOLD",
       "buildCostCredits": 1250,
       "zocRadiusMeters": 24,
       "revenueMilliCreditsPerPerson": 450
     },
     {
       "id": "seban_ileban",
-      "displayName": "セバンイレバン",
+      "displayName": "DAYLARK",
       "buildCostCredits": 800,
       "zocRadiusMeters": 18,
       "revenueMilliCreditsPerPerson": 400

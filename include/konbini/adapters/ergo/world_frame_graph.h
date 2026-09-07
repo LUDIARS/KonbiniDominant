@@ -8,6 +8,7 @@
 
 namespace konbini::adapters::pictor {
 class WorldGeometryCache;
+class WorldSceneTargets;
 }
 
 namespace konbini::render {
@@ -47,6 +48,7 @@ public:
 
     // 都市 geometry の upload 先。startup で 1 回だけ載せる。
     [[nodiscard]] pictor::WorldGeometryCache& geometryCache();
+    [[nodiscard]] const pictor::WorldSceneTargets& sceneTargets() const;
 
     [[nodiscard]] render::WorldRenderLayer& worldLayer();
     [[nodiscard]] render::HudOverlayLayer& hudLayer();

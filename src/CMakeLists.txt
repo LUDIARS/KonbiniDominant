@@ -12,6 +12,7 @@ endif()
 add_subdirectory(app)
 if(KONBINI_BUILD_RENDER)
   add_subdirectory(adapters/ergo)
+  add_subdirectory(gallery)
 endif()
 
 # Stable aggregate used by staged local reviews.

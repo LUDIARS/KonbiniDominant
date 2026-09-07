@@ -79,6 +79,10 @@ WorldDrawList buildWorldDrawList(
             selected = &facility;
         }
 
+        // A replacement storefront owns this footprint. Keeping the original
+        // facility mesh would bury a one-story shop inside the old building.
+        if (facility.state == sim::FacilityState::Replaced) continue;
+
         const WorldFacilityDraw draw{
             .figmentumKey = facility.figmentumKey,
             .facilityId = facility.id,
@@ -99,9 +103,7 @@ WorldDrawList buildWorldDrawList(
         drawList.overlayMesh,
         buildZocOverlayGeometry(
             snapshot.stores(), spec.zocSegmentCount, spec.zocGroundYMeters));
-    appendMesh(
-        drawList.overlayMesh,
-        buildStoreMarkerGeometry(snapshot.stores(), spec.storeMarker));
+    drawList.storeMesh = buildStoreMarkerGeometry(snapshot.stores(), spec.storeMarker);
     if (selected != nullptr) {
         appendMesh(
             drawList.overlayMesh,

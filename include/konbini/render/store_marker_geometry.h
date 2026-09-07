@@ -9,17 +9,17 @@
 
 namespace konbini::render {
 
-// first playable の店舗マーカーは chain 色の直方体 1 つ。BASE-FP-PALETTE-01
-// と同じく presentation 専用の暫定値で、gameplay 分岐には使わない。
+// Three original storefronts, scaled to the placement footprint. Presentation
+// only: legacy chain IDs and gameplay economics remain stable.
 struct StoreMarkerSpec {
     double halfWidthMeters = 3.0;
-    double heightMeters = 7.0;
-    float alpha = 0.85F;
+    double heightMeters = 3.6;
+    float alpha = 1.0F;
 };
 
 [[nodiscard]] StoreMarkerSpec defaultStoreMarkerSpec() noexcept;
 
-// snapshot の store 順をそのまま使い、店舗ごとに 1 box を積む。無効な store
+// snapshot の store 順をそのまま使い、店舗ごとに外観を積む。無効な store
 // (ID 未設定、非有限座標、未知 chain) は飛ばさず `std::invalid_argument`。
 [[nodiscard]] WorldMesh buildStoreMarkerGeometry(
     std::span<const sim::RenderStore> stores, const StoreMarkerSpec& spec);

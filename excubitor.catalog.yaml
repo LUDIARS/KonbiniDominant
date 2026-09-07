@@ -4,7 +4,10 @@
 # 行う。worktree や直接 exe 起動は使わない
 # (spec/plan/tasks/first-playable-validation.md#Procedure)。
 services:
-  konbini-dominant-app:
+  - code: konbini-dominant-app
+    name: Konbini Dominant
+    project_code: KD
+    repo: LUDIARS/KonbiniDominant
     description: Konbini Dominant native first playable (Windows / Vulkan)
     runtime: app
     app_kind: native
@@ -12,6 +15,19 @@ services:
     cwd: ${ARS_ROOT}/KonbiniDominant
     build_command: 'cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DKONBINI_BUILD_TESTS=OFF && cmake --build build --config Release --target konbini_dominant'
     process_match: konbini_dominant.exe
+    autostart: false
+    restart_policy: 'no'
+    health:
+      type: process
+  - code: kd-store-gallery
+    name: Konbini Dominant original store gallery
+    project_code: KD
+    repo: LUDIARS/KonbiniDominant
+    tier: local-app
+    runtime: app
+    app_kind: native
+    cwd: ${ARS_ROOT}/KonbiniDominant
+    exec: ${ARS_ROOT}/KonbiniDominant/build/Release/konbini_store_gallery.exe
     autostart: false
     restart_policy: 'no'
     health:

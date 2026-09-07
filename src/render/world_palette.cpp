@@ -17,11 +17,11 @@ WorldColor chainColor(const sim::ChainId chain, const float alpha) {
     }
     switch (chain) {
         case sim::ChainId::Losan:
-            return {0.18F, 0.52F, 0.96F, alpha};
+            return {0.43F, 0.22F, 0.39F, alpha};
         case sim::ChainId::Famoma:
-            return {0.94F, 0.27F, 0.25F, alpha};
+            return {0.91F, 0.39F, 0.32F, alpha};
         case sim::ChainId::SebanIleban:
-            return {0.20F, 0.78F, 0.43F, alpha};
+            return {0.92F, 0.61F, 0.18F, alpha};
     }
     throw std::invalid_argument("unknown first-playable chain");
 }

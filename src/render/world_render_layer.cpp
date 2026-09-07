@@ -28,6 +28,7 @@ struct WorldRenderLayer::Impl {
     VkDevice device = VK_NULL_HANDLE;
     WorldPipelines pipelines;
     adapters::pictor::WorldOverlayBuffers overlayBuffers;
+    adapters::pictor::WorldOverlayBuffers storeBuffers;
     // 記録前に scene target の bundle 世代を検証する。extent と flight 数が
     // 変わらない resize では他の guard がすべて通ってしまい、破棄済み
     // framebuffer / render pass への記録をこの比較だけが捕捉できる。
@@ -76,6 +77,8 @@ void WorldRenderLayer::initialize(::ergo::render::RenderContext& context) {
         impl_->pipelines.initialize(
             impl_->device, std::filesystem::path(context.shader_dir));
         impl_->overlayBuffers.initialize(
+            context.vk->physical_device(), impl_->device, flightCount);
+        impl_->storeBuffers.initialize(
             context.vk->physical_device(), impl_->device, flightCount);
     } catch (...) {
         shutdown();
@@ -219,6 +222,20 @@ void WorldRenderLayer::record(
         recordFacility(draw);
     }
 
+    // Storefront components must occlude each other; ZOC stays in the
+    // depth-read-only overlay pass below.
+    const auto& stores = impl_->storeBuffers.upload(flight, impl_->drawList.storeMesh);
+    if (stores.indexCount() != 0) {
+        push.tint = kNeutralTint;
+        vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0,
+                           static_cast<std::uint32_t>(sizeof(push)), &push);
+        const VkBuffer vertices = stores.vertexBuffer();
+        const VkDeviceSize offset = 0;
+        vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertices, &offset);
+        vkCmdBindIndexBuffer(commandBuffer, stores.indexBuffer(), 0, VK_INDEX_TYPE_UINT32);
+        vkCmdDrawIndexed(commandBuffer, stores.indexCount(), 1, 0, 0, 0);
+    }
+
     vkCmdBindPipeline(
         commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
         impl_->pipelines.overlayPipeline());
@@ -262,6 +279,7 @@ void WorldRenderLayer::shutdown() {
 
     impl_->context->vk->device_wait_idle();
     impl_->overlayBuffers.shutdown();
+    impl_->storeBuffers.shutdown();
     impl_->pipelines.shutdown();
     impl_->drawList = {};
     impl_->camera = {};

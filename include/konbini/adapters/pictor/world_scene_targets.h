@@ -59,6 +59,9 @@ public:
     [[nodiscard]] VkImageView depthView(
         std::uint32_t flightIndex) const;
     [[nodiscard]] VkImageView currentDepthView() const;
+    // Borrowed image, valid only until resize/shutdown. Readback callers must
+    // synchronize with the rendering queue and restore its shader-read layout.
+    [[nodiscard]] VkImage colorImage(std::uint32_t flightIndex) const;
 
     [[nodiscard]] static std::array<VkClearValue, 2> clearValues()
         noexcept;
@@ -70,8 +73,6 @@ private:
     struct Impl;
 
     [[nodiscard]] std::uint32_t currentFlight() const;
-    [[nodiscard]] VkImage colorImage(
-        std::uint32_t flightIndex) const;
 
     std::unique_ptr<Impl> impl_;
 };

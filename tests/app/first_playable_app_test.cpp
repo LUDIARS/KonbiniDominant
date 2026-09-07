@@ -390,7 +390,7 @@ void testHudLinesAreRenderable() {
     bool sawFailure = false;
     bool sawDropped = false;
     for (const std::string& line : lines) {
-        sawChain = sawChain || line == "CHAIN SEBAN ILEBAN";
+        sawChain = sawChain || line == "CHAIN DAYLARK";
         sawFailure =
             sawFailure ||
             line == "PLACEMENT REJECTED - NOT ENOUGH CASH";

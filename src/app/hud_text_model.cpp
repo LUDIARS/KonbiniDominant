@@ -27,21 +27,12 @@ void requireRenderable(const std::string& line) {
 
 // @implements spec/feature/chain-selection.md 共通
 std::string hudChainLabel(const sim::ChainId chain) {
-    const std::string_view slug = sim::chainSlug(chain);
-    if (slug.empty()) {
-        throw std::invalid_argument("hud chain label requires a known chain");
+    switch (chain) {
+        case sim::ChainId::Losan: return "MOONPANTRY";
+        case sim::ChainId::Famoma: return "SUNFOLD";
+        case sim::ChainId::SebanIleban: return "DAYLARK";
     }
-    std::string label;
-    label.reserve(slug.size());
-    for (const char character : slug) {
-        if (character == '_') {
-            label.push_back(' ');
-            continue;
-        }
-        label.push_back(static_cast<char>(std::toupper(
-            static_cast<unsigned char>(character))));
-    }
-    return label;
+    throw std::invalid_argument("hud chain label requires a known chain");
 }
 
 // @implements spec/feature/ui-ux.md Common HUD

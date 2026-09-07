@@ -72,9 +72,11 @@ setup contract は [spec/setup/native-development.md](spec/setup/native-developm
 
 ## Controls
 
+Original storefronts: [three-brand design and Pictor captures](spec/feature/three-store-brands.md).
+
 | 入力 | 動作 |
 |---|---|
-| `1` / `2` / `3` | chain 選択 (ローサン / ファモマ / セバンイレバン) |
+| `1` / `2` / `3` | chain 選択 (MOONPANTRY / SUNFOLD / DAYLARK) |
 | left click | facility 選択、同じ有効候補を再clickで配置確定 |
 | right click / `Esc` | 選択解除 |
 | `WASD` / 中ボタンdrag | camera移動 |

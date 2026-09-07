@@ -244,9 +244,10 @@ overlayがdepth writeを行うとoverlay同士が互いを消すため、depth�
 書く。Pictorの`build_graphics_pipeline()`はblend非対応かつdepth testと
 depth writeが連動するので、この2本はgame側で組む。
 
-記録順は`baseFacilities` → `overlayFacilities` → `overlayMesh`で固定する。
-`overlayMesh`はZOC → store marker → selectionの順に結合し、snapshot内の順序を
-そのまま使う。
+記録順は`baseFacilities` → `storeMesh` → `overlayFacilities` → `overlayMesh`。
+店舗は base pipeline で depth write し、外壁・看板・庇の前後関係を保つ。
+`overlayMesh`はZOC → selectionの順に結合し、snapshot内の順序をそのまま使う。
+`Replaced` facility の旧メッシュは店舗を隠さないよう描画しない。
 
 push constantはvertex stageのみが読み、`viewProjection` (mat4) と`tint` (vec4)
 の80 byte。`viewProjection`の正本は`IsometricCamera::viewProjection`。

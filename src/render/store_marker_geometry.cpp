@@ -1,10 +1,10 @@
 #include "konbini/render/store_marker_geometry.h"
 
 #include <cmath>
+#include <cstddef>
 #include <stdexcept>
 
-#include "konbini/render/world_palette.h"
-#include "world_box_geometry.h"
+#include "storefront_geometry.h"
 
 // @implements spec/interface/pictor-rendering.md Game-owned render domain
 
@@ -34,8 +34,12 @@ WorldMesh buildStoreMarkerGeometry(
     validateSpec(spec);
 
     WorldMesh mesh;
-    mesh.vertices.reserve(stores.size() * 24U);
-    mesh.indices.reserve(stores.size() * 36U);
+    // A storefront is roughly 120 boxes (shell, glazing, door, 5x7 lettering);
+    // reserving one box per store, as the old single-box marker did, would
+    // force a growth cascade on every facade.
+    constexpr std::size_t kBoxesPerStorefront = 120U;
+    mesh.vertices.reserve(stores.size() * kBoxesPerStorefront * 24U);
+    mesh.indices.reserve(stores.size() * kBoxesPerStorefront * 36U);
     for (const sim::RenderStore& store : stores) {
         if (!store.id.isValid() || !store.facilityId.isValid() ||
             !sim::isFinite(store.positionMeters) ||
@@ -43,17 +47,7 @@ WorldMesh buildStoreMarkerGeometry(
             throw std::invalid_argument(
                 "store marker geometry received an invalid render store");
         }
-        // store position は接地点なので、box 中心を高さの半分だけ持ち上げる。
-        const sim::Vec3 center{
-            store.positionMeters.x,
-            store.positionMeters.y + spec.heightMeters * 0.5,
-            store.positionMeters.z,
-        };
-        detail::appendAxisAlignedBox(
-            mesh, center,
-            {spec.halfWidthMeters, spec.heightMeters * 0.5,
-             spec.halfWidthMeters},
-            chainColor(store.chain, spec.alpha));
+        detail::appendStorefront(mesh, store, spec);
     }
     return mesh;
 }

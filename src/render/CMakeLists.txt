@@ -12,6 +12,12 @@ add_library(
     selection_overlay_geometry.cpp
     speech_bubble_geometry.cpp
     store_marker_geometry.cpp
+    store_tower_geometry.cpp
+    store_tower_additions.cpp
+    store_tower_additions.h
+    "${PROJECT_SOURCE_DIR}/include/konbini/render/store_tower_geometry.h"
+    storefront_geometry.cpp
+    storefront_geometry.h
     store_placement_animation.cpp
     visia.cpp
     visia_geometry.cpp

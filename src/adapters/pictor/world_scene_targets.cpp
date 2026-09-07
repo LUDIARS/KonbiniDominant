@@ -65,7 +65,7 @@ makeAttachmentDefinitions() {
     color.sizing = ::pictor::AttachmentSizing::SWAPCHAIN_RELATIVE;
     color.scale = 1.0F;
     color.usage = ::pictor::USAGE_COLOR_ATTACHMENT |
-                  ::pictor::USAGE_SAMPLED;
+                  ::pictor::USAGE_SAMPLED | ::pictor::USAGE_TRANSFER_SRC;
     color.clear_color = {
         kSceneClearColorR, kSceneClearColorG, kSceneClearColorB,
         kSceneClearColorA};

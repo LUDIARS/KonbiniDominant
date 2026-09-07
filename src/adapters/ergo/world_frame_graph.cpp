@@ -165,6 +165,11 @@ bool WorldFrameGraph::isInitialized() const noexcept {
     return impl_ != nullptr && impl_->initialized;
 }
 
+const pictor::WorldSceneTargets& WorldFrameGraph::sceneTargets() const {
+    if (!isInitialized()) throw std::logic_error("frame graph is not initialized");
+    return impl_->targets;
+}
+
 pictor::WorldGeometryCache& WorldFrameGraph::geometryCache() {
     if (!isInitialized()) {
         throw std::logic_error("world frame graph is not initialized");
