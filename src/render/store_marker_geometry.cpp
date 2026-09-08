@@ -34,10 +34,12 @@ WorldMesh buildStoreMarkerGeometry(
     validateSpec(spec);
 
     WorldMesh mesh;
-    // A storefront is roughly 120 boxes (shell, glazing, door, 5x7 lettering);
-    // reserving one box per store, as the old single-box marker did, would
-    // force a growth cascade on every facade.
-    constexpr std::size_t kBoxesPerStorefront = 120U;
+    // A storefront is ~30 structural boxes (shell, glazing, door, canopy) plus
+    // one box per lit 5x7 pixel of the brand name; the worst case, MOONPANTRY,
+    // lights 156 pixels, so ~190 boxes. Rounded up to leave headroom for sign
+    // or facade edits. Reserving one box per store, as the old single-box
+    // marker did, would force a growth cascade per facade.
+    constexpr std::size_t kBoxesPerStorefront = 200U;
     mesh.vertices.reserve(stores.size() * kBoxesPerStorefront * 24U);
     mesh.indices.reserve(stores.size() * kBoxesPerStorefront * 36U);
     for (const sim::RenderStore& store : stores) {

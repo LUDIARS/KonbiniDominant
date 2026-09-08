@@ -23,11 +23,14 @@ services:
     name: Konbini Dominant original store gallery
     project_code: KD
     repo: LUDIARS/KonbiniDominant
+    description: Presentation-only storefront / tower gallery capture (Windows / Vulkan)
     tier: local-app
     runtime: app
     app_kind: native
     cwd: ${ARS_ROOT}/KonbiniDominant
     exec: ${ARS_ROOT}/KonbiniDominant/build/Release/konbini_store_gallery.exe
+    build_command: 'cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DKONBINI_BUILD_RENDER=ON -DKONBINI_BUILD_FIGMENTUM_ADAPTER=OFF -DKONBINI_BUILD_TESTS=OFF && cmake --build build --config Release --target konbini_store_gallery'
+    process_match: konbini_store_gallery.exe
     autostart: false
     restart_policy: 'no'
     health:

@@ -16,6 +16,11 @@ namespace {
 
 void appendFloorNumber(WorldMesh& mesh, const sim::Vec3 center,
                        const std::uint32_t floor, const double scale) {
+    // Two digit cells only. A three-digit floor would silently render a
+    // non-digit glyph for the tens place, so reject it instead.
+    if (floor > 99U) {
+        throw std::invalid_argument("floor number plate holds two digits");
+    }
     const WorldVertex::ColorRgba panel{0.12F, 0.14F, 0.20F, 1.0F};
     const WorldVertex::ColorRgba ink{1.0F, 0.90F, 0.56F, 1.0F};
     detail::appendAxisAlignedBox(mesh, center, {0.80 * scale, 0.57 * scale, 0.08 * scale}, panel);

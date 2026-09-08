@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include "../render/world_box_geometry.h"
 
+// @implements spec/feature/three-store-brands.md Current Fable comparison
 namespace konbini::gallery {
 render::WorldMesh buildReferenceStores(std::span<const sim::RenderStore> stores) {
     render::WorldMesh mesh;

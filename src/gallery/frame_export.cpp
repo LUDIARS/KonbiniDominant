@@ -8,6 +8,7 @@
 #include "konbini/adapters/pictor/world_scene_targets.h"
 #include "pictor/surface/vulkan_context.h"
 
+// @implements spec/feature/three-store-brands.md Comparison delivery
 namespace konbini::gallery {
 namespace {
 void requireVk(VkResult result) {
@@ -46,7 +47,15 @@ void exportFrame(::pictor::VulkanContext& context,
     }
     context.device_wait_idle();
     const auto extent = targets.extent();
-    const VkDeviceSize bytes = static_cast<VkDeviceSize>(extent.width) * extent.height * 8U;
+    if (extent.width == 0 || extent.height == 0) {
+        throw std::logic_error("gallery capture requires a non-empty extent");
+    }
+    // Tied to the world color attachment format, R16G16B16A16_SFLOAT in
+    // `world_scene_targets.cpp`: 4 half channels, 8 bytes per pixel. Changing
+    // that format without changing this stride would export garbled pixels.
+    constexpr VkDeviceSize kBytesPerPixel = 8U;
+    const VkDeviceSize bytes =
+        static_cast<VkDeviceSize>(extent.width) * extent.height * kBytesPerPixel;
     Readback staging{context.device()};
     VkBufferCreateInfo info{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
     info.size = bytes;

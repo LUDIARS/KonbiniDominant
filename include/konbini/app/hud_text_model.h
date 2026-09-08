@@ -29,9 +29,12 @@ struct HudTextInput {
     std::uint32_t droppedTicks = 0;
 };
 
-// chain の HUD 表記。content の `displayName` は日本語で、first playable の
-// 5x7 bitmap font は ASCII しか持たない。slug から作った ASCII ラベルを使い、
-// 日本語表示は text atlas を持つまで扱わない (BASE-FP-HUD-ASCII-01)。
+// chain の HUD 表記。first playable の 5x7 bitmap font は ASCII しか持たない
+// ので、brand 名を ASCII literal として直接持つ (BASE-FP-HUD-ASCII-01)。
+// slug 由来の派生をやめたのは、slug が simulation 側の stable ID であり、
+// presentation の brand 名とは別に動くため。content の `displayName` と
+// 同じ文字列を保つ責任はここにある (data/content/first-playable.json)。
+// 未知の chain は無言で空ラベルにせず `std::invalid_argument`。
 [[nodiscard]] std::string hudChainLabel(sim::ChainId chain);
 
 [[nodiscard]] std::string_view hudPlacementFailureText(

@@ -5,6 +5,7 @@
 #include <span>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "konbini/app/camera_controller.h"
@@ -401,6 +402,23 @@ void testHudLinesAreRenderable() {
     CHECK(sawDropped);
 }
 
+// 表示名は presentation 側の契約。3 chain すべてを固定し、bitmap font が
+// 描けない文字が入り込まないことも確認する。
+void testHudChainLabelsCoverEveryChain() {
+    const std::pair<konbini::sim::ChainId, std::string> expected[] = {
+        {konbini::sim::ChainId::Losan, "MOONPANTRY"},
+        {konbini::sim::ChainId::Famoma, "SUNFOLD"},
+        {konbini::sim::ChainId::SebanIleban, "DAYLARK"},
+    };
+    for (const auto& [chain, label] : expected) {
+        const std::string actual = konbini::app::hudChainLabel(chain);
+        CHECK(actual == label);
+        for (const char character : actual) {
+            CHECK(konbini::render::isBitmapFontCharacter(character));
+        }
+    }
+}
+
 void testHudHidesControlsWhenToggledOff() {
     HudTextInput input;
     input.showControls = false;
@@ -483,6 +501,7 @@ int main() {
     testCommandOrderIsMonotonic();
     testPlaceStoreRejectsDeadFacilityHandles();
     testHudLinesAreRenderable();
+    testHudChainLabelsCoverEveryChain();
     testHudHidesControlsWhenToggledOff();
     testHudGeometryIsPixelSpaceAndBounded();
     testHudGeometryRejectsUnsupportedText();

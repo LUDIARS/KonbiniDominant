@@ -160,6 +160,7 @@ void WorldRenderLayer::record(
         targets_->generation() != impl_->targetsGeneration ||
         targets_->flightCount() != flightCount ||
         impl_->overlayBuffers.flightCount() != flightCount ||
+        impl_->storeBuffers.flightCount() != flightCount ||
         impl_->pipelines.renderPass() != targets_->renderPass()) {
         throw std::runtime_error(
             "world render layer has stale render targets");

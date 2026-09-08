@@ -1,6 +1,5 @@
 #include "konbini/app/hud_text_model.h"
 
-#include <cctype>
 #include <stdexcept>
 
 #include "konbini/render/bitmap_font.h"
