@@ -1,0 +1,58 @@
+{
+  "name": "resident-presentation",
+  "description": "Presentation-only resident projection and Visia primitives: content v2 resident profile, deterministic ambient residents, placement cues, CPU box/annulus geometry, bitmap speech bubbles and the store placement animation sampler.",
+  "presetRules": [],
+  "templateRules": [],
+  "membership": [
+    {
+      "pathPattern": "(^|/)include/konbini/sim/resident_presentation\\.h$"
+    },
+    {
+      "pathPattern": "(^|/)include/konbini/sim/placement_cue_projection\\.h$"
+    },
+    {
+      "pathPattern": "(^|/)include/konbini/sim/render_store_placement_cue\\.h$"
+    },
+    {
+      "pathPattern": "(^|/)src/sim/snapshots/resident_presentation\\.cpp$"
+    },
+    {
+      "pathPattern": "(^|/)src/sim/snapshots/placement_cue_projection\\.cpp$"
+    },
+    {
+      "pathPattern": "(^|/)include/konbini/render/(bitmap_font|resident_visual_geometry|speech_bubble_geometry|store_placement_animation|visia|visia_geometry)\\.h$"
+    },
+    {
+      "pathPattern": "(^|/)src/render/(bitmap_font|landing_effect_geometry|resident_primitive_geometry|resident_visual_geometry|speech_bubble_geometry|store_placement_animation|visia|visia_geometry|visia_geometry_support)\\.(cpp|h)$"
+    },
+    {
+      "pathPattern": "(^|/)tests/render/"
+    },
+    {
+      "pathPattern": "(^|/)tests/sim/(resident_presentation_content|resident_presentation_projection|placement_cue_projection|presentation_schema_isolation)_test\\.cpp$"
+    },
+    {
+      "pathPattern": "(^|/)spec/feature/npc-conversations-and-placement-feedback\\.md$"
+    },
+    {
+      "pathPattern": "(^|/)spec/interface/visia-presentation\\.md$"
+    },
+    {
+      "pathPattern": "(^|/)spec/test/presentation-validation-tests\\.md$"
+    }
+  ],
+  "cardTemplate": "Summarise the resident-presentation domain: the pure resident projection derived from population cells, placement cues, and the game-owned Visia CPU geometry and animation sampler that render adapters consume.",
+  "source": "spec/interface/visia-presentation.md",
+  "mechanics": [
+    "pure-projection-no-retained-state",
+    "counter-rng-presentation-streams",
+    "cpu-primitive-geometry",
+    "distance-culled-speech-bubbles",
+    "store-placement-sampler"
+  ],
+  "specRefs": [
+    "REQ-NPC-01",
+    "REQ-PLACE-FEEDBACK-01",
+    "REQ-VISIA-01"
+  ]
+}
