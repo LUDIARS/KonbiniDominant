@@ -22,6 +22,9 @@ struct StoreRow {
     double zocRadiusMeters = 0.0;
     std::uint64_t capturedPopulation = 0;
     bool isActive = true;
+    std::uint32_t revenuePermille = 1000;
+    std::uint32_t verticalSlot = 0, faith = 0;
+    bool isAntiStore = false;
 };
 
 class StoreTable {
@@ -33,8 +36,15 @@ public:
     [[nodiscard]] std::optional<std::size_t> find(StoreId id) const noexcept;
     [[nodiscard]] bool hasActiveStoreAt(FacilityId facilityId) const noexcept;
 
+    [[nodiscard]] std::optional<std::size_t> findAt(FacilityId facility, std::uint32_t slot) const noexcept;
+    [[nodiscard]] std::uint32_t firstEmptySlot(FacilityId facility, std::uint32_t limit) const noexcept;
+    void setZocRadius(std::size_t index, double radius);
+    void setFaith(std::size_t index, std::uint32_t faith);
+    void markAntiStore(std::size_t index);
     void clearCapturedPopulation() noexcept;
     void addCapturedPopulation(std::size_t denseIndex, std::uint32_t population);
+    void setRevenuePermille(std::size_t denseIndex, std::uint32_t value);
+    [[nodiscard]] bool deactivate(StoreId id) noexcept;
 
 private:
     static constexpr std::size_t kMissing = static_cast<std::size_t>(-1);
@@ -47,6 +57,9 @@ private:
     std::vector<double> zocRadiiMeters_;
     std::vector<std::uint64_t> capturedPopulations_;
     std::vector<std::uint8_t> isActive_;
+    std::vector<std::uint32_t> revenuePermille_;
+    std::vector<std::uint32_t> verticalSlots_, faiths_;
+    std::vector<std::uint8_t> antiStores_;
     std::vector<std::size_t> sparseIndices_;
 };
 

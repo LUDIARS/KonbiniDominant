@@ -11,6 +11,8 @@
 #include "konbini/sim/render_snapshot.h"
 #include "konbini/sim/select_chain_system.h"
 #include "konbini/sim/world_entity_ids.h"
+#include "konbini/sim/encirclement.h"
+#include "konbini/sim/campaign_command_system.h"
 
 // @implements spec/design.md 5. Tick と決定性
 // @implements spec/plan/tasks/first-playable.md Simulation
@@ -26,6 +28,7 @@ struct CompletedTick {
     std::uint64_t completedTicks = 0;
     std::vector<SelectChainResult> chainSelections;
     std::vector<PlacementResult> placements;
+    std::vector<CampaignCommandResult> campaignActions;
     bool economyCollected = false;
     CanonicalSnapshot canonical;
     std::shared_ptr<const RenderSnapshot> render;
@@ -55,6 +58,8 @@ private:
     ChainEconomyTable economy_;
     WorldEntityIds identities_;
     CommandQueue commands_;
+    std::vector<DominantTriangle> triangles_;
+    std::vector<Encirclement> encirclements_;
 };
 
 }  // namespace konbini::sim

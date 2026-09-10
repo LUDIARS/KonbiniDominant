@@ -1,6 +1,6 @@
 {
   "name": "platform-adapters",
-  "description": "外部との接続。 OS/ライブラリ差を吸収するアダプタ層。",
+  "description": "外部との接続。Pictor／Ergo／Figmentumと、Windows touch・Android NativeActivity・iOS UIKit/Vulkan surfaceの差を吸収する。",
   "presetRules": [],
   "templateRules": [],
   "membership": [
@@ -9,6 +9,12 @@
     },
     {
       "pathPattern": "(^|/)include/(?:.*/)?adapters/(?:.*/)?[^/]+$"
+    },
+    {
+      "pathPattern": "(^|/)mobile/(?:.*/)?[^/]+$"
+    },
+    {
+      "pathPattern": "(^|/)cmake/(MobileVulkan|mobile/FindVulkan)\\.cmake$"
     }
   ]
 }

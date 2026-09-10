@@ -27,7 +27,7 @@ public:
     FixedStepDriver(
         std::uint32_t ticksPerSecond, std::uint32_t maxTicksPerFrame);
 
-    [[nodiscard]] FixedStepPlan advance(double renderDtSeconds);
+    [[nodiscard]] FixedStepPlan advance(double renderDtSeconds, double timeScale = 1.0);
 
     [[nodiscard]] double fixedDeltaSeconds() const noexcept;
     [[nodiscard]] double accumulatedSeconds() const noexcept;

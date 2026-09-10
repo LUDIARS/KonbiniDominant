@@ -1,6 +1,6 @@
 {
   "name": "simulation",
-  "description": "シミュレーションの中核。 街の状態遷移と固定ステップの進行。",
+  "description": "決定論的シミュレーションの中核。Phase 1–4、経済・人口、配置、支配、スキル、次元、Aion、固定ステップ状態遷移を所有する。",
   "presetRules": [],
   "templateRules": [],
   "membership": [

@@ -1,8 +1,10 @@
 #pragma once
 
 #include <optional>
+#include "konbini/adapters/ergo/construction_presentation.h"
 
 #include "konbini/app/hud_text_model.h"
+#include "konbini/app/pointer_controls.h"
 #include "konbini/render/hud_overlay_layer.h"
 #include "konbini/render/hud_text_geometry.h"
 #include "konbini/render/isometric_camera.h"
@@ -22,19 +24,25 @@ public:
     FramePresenter(
         render::WorldDrawListSpec drawListSpec, render::HudTextStyle hudStyle);
 
+    void observe(const sim::RenderSnapshot& snapshot);
+    void advance(double deltaSeconds);
+    void reset();
+
     void present(
         render::WorldRenderLayer& worldLayer,
         render::HudOverlayLayer& hudLayer,
         const sim::RenderSnapshot& snapshot,
         const render::IsometricCamera& camera,
         std::optional<sim::FacilityId> selectedFacility,
-        const HudTextInput& hudInput);
+        const HudTextInput& hudInput,
+        const PointerControls& controls, std::optional<PointerAction> pressed);
 
     [[nodiscard]] const render::WorldDrawListSpec& drawListSpec()
         const noexcept;
     [[nodiscard]] const render::HudTextStyle& hudStyle() const noexcept;
 
 private:
+    adapters::ergo::ConstructionPresentation construction_;
     render::WorldDrawListSpec drawListSpec_;
     render::HudTextStyle hudStyle_;
 };

@@ -1,0 +1,82 @@
+{
+  "preMerge": true,
+  "configuredTimeScale": 100,
+  "result": {
+    "event": "resultPresented",
+    "tick": 5490,
+    "run": 1,
+    "phase": 2,
+    "outcome": 1,
+    "stores": 103,
+    "cash": 2090696,
+    "foreignDestroyed": 2,
+    "framesPresented": 345,
+    "wallSeconds": 9.31977
+  },
+  "phaseSequence": [
+    1,
+    3,
+    4,
+    5,
+    6,
+    2
+  ],
+  "stderrBytes": 0,
+  "clearScreen": "clear-screen.png",
+  "visualInspection": "VICTORY; reached phase 4; survived 547s; foreign worlds 2/2; surviving stores 103",
+  "approximateWallSpeedIncludingStartup": 58.69243554293722,
+  "sourceRevision": "911d960aac49ea0b9309aaac87172ee2ea3b78cc",
+  "screenshotSha256": "effe31566436dc834d4cc249a38db323289120a4db09c4cbc219b4cff4333b7c",
+  "artifactManifest": {
+    "sourceRevision": "911d960aac49ea0b9309aaac87172ee2ea3b78cc",
+    "sourceBranch": "feat/pointer-controls",
+    "mainRevision": "467851195e78d994107aaa56937806c0e08beab2",
+    "preMerge": true,
+    "files": [
+      {
+        "path": "konbini_dominant.exe",
+        "sha256": "3751f5c599ae40ced8dbc98afdf08f188561bdcb1a5e267975028bf5cc6eabd3",
+        "previouslyExisted": false
+      },
+      {
+        "path": "data/content/first-playable.json",
+        "sha256": "bddc1cf51687edaaebb80717f47aefecff333674dce654317b34ba3dbcd2be52",
+        "previouslyExisted": false
+      },
+      {
+        "path": "shaders/konbini_world.vert.spv",
+        "sha256": "374d39b94717bb9a8caaa7c3755452718b761734aeca47df84bb4d5948df0bfd",
+        "previouslyExisted": false
+      },
+      {
+        "path": "shaders/konbini_world.frag.spv",
+        "sha256": "6620c37f7c1181d0b1a33d73eb52d946d5a686c1fbac55b648174e132e82923f",
+        "previouslyExisted": false
+      },
+      {
+        "path": "shaders/konbini_composite.vert.spv",
+        "sha256": "cf803532719493c9569886dc3d6f13fdb63fccee1171aeeadfc8bbfca7ce883c",
+        "previouslyExisted": false
+      },
+      {
+        "path": "shaders/konbini_composite.frag.spv",
+        "sha256": "56ac337f72fc53403b0b1e3daa8d831eab971ceb253f199f8432bef74d294bb6",
+        "previouslyExisted": false
+      },
+      {
+        "path": "shaders/konbini_hud.vert.spv",
+        "sha256": "8fb87847dcbe763c458b522bed00841271e71ba5e078cd4aeb05e55916324bc0",
+        "previouslyExisted": false
+      },
+      {
+        "path": "shaders/konbini_hud.frag.spv",
+        "sha256": "721b020704e1dacc21db51bdac9c18f8672c9c8f355f604473abafb6974707eb",
+        "previouslyExisted": false
+      }
+    ]
+  },
+  "processClosed": true,
+  "exitCode": null,
+  "exitCodeNote": "The process closed within 10s; the previous launcher did not retain the exit code.",
+  "scope": "Pre-merge original deterministic pilot; the BT refactor must be retested."
+}

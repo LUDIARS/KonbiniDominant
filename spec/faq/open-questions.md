@@ -67,6 +67,15 @@ kind: design
 
 baselineが書かれていることをowner確定とみなさない。
 
+## Phase 1 限定の決定 (2026-09-09)
+
+ユーザーは3勢力、3秒包囲の自動破壊、敵全滅＋現在人口60%で勝利、
+5分で支配人口比較（首位同点は引き分け）、店舗ゼロ＋資金不足で敗北、
+結果から再挑戦を承認し、残る実装判断を委任した。
+今回の `TBD-TRI-CAPTURE-01` / `TBD-DOMINATION-01` / `TBD-LOSE-02` は
+[Phase 1 単独版](../feature/phase-1-game-loop.md) の範囲で解消する。
+3チェーンの原案固有能力、モバイル、後続Phaseの未決事項は確定した扱いにしない。
+
 ## Decision log
 
 | date | decision |

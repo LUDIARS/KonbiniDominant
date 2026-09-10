@@ -15,7 +15,7 @@
 namespace konbini::city {
 
 inline constexpr std::int32_t kFirstPlayableFacilityPolygonizeResolution = 24;
-inline constexpr std::uint32_t kFacilityGeometryCacheSchemaVersion = 1;
+inline constexpr std::uint32_t kFacilityGeometryCacheSchemaVersion = 2;
 inline constexpr std::uint32_t kFacilityVertexFormatVersion = 1;
 
 // recipe hash だけでなく generator revision / 解像度 / vertex format も key に

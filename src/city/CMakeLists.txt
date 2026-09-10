@@ -4,6 +4,8 @@ add_library(
     building_recipe_fingerprint.cpp
     canonical_bytes.cpp
     canonical_bytes.h
+    grid_town.cpp
+    grid_town_validation.cpp
     city_manifest.cpp
     city_manifest_canonical.cpp
     city_manifest_projection.cpp

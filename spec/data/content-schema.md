@@ -1,5 +1,14 @@
 # Content schema
 
+## Phase 1 profile v3 (2026-09-09)
+
+`schemaVersion: 1, contentVersion: 3` は `phase1` object を必須とする。
+各 field と baseline は `data/content/phase1.json` が正本。
+未設定・未知 field・不正範囲はエラー。version 2 は履歴用の明示 profile として
+従来の厳格な値検証を維持し、version 3 から無言で縮退しない。
+ルールは [phase-1-game-loop](../feature/phase-1-game-loop.md) を参照。
+
+
 ## 目的
 
 chain差、経済式、phase条件、boss設定をコード分岐ではなくversion付きcontent dataで
@@ -189,3 +198,10 @@ Delaunayは候補列挙法であり、これらgame ruleの値を決めない。
 - chain variantが少なくとも1つ存在する
 - phase遷移先が閉じたgraphを作る
 - schema version不一致は明示error
+
+## Campaign profile v4
+
+Default first-playable.json is now v4. phase1.json preserves the historical v3 profile.
+The campaign object requires vertical, dimensions, aion and skills, with no unknown
+keys or missing numeric defaults. See ../feature/full-campaign-baseline.md and
+../feature/skill-upgrades.md for the required, validated content values.

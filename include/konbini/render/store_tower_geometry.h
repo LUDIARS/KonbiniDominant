@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 #include "konbini/render/store_marker_geometry.h"
 
 namespace konbini::render {

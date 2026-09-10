@@ -33,6 +33,9 @@ bool payloadLess(const PlayerCommand& left, const PlayerCommand& right) noexcept
             } else if constexpr (std::is_same_v<Left, SelectChainCommand>) {
                 return chainIndex(leftCommand.chain) <
                        chainIndex(rightCommand.chain);
+            } else if constexpr (std::is_same_v<Left, CampaignCommand>) {
+                return std::tuple{leftCommand.chain,leftCommand.action,leftCommand.facilityId,leftCommand.verticalSlot,leftCommand.dimension} <
+                       std::tuple{rightCommand.chain,rightCommand.action,rightCommand.facilityId,rightCommand.verticalSlot,rightCommand.dimension};
             } else {
                 return std::tuple{chainIndex(leftCommand.chain),
                                   facilityOrder(leftCommand.facilityId),

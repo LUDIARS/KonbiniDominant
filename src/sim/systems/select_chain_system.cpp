@@ -1,4 +1,5 @@
 #include "konbini/sim/select_chain_system.h"
+#include <utility>
 
 // @implements spec/feature/chain-selection.md 共通
 // @implements spec/feature/game-flow.md 状態機械
@@ -21,9 +22,19 @@ SelectChainFailure applySelectChain(const SelectChainCommand& command,
     if (state.playerChain.has_value()) {
         return SelectChainFailure::ChainAlreadySelected;
     }
-    if (!economy.activate(command.chain)) {
+    ChainEconomyTable stagedEconomy = economy;
+    if (!stagedEconomy.activate(command.chain)) {
         return SelectChainFailure::ChainAlreadyActive;
     }
+    if (state.competitive) {
+        for (std::size_t index = 0; index < kFirstPlayableChainCount; ++index) {
+            const auto rival = static_cast<ChainId>(index);
+            if (rival != command.chain && !stagedEconomy.activate(rival)) {
+                return SelectChainFailure::ChainAlreadyActive;
+            }
+        }
+    }
+    economy = std::move(stagedEconomy);
     state.playerChain = command.chain;
     state.phase = GamePhase::Phase1;
     return SelectChainFailure::None;

@@ -4,6 +4,7 @@
 #include <stdexcept>
 
 #include "konbini/render/world_palette.h"
+#include "konbini/render/facility_display_bounds.h"
 #include "world_box_geometry.h"
 
 // @implements spec/interface/pictor-rendering.md Game-owned render domain
@@ -27,8 +28,9 @@ WorldMesh buildSelectionOverlayGeometry(
             "selection overlay received an invalid render facility");
     }
 
-    const sim::Vec3& min = facility.boundsMeters.min;
-    const sim::Vec3& max = facility.boundsMeters.max;
+    const auto bounds = facilityDisplayBounds(facility);
+    const sim::Vec3& min = bounds.min;
+    const sim::Vec3& max = bounds.max;
     WorldMesh mesh;
     mesh.vertices.reserve(24);
     mesh.indices.reserve(36);

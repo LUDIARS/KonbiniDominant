@@ -40,7 +40,7 @@ using konbini::sim::StoreId;
 using konbini::sim::StoreRow;
 using konbini::sim::StoreTable;
 using konbini::sim::Vec3;
-using konbini::sim::kCanonicalSnapshotSchemaVersion;
+using konbini::sim::kLegacyCanonicalSnapshotSchemaVersion;
 using konbini::sim::kFirstPlayableChainCount;
 using konbini::sim::makeCanonicalSnapshot;
 using konbini::sim::makeRenderSnapshot;
@@ -234,7 +234,7 @@ void testCanonicalLayoutHasNoPresentationRecords() {
         kPopulationBytes + kPopulationAssignmentBytes + kU32 +
         (kChainEconomyBytes * kFirstPlayableChainCount);
 
-    CHECK(assigned.schemaVersion == kCanonicalSnapshotSchemaVersion);
+    CHECK(assigned.schemaVersion == kLegacyCanonicalSnapshotSchemaVersion);
     CHECK(assigned.bytes.size() == expectedAssignedBytes);
 
     const CanonicalSnapshot unassigned = makeCanonicalSnapshot(

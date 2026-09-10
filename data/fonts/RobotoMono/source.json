@@ -1,0 +1,19 @@
+{
+  "family": "Roboto Mono",
+  "repository": "https://github.com/google/fonts",
+  "revision": "aa24661a5ba24c8f8a550a16fb13198719fc2c23",
+  "files": [
+    {
+      "file": "RobotoMono[wght].ttf",
+      "url": "https://raw.githubusercontent.com/google/fonts/aa24661a5ba24c8f8a550a16fb13198719fc2c23/ofl/robotomono/RobotoMono%5Bwght%5D.ttf",
+      "bytes": 183700,
+      "sha256": "66a80e79d17e4c7cabd162e2916578a4cc08fd19eef6e2a643305eae9c567b2b"
+    },
+    {
+      "file": "OFL.txt",
+      "url": "https://raw.githubusercontent.com/google/fonts/aa24661a5ba24c8f8a550a16fb13198719fc2c23/ofl/robotomono/OFL.txt",
+      "bytes": 4395,
+      "sha256": "50ab8dd54680d3473f649c9db86fece88434d097c7834475c1c72d2f8c429215"
+    }
+  ]
+}

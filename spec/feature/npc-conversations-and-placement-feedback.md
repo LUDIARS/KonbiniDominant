@@ -72,24 +72,10 @@ simulation上の店舗配置、施設置換、支払は同じtickで即時確定
 その結果を変更せず、成功した`PlacementResult::placedStore`から作る一時的な
 `RenderStorePlacementCue`だけをconsumeする。
 
-BASE-PLACE-ANIM-01:
-
-| parameter | baseline |
-|---|---:|
-| 上空で溜める時間 | 0.20秒 |
-| 落下時間 | 0.65秒 |
-| 落下easing | `EaseInCubic` |
-| 着地effect時間 | 0.40秒 |
-| 出現高度 | target + 18m |
-| Y軸総回転 | 270度 |
-| first playable最終yaw | 0度 |
-
-- hold中は上空で待機し、fall中は明示したeasing curveでtargetへ着地する
-- fall完了時には必ずtarget位置、270度回転済みの最終yawになる
-- effectは着地時から拡大・fadeするring primitive
-- cueを保持できなかったrendererは最終店舗poseを表示してよいが、配置済み店舗を
-  消したりsimulationを巻き戻してはならない
-- camera shake、flash、強いparticleはaccessibility設定が定義されるまで追加しない
+現行の演出は [Store construction effects](store-construction-effects.md) を正本とする。
+360度回転しながら浮上し、短く滞空してから急落する。回転の軌跡と着地の土煙は
+Ergo の particle モジュールで生成し、既存の Pictor 描画へ接続する。
+入力成功・支払・店舗の収益開始を、演出完了まで待たせない。
 
 ## Visia dummy
 
@@ -119,5 +105,5 @@ resourceへ解決する責務はadapter側に置く。詳細は
 - store滞在中だけ本文付きspeech requestを公開する
 - camera eyeから220mを超える吹き出しgeometryを生成しない
 - residentと着地effectがVisia primitive geometryとして生成できる
-- placement sampleが0.20秒hold、0.65秒fall、270度回転、着地ringを表現する
+- placement sampleが360度回転・浮上・滞空・急落を表現し、着地時に土煙が出る
 - 同じauthoritative stateからcanonical snapshotは機能追加前と同じ規則で生成される

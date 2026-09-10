@@ -14,12 +14,15 @@ enum class StorePlacementEasingCurve : std::uint8_t {
     EaseInCubic = 0,
 };
 
+enum class StorePlacementStage : std::uint8_t { Spin, Hover, Fall, Landed };
+
 struct StorePlacementAnimationSpec {
-    double holdSeconds = 0.2;
-    double fallSeconds = 0.65;
-    double effectSeconds = 0.4;
-    double spawnHeightMeters = 18.0;
-    double rotationDegrees = 270.0;
+    double spinSeconds = 0.36;
+    double holdSeconds = 0.16;
+    double fallSeconds = 0.18;
+    double effectSeconds = 0.60;
+    double spawnHeightMeters = 8.0;
+    double rotationDegrees = 360.0;
     StorePlacementEasingCurve fallEasing =
         StorePlacementEasingCurve::EaseInCubic;
     VisiaId landingEffectVisia =
@@ -28,6 +31,7 @@ struct StorePlacementAnimationSpec {
 
 struct StorePlacementAnimationSample {
     VisiaPose storePose;
+    StorePlacementStage stage = StorePlacementStage::Spin;
     std::optional<VisiaInstance> landingEffect;
     bool hasLanded = false;
     bool isComplete = false;
@@ -39,8 +43,8 @@ void validateStorePlacementAnimationSpec(
     const StorePlacementAnimationSpec& spec);
 
 // elapsedSeconds is presentation time since the accepted placement event.
-// The returned final store pose is exactly targetPose; the 270-degree turn
-// therefore starts behind that final yaw rather than leaving a yaw offset.
+// A full turn lifts the store, a short hover holds it, then it slams down.
+// The final pose is exactly targetPose, including on elevated floors.
 [[nodiscard]] StorePlacementAnimationSample sampleStorePlacementAnimation(
     const StorePlacementAnimationSpec& spec,
     const VisiaPose& targetPose,

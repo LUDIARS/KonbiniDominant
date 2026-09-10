@@ -3,6 +3,8 @@
 #include <stdexcept>
 
 #include "konbini/render/bitmap_font.h"
+#include "konbini/app/phase1_hud_text.h"
+#include "konbini/app/campaign_hud_text.h"
 
 // @implements spec/feature/ui-ux.md Common HUD
 
@@ -58,6 +60,8 @@ std::string_view hudPlacementFailureText(
             return "FACILITY UNAVAILABLE";
         case sim::PlacementFailure::FacilityOccupied:
             return "FACILITY OCCUPIED";
+        case sim::PlacementFailure::MissingSupport: return "BUILD THE FLOOR BELOW FIRST";
+        case sim::PlacementFailure::DimensionCollapsed: return "DIMENSION HAS COLLAPSED";
         case sim::PlacementFailure::InsufficientCash:
             return "NOT ENOUGH CASH";
     }
@@ -84,6 +88,16 @@ std::string_view hudChainFailureText(
 
 // @implements spec/feature/ui-ux.md Common HUD
 std::vector<std::string> buildHudLines(const HudTextInput& input) {
+    if (input.hud.campaign.enabled) {
+        auto lines = buildCampaignHudLines(input);
+        for (const auto& line : lines) { requireRenderable(line); }
+        return lines;
+    }
+    if (input.hud.competitive) {
+        auto lines = buildPhase1HudLines(input);
+        for (const auto& line : lines) { requireRenderable(line); }
+        return lines;
+    }
     std::vector<std::string> lines;
 
     if (input.hud.playerChain.has_value()) {

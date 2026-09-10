@@ -20,12 +20,12 @@ namespace konbini::render {
 // `panelColor` の alpha が 0 の場合、背景 quad は生成しない (透明な quad を
 // blend で描くと、見えないのに fill rate だけ消費する)。
 struct HudTextStyle {
-    float glyphPixelScale = 3.0F;
-    float glyphSpacingPixels = 1.0F;
+    float glyphPixelScale = 2.0F;
+    float glyphSpacingPixels = 0.5F;
     float linePaddingPixels = 4.0F;
-    float originXPixels = 16.0F;
-    float originYPixels = 16.0F;
-    float panelPaddingPixels = 8.0F;
+    float originXPixels = 12.0F;
+    float originYPixels = 12.0F;
+    float panelPaddingPixels = 6.0F;
     WorldVertex::ColorRgba textColor{1.0F, 1.0F, 1.0F, 1.0F};
     WorldVertex::ColorRgba panelColor{0.0F, 0.0F, 0.0F, 0.55F};
 };
@@ -38,7 +38,7 @@ struct HudTextStyle {
 [[nodiscard]] float hudTextWidthPixels(
     std::string_view line, const HudTextStyle& style);
 
-// `lines` を pixel 空間の quad mesh へ展開する。原点は左上 (Y 下向き) で、
+// `lines` をGoogle Fonts由来の輪郭三角形でpixel空間へ展開する。原点は左上 (Y 下向き) で、
 // Vulkan の framebuffer 座標と一致させる。
 //
 // font が持たない文字、非正の scale、zero extent はすべて

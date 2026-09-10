@@ -33,21 +33,26 @@ public:
     [[nodiscard]] const ChainContent& rules(ChainId chain) const;
 
     [[nodiscard]] bool activate(ChainId chain);
+    [[nodiscard]] bool activateWithCash(ChainId chain, std::int64_t initialCashCredits);
     [[nodiscard]] bool canAfford(ChainId chain, std::int64_t credits) const;
     [[nodiscard]] bool debitPlacement(ChainId chain, std::int64_t credits);
     void resetTickMetrics() noexcept;
     void setCustomerShare(ChainId chain, std::uint64_t population);
     void creditRevenue(ChainId chain, std::int64_t credits);
+    void removeStore(ChainId chain);
+    [[nodiscard]] bool spend(ChainId chain, std::int64_t credits);
+    [[nodiscard]] const std::optional<CampaignContent>& campaignRules() const noexcept { return campaign_; }
 
 private:
-    std::array<ChainContent, kFirstPlayableChainCount> rules_;
-    std::array<std::int64_t, kFirstPlayableChainCount> cashCredits_{};
-    std::array<std::uint32_t, kFirstPlayableChainCount> storeCounts_{};
-    std::array<std::uint64_t, kFirstPlayableChainCount> customerShares_{};
-    std::array<std::int64_t, kFirstPlayableChainCount> incomeThisTick_{};
-    std::array<std::int64_t, kFirstPlayableChainCount> expenseThisTick_{};
-    std::array<std::uint8_t, kFirstPlayableChainCount> isActive_{};
+    std::array<ChainContent, kSimulationChainCount> rules_;
+    std::array<std::int64_t, kSimulationChainCount> cashCredits_{};
+    std::array<std::uint32_t, kSimulationChainCount> storeCounts_{};
+    std::array<std::uint64_t, kSimulationChainCount> customerShares_{};
+    std::array<std::int64_t, kSimulationChainCount> incomeThisTick_{};
+    std::array<std::int64_t, kSimulationChainCount> expenseThisTick_{};
+    std::array<std::uint8_t, kSimulationChainCount> isActive_{};
     std::uint32_t startingStoreEquivalent_ = 0;
+    std::optional<CampaignContent> campaign_;
 };
 
 }  // namespace konbini::sim

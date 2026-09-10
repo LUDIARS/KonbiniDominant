@@ -1,5 +1,8 @@
 # Problem logs
 
+- [2026-09-09-startup-degenerate-mesh-normal.md](2026-09-09-startup-degenerate-mesh-normal.md)
+  — 配布EXEが退化三角形の法線計算で起動直後に終了する
+
 実際に発生した問題・障害の記録。1件1ファイルとし、file名は
 `YYYY-MM-DD-<slug>.md` とする。
 

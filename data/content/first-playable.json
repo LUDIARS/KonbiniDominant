@@ -1,6 +1,23 @@
 {
   "schemaVersion": 1,
-  "contentVersion": 2,
+  "contentVersion": 4,
+  "phase1": {
+    "durationTicks": 3000,
+    "captureDelayTicks": 30,
+    "dominationPercent": 60,
+    "aiOpeningPeriodTicks": 60,
+    "aiPeriodTicks": 20,
+    "aiRampTicks": 2400,
+    "aiTriangleScore": 250,
+    "aiEncirclementScore": 1000,
+    "aiExposurePenalty": 1500,
+    "triangleMaxEdgeMeters": 90,
+    "triangleMinAreaSquareMeters": 20,
+    "triangleInfluence": 3,
+    "triangleRevenuePermille": 1500,
+    "destructionPopulationLossPercent": 20,
+    "populationRecoveryPerPeriod": 2
+  },
   "simulation": {
     "ticksPerSecond": 10,
     "economyPeriodTicks": 10,
@@ -48,5 +65,74 @@
       "zocRadiusMeters": 18,
       "revenueMilliCreditsPerPerson": 400
     }
-  ]
+  ],
+  "campaign": {
+    "vertical": {
+      "durationTicks": 1800,
+      "slots": 256,
+      "costStepPermille": 10,
+      "floorHeightMeters": 3.2,
+      "faithMax": 100,
+      "startingFaith": 50,
+      "faithGrowth": 2,
+      "faithNeighborLimit": 3,
+      "triangleFaith": 4,
+      "heightFaithLimit": 4,
+      "imageCost": 500,
+      "imageCooldownTicks": 100,
+      "imageFaith": 25
+    },
+    "dimensions": {
+      "foreignCount": 2,
+      "seedVersion": 1,
+      "initialRivalStores": 4,
+      "inversionCost": 500,
+      "inversionCooldownTicks": 30,
+      "energyDurationTicks": 300,
+      "energyRevenuePermille": 1500,
+      "energyFaith": 3,
+      "maxActive": 6,
+      "escapeCost": 1000,
+      "escapeCooldownTicks": 30
+    },
+    "aion": {
+      "warningTicks": 50,
+      "manifestationTicks": 300,
+      "spawnPeriodTicks": 4,
+      "maxValueWarningTicks": 40,
+      "budgetCredits": 100000000,
+      "buildCostCredits": 100,
+      "zocRadiusMeters": 30,
+      "timePeriodTicks": 50,
+      "historyTicks": 20,
+      "pasteLotOffset": 3,
+      "pasteLimit": 3
+    },
+    "skills": {
+      "maxRank": 5,
+      "maxEquipped": 6,
+      "firstExperience": 80,
+      "experienceStep": 20,
+      "customersPerExperience": 50,
+      "baseExperience": 2,
+      "maxExperiencePerPeriod": 20,
+      "staffFaith": 1,
+      "deliveryRadiusPermille": 80,
+      "coffeeCreditsPerStore": 20,
+      "coffeeStoreCap": 32,
+      "bakeryRecovery": 2,
+      "snacksInfluence": 1,
+      "qualityRevenuePermille": 100,
+      "buildDiscountPermille": 80,
+      "cameraDelayTicks": 10,
+      "nightCooldownPermille": 80,
+      "raisedRevenuePermille": 200,
+      "raisedFaithPenalty": 1,
+      "pulsePeriodTicks": 100,
+      "snacksDurationTicks": 30,
+      "wavePeriodTicks": 150,
+      "waveDurationTicks": 20,
+      "waveDurationPerRank": 5
+    }
+  }
 }

@@ -1,6 +1,6 @@
 {
   "name": "rendering",
-  "description": "描画。 画面への出力と表示要素の構成。",
+  "description": "描画。グリッド都市、階層店舗、支配・警告・スキル演出、ベクタ文字、HUDをCPU geometryとして構成する。",
   "presetRules": [],
   "templateRules": [],
   "membership": [

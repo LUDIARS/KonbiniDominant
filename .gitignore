@@ -36,5 +36,13 @@ tests/
 *.dll
 *.lib
 
+# Native mobile build output
+/mobile/android/.gradle/
+/mobile/android/.idea/
+/mobile/android/local.properties
+/mobile/android/app/.cxx/
+/mobile/android/app/build/
+/build-mobile-assets/
+
 .DS_Store
 Thumbs.db

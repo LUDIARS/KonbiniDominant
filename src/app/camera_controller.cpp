@@ -61,6 +61,10 @@ void CameraController::apply(const FrameInput& input) {
             "camera controller requires a finite non-negative delta");
     }
 
+    if(!std::isfinite(input.pinchRatio) || input.pinchRatio<=0)
+        throw std::invalid_argument("invalid pinch ratio");
+    config_.verticalSpanMeters=std::clamp(config_.verticalSpanMeters/input.pinchRatio,
+        spec_.minVerticalSpanMeters,spec_.maxVerticalSpanMeters);
     // zoom は乗算なので、方向キーの pan より先に反映して drag/pan の
     // meter 換算に新しい span を使う。
     if (input.zoomSteps != 0.0) {
@@ -119,6 +123,11 @@ const CameraControlSpec& CameraController::spec() const noexcept {
     return spec_;
 }
 
+void CameraController::focusHeight(const double meters) {
+    if (!std::isfinite(meters) || meters < 0 || meters > 3000) { throw std::invalid_argument("invalid floor height"); }
+    config_.targetMeters.y = meters;
+    config_.farPlaneMeters = std::max(config_.farPlaneMeters, config_.distanceMeters * 4.0 + meters + 100.0);
+}
 void CameraController::clampTarget() {
     config_.targetMeters.x = std::clamp(
         config_.targetMeters.x, cityBounds_.min.x - spec_.targetMarginMeters,

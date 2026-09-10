@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <stdexcept>
 
-#include "konbini/render/bitmap_font.h"
+#include "konbini/render/vector_font.h"
 
 // @implements spec/feature/ui-ux.md Common HUD
 
@@ -53,7 +53,7 @@ HudTextStyle defaultHudTextStyle() noexcept {
 
 float hudLineHeightPixels(const HudTextStyle& style) {
     validateStyle(style);
-    return static_cast<float>(kBitmapGlyphHeight) * style.glyphPixelScale +
+    return 7.0F * style.glyphPixelScale +
            style.linePaddingPixels;
 }
 
@@ -63,11 +63,10 @@ float hudTextWidthPixels(
     if (line.empty()) {
         return 0.0F;
     }
-    const float advance =
-        static_cast<float>(kBitmapGlyphWidth) * style.glyphPixelScale +
-        style.glyphSpacingPixels;
-    return advance * static_cast<float>(line.size()) -
-           style.glyphSpacingPixels;
+    float width = 0;
+    for (const char character : line)
+        width += vectorGlyph(character).advance * 7.0F * style.glyphPixelScale + style.glyphSpacingPixels;
+    return width - style.glyphSpacingPixels;
 }
 
 // @implements spec/feature/ui-ux.md Common HUD
@@ -80,7 +79,7 @@ WorldMesh buildHudTextMesh(
             "hud text geometry requires a non-zero viewport");
     }
     for (const std::string& line : lines) {
-        validateBitmapFontText(line);
+        validateVectorFontText(line);
     }
 
     WorldMesh mesh;
@@ -108,36 +107,21 @@ WorldMesh buildHudTextMesh(
             style.panelColor);
     }
 
-    const float pixel = style.glyphPixelScale;
-    const float advance =
-        static_cast<float>(kBitmapGlyphWidth) * pixel +
-        style.glyphSpacingPixels;
-    for (std::size_t lineIndex = 0; lineIndex < lines.size(); ++lineIndex) {
-        const float lineTop =
-            style.originYPixels + lineHeight * static_cast<float>(lineIndex);
-        const std::string& line = lines[lineIndex];
-        for (std::size_t column = 0; column < line.size(); ++column) {
-            const BitmapGlyphRows& glyph = bitmapGlyph5x7(line[column]);
-            const float glyphLeft =
-                style.originXPixels + advance * static_cast<float>(column);
-            for (std::uint32_t row = 0; row < kBitmapGlyphHeight; ++row) {
-                const std::uint8_t bits = glyph[row];
-                for (std::uint32_t bit = 0; bit < kBitmapGlyphWidth; ++bit) {
-                    // bit 4 が左端。行を右から左へ読むと文字が鏡像になる。
-                    const std::uint8_t mask = static_cast<std::uint8_t>(
-                        1U << (kBitmapGlyphWidth - 1U - bit));
-                    if ((bits & mask) == 0) {
-                        continue;
-                    }
-                    const float minX =
-                        glyphLeft + static_cast<float>(bit) * pixel;
-                    const float minY =
-                        lineTop + static_cast<float>(row) * pixel;
-                    appendQuad(
-                        mesh, minX, minY, minX + pixel, minY + pixel,
-                        style.textColor);
-                }
+    const float height = 7.0F * style.glyphPixelScale;
+    for (std::size_t row = 0; row < lines.size(); ++row) {
+        float left = style.originXPixels;
+        const float top = style.originYPixels + lineHeight * static_cast<float>(row);
+        for (const char character : lines[row]) {
+            const auto glyph = vectorGlyph(character);
+            const auto base = static_cast<std::uint32_t>(mesh.vertices.size());
+            for (const auto point : glyph.points) {
+                mesh.vertices.push_back({{
+                    left + static_cast<float>(point[0]) / kVectorFontUnits * height,
+                    top + static_cast<float>(point[1]) / kVectorFontUnits * height, 0},
+                    {}, style.textColor});
             }
+            for (const auto index : glyph.indices) mesh.indices.push_back(base + index);
+            left += glyph.advance * height + style.glyphSpacingPixels;
         }
     }
     return mesh;

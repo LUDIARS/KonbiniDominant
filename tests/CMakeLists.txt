@@ -57,6 +57,23 @@ konbini_add_test(
   konbini_render_domain
 )
 
+add_executable(konbini_phase1_tests sim/phase1_game_loop_test.cpp)
+target_link_libraries(konbini_phase1_tests PRIVATE konbini_app_domain konbini_render_domain)
+target_compile_definitions(konbini_phase1_tests PRIVATE
+  "KONBINI_PHASE1_CONTENT_FILE=\"${PROJECT_SOURCE_DIR}/data/content/phase1.json\""
+  "KONBINI_CAMPAIGN_CONTENT_FILE=\"${PROJECT_SOURCE_DIR}/data/content/first-playable.json\"")
+konbini_enable_warnings(konbini_phase1_tests)
+add_test(NAME konbini_phase1_tests COMMAND konbini_phase1_tests)
+add_dependencies(konbini_review konbini_phase1_tests)
+
+add_executable(konbini_campaign_tests sim/campaign_systems_test.cpp check.h)
+target_link_libraries(konbini_campaign_tests PRIVATE konbini_sim)
+target_compile_definitions(konbini_campaign_tests PRIVATE
+  "KONBINI_CAMPAIGN_CONTENT_FILE=\"${PROJECT_SOURCE_DIR}/data/content/first-playable.json\"")
+konbini_enable_warnings(konbini_campaign_tests)
+add_test(NAME konbini_campaign_tests COMMAND konbini_campaign_tests)
+add_dependencies(konbini_review konbini_campaign_tests)
+
 # app domain (fixed step / camera / selection / command / HUD) と HUD geometry。
 # Vulkan にも Ergo にも依存しないので render 無効構成でも走る。
 add_executable(
@@ -108,4 +125,22 @@ if(KONBINI_BUILD_RENDER)
     COMMAND konbini_render_adapter_tests
   )
   add_dependencies(konbini_review konbini_render_adapter_tests)
+endif()
+
+add_executable(konbini_grid_town_ui_tests render/grid_town_ui_test.cpp)
+target_link_libraries(konbini_grid_town_ui_tests PRIVATE konbini_app_domain konbini_render_domain)
+target_compile_definitions(konbini_grid_town_ui_tests PRIVATE
+  "KONBINI_GRID_CONTENT_FILE=\"${PROJECT_SOURCE_DIR}/data/content/first-playable.json\"")
+konbini_enable_warnings(konbini_grid_town_ui_tests)
+add_test(NAME konbini_grid_town_ui_tests COMMAND konbini_grid_town_ui_tests)
+add_dependencies(konbini_review konbini_grid_town_ui_tests)
+
+if(KONBINI_BUILD_RENDER)
+  add_executable(konbini_construction_tests adapters/construction_presentation_test.cpp)
+  target_link_libraries(konbini_construction_tests PRIVATE konbini_ergo_adapter)
+  target_compile_definitions(konbini_construction_tests PRIVATE
+    "KONBINI_CONSTRUCTION_CONTENT_FILE=\"${PROJECT_SOURCE_DIR}/data/content/phase1.json\"")
+  konbini_enable_warnings(konbini_construction_tests)
+  add_test(NAME konbini_construction_tests COMMAND konbini_construction_tests)
+  add_dependencies(konbini_review konbini_construction_tests)
 endif()

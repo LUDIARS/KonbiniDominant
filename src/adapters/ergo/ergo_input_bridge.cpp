@@ -45,13 +45,23 @@ std::map<GLFWwindow*, ErgoInputBridge*>& bridgeRegistry() {
             return KeyCode::Num2;
         case GLFW_KEY_3:
             return KeyCode::Num3;
+        case GLFW_KEY_P: return KeyCode::P;
+        case GLFW_KEY_R: return KeyCode::R;
+        case GLFW_KEY_Q: return KeyCode::Q;
+        case GLFW_KEY_E: return KeyCode::E;
+        case GLFW_KEY_F: return KeyCode::F;
+        case GLFW_KEY_G: return KeyCode::G;
+        case GLFW_KEY_C: return KeyCode::C;
+        case GLFW_KEY_I: return KeyCode::I;
+        case GLFW_KEY_X: return KeyCode::X;
+        case GLFW_KEY_TAB: return KeyCode::Tab;
+        case GLFW_KEY_SPACE: return KeyCode::Space;
         case GLFW_KEY_ESCAPE:
             return KeyCode::Escape;
         case GLFW_KEY_F1:
             return KeyCode::F1;
         default:
-            // 未対応の key は無視する。first playable の操作表 (WASD /
-            // 1-3 / Esc / F1) を外れる入力へ意味を与えない。
+            // 操作表に無い key は取り込まない。
             return std::nullopt;
     }
 }
@@ -99,6 +109,7 @@ void ErgoInputBridge::attach(
             "another input bridge is already attached to this window");
     }
 
+    touch_.attach(window);
     window_ = window;
     system_ = &system;
     bridgeRegistry().emplace(window, this);
@@ -131,6 +142,7 @@ void ErgoInputBridge::detach() noexcept {
     if (window_ == nullptr) {
         return;
     }
+    touch_.detach();
     glfwSetKeyCallback(window_, nullptr);
     glfwSetMouseButtonCallback(window_, nullptr);
     glfwSetCursorPosCallback(window_, nullptr);
@@ -153,6 +165,16 @@ void ErgoInputBridge::beginFrame() {
         throw std::logic_error("input bridge is not attached");
     }
     frame_ = pending_;
+    if(const auto touch=touch_.consume()) {
+        static_cast<app::PointerSample&>(frame_)=*touch;
+        frame_.insideWindow=true;
+    }
+    int width=1,height=1;
+    float xScale=1,yScale=1;
+    glfwGetWindowSize(window_,&width,&height);
+    glfwGetWindowContentScale(window_,&xScale,&yScale);
+    frame_.clientWidth=width>0?width:1;frame_.clientHeight=height>0?height:1;
+    frame_.uiScale=xScale>yScale?xScale:yScale;
     // Ergo 側の scroll / delta は inject 値がそのまま残るので、frame の
     // 正本 (bridge の累積) を反映してから double buffer を進める。
     system_->mouse()->injectScroll(
@@ -164,6 +186,7 @@ void ErgoInputBridge::endFrame() noexcept {
     pending_.deltaXPixels = 0.0;
     pending_.deltaYPixels = 0.0;
     pending_.scrollSteps = 0.0;
+    pending_.pressed=false;pending_.released=false;pending_.cancelled=false;
     if (system_ != nullptr && system_->mouse() != nullptr) {
         // 次 frame の read buffer へ古い scroll が持ち越されないようにする
         // (DoubleBuffer::swap は write buffer へ現在値を複製する)。
@@ -197,6 +220,7 @@ void ErgoInputBridge::clearInjectedState() noexcept {
         return;
     }
     buttons_ = 0;
+    pending_.down=false;pending_.cancelled=true;
     if (::ergo::input::MouseDevice* const mouse = system_->mouse();
         mouse != nullptr) {
         mouse->injectButtonState(0);
@@ -245,6 +269,15 @@ void ErgoInputBridge::mouseButtonCallback(
     const std::optional<std::uint8_t> bit = toErgoButtonBit(button);
     if (!bit.has_value()) {
         return;
+    }
+    if(button==GLFW_MOUSE_BUTTON_LEFT) {
+        glfwGetCursorPos(window,&bridge->pending_.xPixels,&bridge->pending_.yPixels);
+        if(action==GLFW_PRESS) {
+            bridge->pending_.down=true;bridge->pending_.pressed=true;
+            glfwGetCursorPos(window,&bridge->pending_.pressXPixels,&bridge->pending_.pressYPixels);
+        } else if(action==GLFW_RELEASE) {
+            bridge->pending_.down=false;bridge->pending_.released=true;
+        }
     }
     const auto mask = static_cast<std::uint8_t>(1U << *bit);
     if (action == GLFW_PRESS) {

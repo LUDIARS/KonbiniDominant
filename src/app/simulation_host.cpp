@@ -4,6 +4,7 @@
 #include <utility>
 
 #include "konbini/city/city_manifest_projection.h"
+#include "konbini/city/grid_town.h"
 
 // @implements spec/plan/tasks/first-playable.md Simulation
 
@@ -13,7 +14,8 @@ SimulationHost::SimulationHost(
     const std::filesystem::path& contentFile,
     const city::ICityGenerator& cityGenerator)
     : content_(sim::loadFirstPlayableContent(contentFile)),
-      city_(cityGenerator.generateFirstPlayableCity(identities_.facilities())) {
+      city_(content_.phase1 ? city::makeGridTown(identities_.facilities())
+                           : cityGenerator.generateFirstPlayableCity(identities_.facilities())) {
     if (city_.manifest.facilities.empty()) {
         throw std::runtime_error("generated city has no facilities");
     }
@@ -22,6 +24,19 @@ SimulationHost::SimulationHost(
     latestSnapshot_ = snapshot();
 }
 
+void SimulationHost::retry() {
+    if (simulation_->state().phase != sim::GamePhase::Result) {
+        throw std::logic_error("retry is available only after a match ends");
+    }
+    sim::FirstPlayableSimulation replacement(
+        content_, city::projectFacilityTable(city_.manifest), identities_);
+    auto firstSnapshot = sim::makeRenderSnapshot(
+        replacement.state(), content_, replacement.facilities(), replacement.stores(),
+        replacement.populationCells(), replacement.economy(), {});
+    // Construct both replacements before releasing the previous match.
+    simulation_ = std::move(replacement);
+    latestSnapshot_ = std::move(firstSnapshot);
+}
 const sim::FirstPlayableContent& SimulationHost::content() const noexcept {
     return content_;
 }

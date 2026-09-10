@@ -1,5 +1,10 @@
 # Phase 3 — 4次元的侵略
 
+> v4実装: ユーザーの判断委任とPhase 2–4実装指示に基づく具体値・暫定決定は
+> [full-campaign-baseline](full-campaign-baseline.md)を正本とする。
+> 下記の原案に残るTBDのうち実装済み項目は同baselineで解決し、
+> 追加の11種スキルは[skill-upgrades](skill-upgrades.md)で定義する。
+
 ## 目的
 
 別次元へ出店し、相手次元のstoreをanti-storeへ反転させ、同一位置で対消滅させる。

@@ -32,6 +32,7 @@ float checkedFloat(const double value) {
 // segment 依存に分岐しないようにする。winding は +Y から見て CCW で、
 // vertex normal (0, 1, 0) と表裏が一致する。
 // @implements spec/interface/pictor-rendering.md Game-owned render domain
+// @implements spec/feature/full-campaign-baseline.md Vertical presentation
 ZocOverlayGeometry buildZocOverlayGeometry(
     const std::span<const sim::RenderStore> stores,
     const std::uint32_t segmentCount, const float groundYMeters) {
@@ -64,16 +65,19 @@ ZocOverlayGeometry buildZocOverlayGeometry(
             !sim::isFinite(store.positionMeters) ||
             !std::isfinite(store.zocRadiusMeters) ||
             store.zocRadiusMeters <= 0.0 ||
-            !sim::isFirstPlayableChainId(store.chain)) {
+            !sim::isSimulationChainId(store.chain)) {
             throw std::invalid_argument(
                 "ZOC overlay received an invalid render store");
         }
         const WorldColor color = chainColor(store.chain, 0.24F);
+        // @implements spec/feature/full-campaign-baseline.md Vertical presentation
+        const float overlayYMeters = checkedFloat(
+            store.positionMeters.y + static_cast<double>(groundYMeters));
         const std::uint32_t base =
             static_cast<std::uint32_t>(geometry.vertices.size());
         geometry.vertices.push_back({
             .position = {checkedFloat(store.positionMeters.x),
-                         groundYMeters,
+                         overlayYMeters,
                          checkedFloat(store.positionMeters.z)},
             .normal = {0.0F, 1.0F, 0.0F},
             .color = color,
@@ -88,7 +92,7 @@ ZocOverlayGeometry buildZocOverlayGeometry(
                     checkedFloat(store.positionMeters.x +
                                  std::cos(angle) *
                                      store.zocRadiusMeters),
-                    groundYMeters,
+                    overlayYMeters,
                     checkedFloat(store.positionMeters.z +
                                  std::sin(angle) *
                                      store.zocRadiusMeters),

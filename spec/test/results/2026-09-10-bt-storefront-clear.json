@@ -1,0 +1,78 @@
+{
+  "sourceRevision": "c50abfe696b7557c259697c160f79a3f2a085ca8",
+  "mainRevision": "467851195e78d994107aaa56937806c0e08beab2",
+  "preMerge": true,
+  "passed": true,
+  "llmCalls": 0,
+  "evidence": "build/test-runs/20260909T215907-305354Z",
+  "run": 1,
+  "configuredTimeScale": 100,
+  "gameSeconds": 546.1,
+  "wallSecondsIncludingStartup": 10.6265,
+  "effectiveSpeedIncludingStartup": 51.39039194466664,
+  "phaseSequence": [
+    1,
+    3,
+    4,
+    5,
+    6,
+    2
+  ],
+  "result": {
+    "event": "resultPresented",
+    "tick": 5490,
+    "run": 1,
+    "phase": 2,
+    "outcome": 1,
+    "elapsedTicks": 5461,
+    "ticksPerSecond": 10,
+    "endReason": 5,
+    "btNode": "expand_stores",
+    "stores": 103,
+    "cash": 2090696,
+    "foreignDestroyed": 2,
+    "framesPresented": 208,
+    "wallSeconds": 10.6265
+  },
+  "screenshot": {
+    "width": 1280,
+    "height": 720,
+    "humanVisualReview": false
+  },
+  "screenshotSha256": "d678e6d112f2318fcd150282cb04208b7985b1d4b2f80527871229d06b596c7a",
+  "exitCode": 0,
+  "runtimeArtifacts": [
+    {
+      "path": "konbini_dominant.exe",
+      "sha256": "b875cae00c9f8d8eb9673c93e4e6b3a170ab7ee1ec50a5ff8837dcc7fbcc061c"
+    },
+    {
+      "path": "data/content/first-playable.json",
+      "sha256": "cd3cb46d32ed5024a69d05392991230de5d3094e6f58a0f66d44ec8d23ada104"
+    },
+    {
+      "path": "shaders/konbini_world.vert.spv",
+      "sha256": "374d39b94717bb9a8caaa7c3755452718b761734aeca47df84bb4d5948df0bfd"
+    },
+    {
+      "path": "shaders/konbini_world.frag.spv",
+      "sha256": "6620c37f7c1181d0b1a33d73eb52d946d5a686c1fbac55b648174e132e82923f"
+    },
+    {
+      "path": "shaders/konbini_composite.vert.spv",
+      "sha256": "cf803532719493c9569886dc3d6f13fdb63fccee1171aeeadfc8bbfca7ce883c"
+    },
+    {
+      "path": "shaders/konbini_composite.frag.spv",
+      "sha256": "56ac337f72fc53403b0b1e3daa8d831eab971ceb253f199f8432bef74d294bb6"
+    },
+    {
+      "path": "shaders/konbini_hud.vert.spv",
+      "sha256": "8fb87847dcbe763c458b522bed00841271e71ba5e078cd4aeb05e55916324bc0"
+    },
+    {
+      "path": "shaders/konbini_hud.frag.spv",
+      "sha256": "721b020704e1dacc21db51bdac9c18f8672c9c8f355f604473abafb6974707eb"
+    }
+  ]
+}

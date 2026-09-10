@@ -15,6 +15,7 @@ struct StoreMarkerSpec {
     double halfWidthMeters = 3.0;
     double heightMeters = 3.6;
     float alpha = 1.0F;
+    double gridCellMeters = 0.0;
 };
 
 [[nodiscard]] StoreMarkerSpec defaultStoreMarkerSpec() noexcept;

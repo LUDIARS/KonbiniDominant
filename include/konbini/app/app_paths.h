@@ -35,16 +35,15 @@ struct AppPathOverrides {
 // 環境変数 `KONBINI_CONTENT_FILE` / `KONBINI_SHADER_DIR` を読む。
 [[nodiscard]] AppPathOverrides readAppPathOverridesFromEnvironment();
 
-// 既定値は build が生成した `${CMAKE_BINARY_DIR}/shaders` と repository の
-// content で、compile definition として埋め込む。Ergo の
-// `resolve_shader_dir()` のような上方探索 fallback は使わない — 別 build の
-// 古い SPIR-V を拾っても起動してしまうため。
+// 明示された既定パスに環境変数の上書きを適用する。
+// 上方探索 fallback は使わない。別 build の古い資産を拾わないため。
 [[nodiscard]] AppPaths resolveAppPaths(
     const AppPathOverrides& overrides,
     const std::filesystem::path& defaultContentFile,
     const std::filesystem::path& defaultShaderDirectory);
 
-// compile definition の既定値を使う版。
+// 実行ファイル隣の shaders / data/content を既定値に使う版。
+// 配布フォルダ全体を移動しても、起動時の cwd に依存しない。
 [[nodiscard]] AppPaths resolveAppPaths(const AppPathOverrides& overrides);
 
 // content / shader が揃っているかを検証する。欠落は `std::runtime_error` で、

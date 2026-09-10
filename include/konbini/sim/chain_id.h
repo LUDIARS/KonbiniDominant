@@ -17,11 +17,16 @@ enum class ChainId : std::uint8_t {
     Losan = 0,
     Famoma = 1,
     SebanIleban = 2,
+    Aion = 3,
 };
 
 // New Game で選択可能な chain 数 (先頭 3 値)。boss 等を enum へ追加しても
 // この値は増やさない。
 inline constexpr std::size_t kFirstPlayableChainCount = 3;
+inline constexpr std::size_t kSimulationChainCount = 4;
+[[nodiscard]] constexpr bool isSimulationChainId(ChainId id) noexcept {
+    return static_cast<std::size_t>(id) < kSimulationChainCount;
+}
 
 // @implements spec/feature/chain-selection.md 共通
 [[nodiscard]] constexpr bool isFirstPlayableChainId(const ChainId id) noexcept {
@@ -50,6 +55,7 @@ inline constexpr std::size_t kFirstPlayableChainCount = 3;
             return "famoma";
         case ChainId::SebanIleban:
             return "seban_ileban";
+        case ChainId::Aion: return "aion";
     }
     return {};
 }

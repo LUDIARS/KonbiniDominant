@@ -36,7 +36,15 @@ struct PlaceStoreCommand {
     std::uint32_t verticalSlot = 0;
 };
 
-using PlayerCommand = std::variant<SelectChainCommand, PlaceStoreCommand>;
+enum class CampaignAction : std::uint8_t { ImageStrategy, InvertStore, ViewDimension, Escape, ChooseSkill };
+struct CampaignCommand {
+    CommandOrder order{};
+    ChainId chain = ChainId::Losan;
+    CampaignAction action = CampaignAction::ImageStrategy;
+    FacilityId facilityId{};
+    std::uint32_t verticalSlot = 0, dimension = 0;
+};
+using PlayerCommand = std::variant<SelectChainCommand, PlaceStoreCommand, CampaignCommand>;
 
 [[nodiscard]] const CommandOrder& commandOrder(const PlayerCommand& command) noexcept;
 [[nodiscard]] bool commandLess(const PlayerCommand& left,

@@ -2,6 +2,8 @@
 
 #include <cstdint>
 #include <optional>
+#include <span>
+#include "konbini/render/store_construction_visual.h"
 #include <vector>
 
 #include "konbini/render/selection_overlay_geometry.h"
@@ -28,6 +30,9 @@ struct WorldDrawListSpec {
     SelectionOverlaySpec selection;
     std::uint32_t zocSegmentCount = 48;
     float zocGroundYMeters = 0.03F;
+    bool gridTown = false;
+    bool stackView = false;
+    std::uint32_t viewedFloor = 0;
 };
 
 [[nodiscard]] WorldDrawListSpec defaultWorldDrawListSpec() noexcept;
@@ -58,6 +63,7 @@ struct WorldDrawList {
 [[nodiscard]] WorldDrawList buildWorldDrawList(
     const sim::RenderSnapshot& snapshot,
     std::optional<sim::FacilityId> selectedFacility,
-    const WorldDrawListSpec& spec);
+    const WorldDrawListSpec& spec,
+    std::span<const StoreConstructionVisual> construction = {});
 
 }  // namespace konbini::render

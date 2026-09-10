@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": 3,
+  "phase1": {
+    "durationTicks": 3000,
+    "captureDelayTicks": 30,
+    "dominationPercent": 60,
+    "aiOpeningPeriodTicks": 60,
+    "aiPeriodTicks": 20,
+    "aiRampTicks": 2400,
+    "aiTriangleScore": 250,
+    "aiEncirclementScore": 1000,
+    "aiExposurePenalty": 1500,
+    "triangleMaxEdgeMeters": 90,
+    "triangleMinAreaSquareMeters": 20,
+    "triangleInfluence": 3,
+    "triangleRevenuePermille": 1500,
+    "destructionPopulationLossPercent": 20,
+    "populationRecoveryPerPeriod": 2
+  },
+  "simulation": {
+    "ticksPerSecond": 10,
+    "economyPeriodTicks": 10,
+    "randomAlgorithm": "splitmix64-counter-v1"
+  },
+  "population": {
+    "basePopulation": 50,
+    "randomPopulationCount": 101,
+    "randomStream": "FP_POPULATION"
+  },
+  "residentPresentation": {
+    "samplesPerPopulationCell": 1,
+    "walkingSpeedMetersPerSecond": 1.5,
+    "homeDwellTicks": 30,
+    "storeDwellTicks": 40,
+    "speechDurationTicks": 30,
+    "bubbleHeightMeters": 2.2,
+    "bubbleMaxDistanceMeters": 220,
+    "remarks": [
+      "NICE AND CLOSE",
+      "EASY TO REACH",
+      "HANDY LOCATION"
+    ]
+  },
+  "startingStoreEquivalent": 5,
+  "chains": [
+    {
+      "id": "losan",
+      "displayName": "ローサン",
+      "buildCostCredits": 1000,
+      "zocRadiusMeters": 18,
+      "revenueMilliCreditsPerPerson": 500
+    },
+    {
+      "id": "famoma",
+      "displayName": "ファモマ",
+      "buildCostCredits": 1250,
+      "zocRadiusMeters": 24,
+      "revenueMilliCreditsPerPerson": 450
+    },
+    {
+      "id": "seban_ileban",
+      "displayName": "セバンイレバン",
+      "buildCostCredits": 800,
+      "zocRadiusMeters": 18,
+      "revenueMilliCreditsPerPerson": 400
+    }
+  ]
+}

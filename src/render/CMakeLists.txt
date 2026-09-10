@@ -1,10 +1,19 @@
 add_library(
   konbini_render_domain
   STATIC
+    vector_font.cpp
+    grid_ground.cpp
+    grid_store_connections.cpp
+    grid_store_geometry.cpp
+    grid_store_sign.cpp
     bitmap_font.cpp
     facility_picker.cpp
+    facility_display_bounds.cpp
     facility_world_mesh.cpp
     hud_text_geometry.cpp
+    aion_warning_geometry.cpp
+    skill_pulse_geometry.cpp
+    campaign_floor_view.cpp
     isometric_camera.cpp
     landing_effect_geometry.cpp
     resident_primitive_geometry.cpp
@@ -19,11 +28,13 @@ add_library(
     storefront_geometry.cpp
     storefront_geometry.h
     store_placement_animation.cpp
+    animated_store_geometry.cpp
     visia.cpp
     visia_geometry.cpp
     visia_geometry_support.h
     world_box_geometry.h
     world_draw_list.cpp
+    phase1_overlay_geometry.cpp
     world_palette.cpp
     zoc_overlay_geometry.cpp
     "${PROJECT_SOURCE_DIR}/include/konbini/render/bitmap_font.h"

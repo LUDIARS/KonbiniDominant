@@ -1,5 +1,16 @@
 # Game flow
 
+> v4実装: ユーザーの判断委任とPhase 2–4実装指示に基づく具体値・暫定決定は
+> [full-campaign-baseline](full-campaign-baseline.md)を正本とする。
+> 下記の原案に残るTBDのうち実装済み項目は同baselineで解決し、
+> 追加の11種スキルは[skill-upgrades](skill-upgrades.md)で定義する。
+
+## Phase 1 単独版 (2026-09-09)
+
+今回の出荷範囲は `Chain Select → Phase1 → Result → Chain Select`。
+勝敗・5分制限・再挑戦は [phase-1-game-loop.md](phase-1-game-loop.md) が正本。
+Title / Continue / Phase 2 以降は下記の将来仕様であり、今回の実装には含めない。
+
 ## 画面
 
 REQ-FLOW-01:

@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "json_document.h"
+#include "campaign_content_parser.h"
 
 // @implements spec/data/content-schema.md First playable profile v2
 
@@ -93,6 +94,34 @@ double requirePositiveNumber(const json::Value& value,
                                     " must be a positive finite number");
     }
     return value.number();
+}
+
+Phase1Content parsePhase1(const json::Value& value) {
+    const Object& object = value.object();
+    requireOnlyKeys(object, {
+        "durationTicks", "captureDelayTicks", "dominationPercent", "aiPeriodTicks",
+        "aiOpeningPeriodTicks", "aiRampTicks", "aiTriangleScore", "aiEncirclementScore",
+        "aiExposurePenalty", "triangleMaxEdgeMeters", "triangleMinAreaSquareMeters",
+        "triangleInfluence", "triangleRevenuePermille", "destructionPopulationLossPercent",
+        "populationRecoveryPerPeriod"});
+    Phase1Content content;
+    content.durationTicks = requirePositiveUint32(requireField(object, "durationTicks"), "durationTicks");
+    content.captureDelayTicks = requirePositiveUint32(requireField(object, "captureDelayTicks"), "captureDelayTicks");
+    content.dominationPercent = requirePositiveUint32(requireField(object, "dominationPercent"), "dominationPercent");
+    content.aiPeriodTicks = requirePositiveUint32(requireField(object, "aiPeriodTicks"), "aiPeriodTicks");
+    content.aiOpeningPeriodTicks = requirePositiveUint32(requireField(object, "aiOpeningPeriodTicks"), "aiOpeningPeriodTicks");
+    content.aiRampTicks = requirePositiveUint32(requireField(object, "aiRampTicks"), "aiRampTicks");
+    content.aiTriangleScore = requirePositiveUint32(requireField(object, "aiTriangleScore"), "aiTriangleScore");
+    content.aiEncirclementScore = requirePositiveUint32(requireField(object, "aiEncirclementScore"), "aiEncirclementScore");
+    content.aiExposurePenalty = requirePositiveUint32(requireField(object, "aiExposurePenalty"), "aiExposurePenalty");
+    content.triangleMaxEdgeMeters = requirePositiveNumber(requireField(object, "triangleMaxEdgeMeters"), "triangleMaxEdgeMeters");
+    content.triangleMinAreaSquareMeters = requirePositiveNumber(requireField(object, "triangleMinAreaSquareMeters"), "triangleMinAreaSquareMeters");
+    content.triangleInfluence = requirePositiveUint32(requireField(object, "triangleInfluence"), "triangleInfluence");
+    content.triangleRevenuePermille = requirePositiveUint32(requireField(object, "triangleRevenuePermille"), "triangleRevenuePermille");
+    content.destructionPopulationLossPercent = requireUint32(requireField(object, "destructionPopulationLossPercent"), "destructionPopulationLossPercent");
+    content.populationRecoveryPerPeriod = requirePositiveUint32(requireField(object, "populationRecoveryPerPeriod"), "populationRecoveryPerPeriod");
+    validatePhase1Content(content);
+    return content;
 }
 
 SimulationContent parseSimulation(const json::Value& value) {
@@ -323,7 +352,41 @@ void validateResidentPresentationContent(
 
 // @implements spec/data/content-schema.md Validation
 void validateFirstPlayableContent(const FirstPlayableContent& content) {
-    requireBaselineV2(content);
+    if (content.contentVersion == 2) {
+        if (content.phase1 || content.campaign) { throw std::invalid_argument("v2 cannot contain later rules"); }
+        requireBaselineV2(content);
+        return;
+    }
+    if (content.schemaVersion != 1 || (content.contentVersion != 3 && content.contentVersion != 4) || !content.phase1) {
+        throw std::invalid_argument("unsupported profile or missing phase1 rules");
+    }
+    if ((content.contentVersion == 4) != content.campaign.has_value()) {
+        throw std::invalid_argument("campaign is required only for content v4");
+    }
+    if (content.campaign) { validateCampaignContent(*content.campaign); }
+    validatePhase1Content(*content.phase1);
+    validateResidentPresentationShape(content.residentPresentation);
+    if (content.simulation.ticksPerSecond != 10 ||
+        content.simulation.economyPeriodTicks == 0 ||
+        content.simulation.economyPeriodTicks > content.phase1->durationTicks ||
+        content.simulation.randomAlgorithm != "splitmix64-counter-v1" ||
+        content.population.basePopulation == 0 ||
+        content.population.randomPopulationCount == 0 ||
+        static_cast<std::uint64_t>(content.population.basePopulation) +
+            content.population.randomPopulationCount - 1 > std::numeric_limits<std::uint32_t>::max() ||
+        content.population.randomStream != "FP_POPULATION" ||
+        content.startingStoreEquivalent != 5) {
+        throw std::invalid_argument("invalid phase1 simulation/population profile");
+    }
+    for (std::size_t index = 0; index < kFirstPlayableChainCount; ++index) {
+        const auto& chain = content.chain(static_cast<ChainId>(index));
+        if (chain.displayName.empty() || chain.buildCostCredits <= 0 ||
+            chain.buildCostCredits > std::numeric_limits<std::int64_t>::max() / content.startingStoreEquivalent ||
+            !std::isfinite(chain.zocRadiusMeters) || chain.zocRadiusMeters <= 0.0 ||
+            chain.zocRadiusMeters > 1000000.0 || chain.revenueMilliCreditsPerPerson <= 0) {
+            throw std::invalid_argument("invalid phase1 chain profile");
+        }
+    }
 }
 
 // @implements spec/data/content-schema.md First playable profile v2
@@ -338,7 +401,8 @@ FirstPlayableContent parseFirstPlayableContent(const std::string_view input) {
                      "population",
                      "residentPresentation",
                      "startingStoreEquivalent",
-                     "chains"});
+                     "chains",
+                     "phase1", "campaign"});
 
     FirstPlayableContent content;
     content.schemaVersion =
@@ -368,6 +432,10 @@ FirstPlayableContent parseFirstPlayableContent(const std::string_view input) {
         content.chains[index] = std::move(chain);
     }
 
+    if (root.contains("phase1")) {
+        content.phase1 = parsePhase1(requireField(root, "phase1"));
+    }
+    if (root.contains("campaign")) { content.campaign = parseCampaignContent(requireField(root, "campaign")); }
     validateFirstPlayableContent(content);
     return content;
 }

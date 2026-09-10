@@ -5,6 +5,7 @@
 #include <stdexcept>
 
 #include "konbini/city/city_manifest_canonical.h"
+#include "konbini/city/grid_town.h"
 
 // @implements spec/interface/figmentum-city-generation.md Error contract
 
@@ -38,7 +39,7 @@ void validateCityManifest(const CityManifest& manifest) {
             kSupportedFigmentumPlanSchemaVersion ||
         manifest.generatorRecipeVersion !=
             kSupportedFigmentumRecipeVersion ||
-        manifest.generatorRevision != kFigmentumRevision) {
+        (manifest.generatorRevision != kFigmentumRevision && !isGridTown(manifest))) {
         throw std::invalid_argument("unsupported Figmentum city-plan revision");
     }
     if (manifest.seed != kFirstPlayableWorldSeed) {
@@ -109,7 +110,10 @@ void validateCityManifest(const CityManifest& manifest) {
                 "all non-station first-playable facilities must be buildable");
         }
     }
-    if (stationCount != 1) {
+    if (isGridTown(manifest)) {
+        if (stationCount != 0) throw std::invalid_argument("grid town has no station building");
+        validateGridTownCells(manifest);
+    } else if (stationCount != 1) {
         throw std::invalid_argument(
             "CityManifest must contain exactly one station facility");
     }

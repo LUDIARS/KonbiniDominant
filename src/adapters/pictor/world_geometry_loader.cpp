@@ -1,6 +1,7 @@
 #include "konbini/adapters/pictor/world_geometry_loader.h"
 
 #include <stdexcept>
+#include "konbini/city/grid_town.h"
 
 #include "konbini/render/facility_world_mesh.h"
 
@@ -13,6 +14,11 @@ WorldGeometryLoadReport loadCityGeometry(
     if (!cache.isInitialized()) {
         throw std::logic_error(
             "world geometry cache must be initialized before loading a city");
+    }
+    if (city::isGridTown(city.manifest)) {
+        city::validateCityManifest(city.manifest);
+        if (!city.geometry.empty()) throw std::invalid_argument("grid town must not contain buildings");
+        return {};
     }
     if (city.geometry.empty()) {
         throw std::invalid_argument(

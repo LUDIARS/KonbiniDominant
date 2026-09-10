@@ -6,6 +6,12 @@ endif()
 
 project(KonbiniDominant VERSION 0.1.0 LANGUAGES CXX)
 
+set(KONBINI_MOBILE OFF)
+if(ANDROID OR CMAKE_SYSTEM_NAME STREQUAL "iOS")
+  set(KONBINI_MOBILE ON)
+  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+endif()
+
 include(FetchContent)
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/VerifyExactGitSource.cmake")
 
@@ -25,6 +31,13 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+if(MSVC)
+  # Match UTF-8 source encoding in game and pinned dependency translation units.
+  add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/utf-8>")
+  # The portable ZIP carries no developer-machine CRT dependency.
+  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endif()
+
 function(konbini_enable_warnings target)
   if(MSVC)
     target_compile_options(${target} PRIVATE /W4 /permissive- /utf-8)
@@ -43,7 +56,11 @@ if(KONBINI_BUILD_RENDER)
     "771b027f0e5492015b27f54c3bab1fd5c1ae4790"
   )
 
-  find_package(Vulkan REQUIRED COMPONENTS glslc)
+  if(KONBINI_MOBILE)
+    include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/MobileVulkan.cmake")
+  else()
+    find_package(Vulkan REQUIRED COMPONENTS glslc)
+  endif()
 
   set(PICTOR_BUILD_TESTS OFF CACHE BOOL "" FORCE)
   set(PICTOR_BUILD_DEMO OFF CACHE BOOL "" FORCE)
@@ -76,9 +93,10 @@ if(KONBINI_BUILD_RENDER)
   # 使うので有効にする (spec/interface/ergo-runtime.md#利用候補module)。
   set(ERGO_BUILD_INPUT ON CACHE BOOL "" FORCE)
   set(ERGO_BUILD_FRAME ON CACHE BOOL "" FORCE)
+  set(ERGO_BUILD_PARTICLE ON CACHE BOOL "" FORCE)
+  set(ERGO_PARTICLE_HAS_RENDERER OFF CACHE BOOL "" FORCE)
   foreach(
     ergo_module
-    PARTICLE
     GPU_PARTICLE
     BIND
     ACTOR
@@ -134,6 +152,9 @@ if(KONBINI_BUILD_RENDER)
 endif()
 
 add_subdirectory(src)
+if(KONBINI_MOBILE)
+  add_subdirectory(mobile)
+endif()
 
 if(KONBINI_BUILD_TESTS)
   enable_testing()

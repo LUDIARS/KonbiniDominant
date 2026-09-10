@@ -1,5 +1,13 @@
 # Opponent AI
 
+## Phase 1 実装 baseline (2026-09-09)
+
+公開配置と人口から、未獲得顧客、三角形形成、包囲、敵三角形への露出を評価する。
+同スコアは stable FacilityId 順。既存一区画の候補を走査する方式で、
+将来の spatial index / seeded tie-break は今回の必須条件にしない。
+残り2社はプレイヤーと同じ資金・配置検証を通る。出店は最初の4分で
+6秒間隔から2秒間隔へ短縮する。待ち時刻は simulation state に保持する。
+
 ## Baseline
 
 BASE-AI-01: single-playerで、chain select後の残り2chainをAIが操作する。

@@ -20,13 +20,14 @@ struct SelectionOutcome {
 };
 
 // 「1 回目の click で選択、同じ有効候補を再 click で配置確定」という 2 段
-// 操作の状態だけを持つ。picking (ray 交差) は `render::pickFacility` の、
+// 操作の状態を持つ。Phase 1のグリッドはplaceImmediatelyで1回配置する。
+// picking (ray 交差) は `render::pickFacility` の、
 // 配置可否の正本は simulation の責務で、ここでは重複させない。
 class SelectionController {
 public:
     [[nodiscard]] SelectionOutcome onPrimaryClick(
         const std::optional<render::FacilityPick>& pick,
-        const sim::RenderSnapshot& snapshot);
+        const sim::RenderSnapshot& snapshot, bool placeImmediately = false);
 
     // 右 click / Esc。
     void clear() noexcept;

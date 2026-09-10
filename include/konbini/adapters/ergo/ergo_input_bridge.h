@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include "konbini/adapters/ergo/native_touch_bridge.h"
 
 struct GLFWwindow;
 
@@ -18,12 +19,10 @@ namespace konbini::adapters::ergo {
 // で上書きするため、1 frame 内に複数の move callback が来ると最後の 1 件しか
 // 残らない。frame 単位の累積が要る drag では使えないので、pointer の位置 /
 // delta / scroll は bridge 側が正本を持ち、Ergo へは真値の反映として inject
-// する。button / key の状態と edge 判定は Ergo の device が正本。
-struct PointerFrame {
-    double xPixels = 0.0;
-    double yPixels = 0.0;
-    double deltaXPixels = 0.0;
-    double deltaYPixels = 0.0;
+// する。一次ポインターの押下・解放は短いタップを残すため bridge が保持し、
+// その他の button / key の状態と edge 判定は Ergo の device が正本。
+struct PointerFrame : app::PointerSample {
+    double clientWidth = 1, clientHeight = 1, uiScale = 1;
     double scrollSteps = 0.0;
     bool insideWindow = false;
 };
@@ -88,6 +87,7 @@ private:
 
     GLFWwindow* window_ = nullptr;
     ::ergo::input::InputSystem* system_ = nullptr;
+    NativeTouchBridge touch_;
     std::uint8_t buttons_ = 0;
     PointerFrame pending_;
     PointerFrame frame_;

@@ -14,6 +14,7 @@ namespace konbini::app {
 // balance 値は content 側 (`data/content/first-playable.json`) が正本。
 struct AppRunnerConfig {
     AppPaths paths;
+    // Default desktop client area: 720p landscape.
     std::uint32_t windowWidth = 1280;
     std::uint32_t windowHeight = 720;
     std::string windowTitle = "Konbini Dominant";

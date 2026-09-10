@@ -1,5 +1,14 @@
 # Save format
 
+## Phase 1 canonical snapshot v2 (2026-09-09)
+
+content v3 の canonical snapshot は schema 2。試合経過、結果と理由、
+各社の初出店・次のAI行動時刻・破壊数、調整値、人口capacity、収益倍率、
+包囲対象・三角形ID・経過時間を含める。三角形自体は active store から再計算する。
+履歴 content v2 の canonical bytes は schema 1 のまま維持する。
+これは状態比較用 snapshot であり、下記のファイルsave/loadを実装した意味ではない。
+
+
 ## 方針
 
 mesh、Pictor ObjectId、GPU bufferを保存しない。保存の正本は
@@ -91,3 +100,13 @@ ZOC radius、revenue rate、Triangle membershipはcontentと配置から再計�
 - original saveを上書きせず、新versionとして書き出す
 - field欠落を無言defaultで補わない
 - Figmentum recipeの破壊的変更はmanifest migrationまたは旧generator保持が必要
+
+## v4 campaign canonical snapshot
+
+Content v4 uses canonical schema 3. It includes all dimension seeds/states,
+vertical slots, faith, anti flags, Aion layout history, threats, action timers,
+four-faction economy, skill ranks/XP/offers/pulse timers and all rule values.
+The currently viewed dimension is presentation navigation and is deliberately
+excluded, so changing only the camera's world view does not change replay identity.
+Historical v2/v3 encodings remain schema 1/2. This serialization supports hashes
+and replay inspection; a save-file load UI is not added by this change.

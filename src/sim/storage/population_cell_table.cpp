@@ -25,7 +25,7 @@ namespace {
     if (!store.has_value()) {
         return true;
     }
-    return store->isValid() && isFirstPlayableChainId(*chain);
+    return store->isValid() && isSimulationChainId(*chain);
 }
 
 }  // namespace
@@ -34,7 +34,8 @@ namespace {
 void PopulationCellTable::append(const PopulationCellRow& value) {
     if (!value.id.isValid() || !value.facilityId.isValid() ||
         !isFinite(value.positionMeters) ||
-        !isValidAssignment(value.assignedStore, value.preferredChain)) {
+        !isValidAssignment(value.assignedStore, value.preferredChain) ||
+        (value.capacity != 0 && value.population > value.capacity)) {
         throw std::invalid_argument("invalid population cell row");
     }
 
@@ -44,6 +45,7 @@ void PopulationCellTable::append(const PopulationCellRow& value) {
     reserveForAppend(dimensions_, nextSize);
     reserveForAppend(positionsMeters_, nextSize);
     reserveForAppend(populations_, nextSize);
+    reserveForAppend(capacities_, nextSize);
     reserveForAppend(assignedStores_, nextSize);
     reserveForAppend(preferredChains_, nextSize);
     reserveForAppend(hasAssignment_, nextSize);
@@ -53,6 +55,7 @@ void PopulationCellTable::append(const PopulationCellRow& value) {
     dimensions_.push_back(value.dimension);
     positionsMeters_.push_back(value.positionMeters);
     populations_.push_back(value.population);
+    capacities_.push_back(value.capacity == 0 ? value.population : value.capacity);
     assignedStores_.push_back(value.assignedStore.value_or(StoreId{}));
     preferredChains_.push_back(value.preferredChain.value_or(ChainId::Losan));
     hasAssignment_.push_back(value.assignedStore.has_value() ? 1U : 0U);
@@ -81,6 +84,7 @@ PopulationCellRow PopulationCellTable::row(const std::size_t index) const {
         .preferredChain =
             hasAssignment ? std::optional<ChainId>(preferredChains_[index])
                           : std::nullopt,
+        .capacity = capacities_[index],
     };
 }
 
@@ -100,4 +104,11 @@ void PopulationCellTable::assign(const std::size_t denseIndex,
     hasAssignment_[denseIndex] = store.has_value() ? 1U : 0U;
 }
 
+void PopulationCellTable::setPopulation(const std::size_t denseIndex,
+                                        const std::uint32_t population) {
+    if (denseIndex >= size() || population > capacities_[denseIndex]) {
+        throw std::invalid_argument("population exceeds cell capacity");
+    }
+    populations_[denseIndex] = population;
+}
 }  // namespace konbini::sim

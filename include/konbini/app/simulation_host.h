@@ -33,6 +33,8 @@ public:
 
     void submit(sim::PlayerCommand command);
     [[nodiscard]] sim::CompletedTick tick();
+    // Reuse immutable geometry; reset the complete authoritative match.
+    void retry();
 
     // 未 tick でも描ける現在状態の snapshot。tick 後は `CompletedTick` の
     // snapshot が正本になる。

@@ -13,9 +13,10 @@ namespace konbini::sim {
 // @implements spec/data/world-state.md StoreTable
 void StoreTable::append(const StoreRow& value) {
     if (!value.id.isValid() || !value.facilityId.isValid() ||
-        !isFirstPlayableChainId(value.chain) ||
+        !isSimulationChainId(value.chain) ||
         !isFinite(value.positionMeters) || !std::isfinite(value.zocRadiusMeters) ||
-        value.zocRadiusMeters <= 0.0) {
+        value.zocRadiusMeters <= 0.0 || value.revenuePermille < 1000 ||
+        value.revenuePermille > 10000 || value.verticalSlot >= 256 || value.faith > 100) {
         throw std::invalid_argument("invalid store row");
     }
     // sparse slot は entity index 単位なので、generation 違いでも占有済みなら
@@ -37,6 +38,10 @@ void StoreTable::append(const StoreRow& value) {
     reserveForAppend(zocRadiiMeters_, nextSize);
     reserveForAppend(capturedPopulations_, nextSize);
     reserveForAppend(isActive_, nextSize);
+    reserveForAppend(revenuePermille_, nextSize);
+    reserveForAppend(verticalSlots_, nextSize);
+    reserveForAppend(faiths_, nextSize);
+    reserveForAppend(antiStores_, nextSize);
     if (sparseIndices_.size() <= sparseIndex) {
         sparseIndices_.resize(sparseIndex + 1, kMissing);
     }
@@ -50,6 +55,10 @@ void StoreTable::append(const StoreRow& value) {
     zocRadiiMeters_.push_back(value.zocRadiusMeters);
     capturedPopulations_.push_back(value.capturedPopulation);
     isActive_.push_back(value.isActive ? 1U : 0U);
+    revenuePermille_.push_back(value.revenuePermille);
+    verticalSlots_.push_back(value.verticalSlot);
+    faiths_.push_back(value.faith);
+    antiStores_.push_back(value.isAntiStore ? 1U : 0U);
     sparseIndices_[sparseIndex] = denseIndex;
 }
 
@@ -72,6 +81,9 @@ StoreRow StoreTable::row(const std::size_t index) const {
         .zocRadiusMeters = zocRadiiMeters_[index],
         .capturedPopulation = capturedPopulations_[index],
         .isActive = isActive_[index] != 0,
+        .revenuePermille = revenuePermille_[index],
+        .verticalSlot = verticalSlots_[index], .faith = faiths_[index],
+        .isAntiStore = antiStores_[index] != 0,
     };
 }
 
@@ -122,4 +134,20 @@ void StoreTable::addCapturedPopulation(const std::size_t denseIndex,
     capturedPopulations_[denseIndex] += population;
 }
 
+void StoreTable::setRevenuePermille(const std::size_t denseIndex,
+                                   const std::uint32_t value) {
+    if (denseIndex >= size() || value < 1000 || value > 10000) {
+        throw std::invalid_argument("invalid store revenue multiplier");
+    }
+    revenuePermille_[denseIndex] = value;
+}
+bool StoreTable::deactivate(const StoreId id) noexcept {
+    const auto index = find(id);
+    if (!index || isActive_[*index] == 0) { return false; }
+    // Keep tombstones/IDs until retry so stale IDs cannot name another store.
+    isActive_[*index] = 0;
+    capturedPopulations_[*index] = 0;
+    revenuePermille_[*index] = 1000;
+    return true;
+}
 }  // namespace konbini::sim

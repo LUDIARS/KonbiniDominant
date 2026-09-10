@@ -3,8 +3,9 @@
 ## Status
 
 REQ-PLATFORM-01のtoolchain / packaging contract。
-固定PictorにはAndroid / iOS surfaceの足場があるが、KonbiniDominantの
-mobile hostとinstallable packageは未実装。
+KonbiniDominant の Android / iOS host と package target は実装済みだが、
+build、install、device launch は未検証。実装された手順と残る確認項目は
+[mobile-native](mobile-native.md)を正本とする。
 
 Windows first playableの
 [native setup](native-development.md)を置き換えず、追加platformとして扱う。
@@ -111,9 +112,9 @@ runtime writable
 
 build machineの絶対pathやrepository layoutをpackage内で参照しない。
 
-## Build options to introduce
+## Build target separation
 
-名称は実装taskでCMake targetと同時に固定する。少なくとも次の責務を分ける。
+実装 target は少なくとも次の責務を分ける。
 
 - desktop native app
 - Android native library / package

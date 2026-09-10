@@ -14,8 +14,8 @@ namespace {
 // content / save 由来の未検証 ChainId を dense slot へ落とす唯一の入口。
 // @implements spec/data/world-state.md ID
 std::size_t checkedChainIndex(const ChainId chain) {
-    if (!isFirstPlayableChainId(chain)) {
-        throw std::invalid_argument("chain id is outside first-playable range");
+    if (!isSimulationChainId(chain)) {
+        throw std::invalid_argument("chain id is outside simulation range");
     }
     return chainIndex(chain);
 }
@@ -24,8 +24,11 @@ std::size_t checkedChainIndex(const ChainId chain) {
 
 // @implements spec/data/world-state.md ChainEconomyTable
 ChainEconomyTable::ChainEconomyTable(const FirstPlayableContent& content)
-    : rules_(content.chains),
-      startingStoreEquivalent_(content.startingStoreEquivalent) {
+    : startingStoreEquivalent_(content.startingStoreEquivalent), campaign_(content.campaign) {
+    for (std::size_t index = 0; index < content.chains.size(); ++index) { rules_[index] = content.chains[index]; }
+    rules_[chainIndex(ChainId::Aion)] = {ChainId::Aion, "AION",
+        content.campaign ? content.campaign->aion.buildCostCredits : 1,
+        content.campaign ? content.campaign->aion.zocRadiusMeters : 1.0, 1};
     for (std::size_t index = 0; index < rules_.size(); ++index) {
         if (chainIndex(rules_[index].id) != index) {
             throw std::invalid_argument(
@@ -73,8 +76,21 @@ bool ChainEconomyTable::activate(const ChainId chain) {
                    static_cast<std::int64_t>(startingStoreEquivalent_)) {
         throw std::overflow_error("starting cash overflow");
     }
-    cashCredits_[index] =
-        cost * static_cast<std::int64_t>(startingStoreEquivalent_);
+    return activateWithCash(
+        chain, cost * static_cast<std::int64_t>(startingStoreEquivalent_));
+}
+
+bool ChainEconomyTable::activateWithCash(
+    const ChainId chain, const std::int64_t initialCashCredits) {
+    // @implements spec/feature/full-campaign-baseline.md Aion
+    const std::size_t index = checkedChainIndex(chain);
+    if (isActive_[index] != 0) {
+        return false;
+    }
+    if (initialCashCredits < 0) {
+        throw std::invalid_argument("initial cash must be non-negative");
+    }
+    cashCredits_[index] = initialCashCredits;
     isActive_[index] = 1;
     return true;
 }
@@ -135,4 +151,19 @@ void ChainEconomyTable::creditRevenue(const ChainId chain,
     incomeThisTick_[index] += credits;
 }
 
+bool ChainEconomyTable::spend(const ChainId chain, const std::int64_t credits) {
+    if (!canAfford(chain, credits)) { return false; }
+    const auto index=checkedChainIndex(chain);
+    if (expenseThisTick_[index] > std::numeric_limits<std::int64_t>::max()-credits) {
+        throw std::overflow_error("campaign expense overflow");
+    }
+    cashCredits_[index]-=credits; expenseThisTick_[index]+=credits; return true;
+}
+void ChainEconomyTable::removeStore(const ChainId chain) {
+    const std::size_t index = checkedChainIndex(chain);
+    if (storeCounts_[index] == 0) {
+        throw std::logic_error("cannot remove a store from an empty chain");
+    }
+    --storeCounts_[index];
+}
 }  // namespace konbini::sim

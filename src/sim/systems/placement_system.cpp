@@ -2,6 +2,8 @@
 
 #include <stdexcept>
 #include <utility>
+#include "konbini/sim/vertical_placement.h"
+#include "konbini/sim/skill_system.h"
 
 // @implements spec/feature/phase-1-dominant-triangle.md 店舗配置
 // @implements spec/feature/economy-and-population.md 建設費
@@ -16,19 +18,26 @@ PlacementDecision validatePlacement(const PlaceStoreCommand& command,
                                     const FacilityTable& facilities,
                                     const StoreTable& stores,
                                     const ChainEconomyTable& economy) {
-    if (state.phase != GamePhase::Phase1) {
+    if (state.campaign.skills.pending || !isPlayingPhase(state.phase) || (state.phase != GamePhase::Phase1 && !state.campaign.enabled)) {
         return {.failure = PlacementFailure::WrongPhase};
     }
     if (!state.playerChain.has_value()) {
         return {.failure = PlacementFailure::NoPlayerChain};
     }
-    if (!isFirstPlayableChainId(command.chain)) {
+    if (!isSimulationChainId(command.chain) ||
+        (command.chain == ChainId::Aion && (!state.campaign.enabled || state.phase != GamePhase::Boss))) {
         return {.failure = PlacementFailure::InvalidChain};
     }
-    if (*state.playerChain != command.chain) {
+    const bool isPlayer = command.order.sourcePriority == CommandSourcePriority::Player;
+    const bool isAi = command.order.sourcePriority == CommandSourcePriority::Ai;
+    if ((!isPlayer && !isAi) ||
+        (isPlayer && *state.playerChain != command.chain) ||
+        (isAi && (!state.competitive || *state.playerChain == command.chain))) {
         return {.failure = PlacementFailure::WrongChain};
     }
-    if (command.verticalSlot != 0) {
+    if (command.verticalSlot != 0 &&
+        (!verticalUnlocked(state) || !economy.campaignRules() ||
+         command.verticalSlot >= economy.campaignRules()->vertical.slots)) {
         return {.failure = PlacementFailure::UnsupportedVerticalSlot};
     }
 
@@ -38,23 +47,35 @@ PlacementDecision validatePlacement(const PlaceStoreCommand& command,
         return {.failure = PlacementFailure::FacilityNotFound};
     }
     const FacilityRow facility = facilities.row(*facilityIndex);
+    if (state.campaign.enabled && !dimensionActive(state.campaign, facility.dimension)) {
+        return {.failure = PlacementFailure::DimensionCollapsed};
+    }
     if (!facility.isBuildable) {
         return {.failure = PlacementFailure::FacilityProtected};
     }
-    if (facility.state != FacilityState::Intact) {
+    if (!verticalUnlocked(state) && facility.state != FacilityState::Intact &&
+        !(state.competitive && facility.state == FacilityState::Destroyed)) {
         return {.failure = PlacementFailure::FacilityUnavailable};
     }
-    if (stores.hasActiveStoreAt(command.facilityId)) {
+    if (stores.findAt(command.facilityId, command.verticalSlot)) {
         return {.failure = PlacementFailure::FacilityOccupied};
     }
 
+    if (command.verticalSlot > 0 && !stores.findAt(command.facilityId, command.verticalSlot - 1)) {
+        return {.failure = PlacementFailure::MissingSupport};
+    }
     const ChainContent& rules = economy.rules(command.chain);
-    if (!economy.canAfford(command.chain, rules.buildCostCredits)) {
+    auto cost = economy.campaignRules()
+        ? verticalBuildCost(rules.buildCostCredits, command.verticalSlot, economy.campaignRules()->vertical)
+        : rules.buildCostCredits;
+    if (economy.campaignRules())
+        cost=skillBuildCost(cost,state,economy.campaignRules()->skills,command.chain);
+    if (!economy.canAfford(command.chain, cost)) {
         return {.failure = PlacementFailure::InsufficientCash};
     }
     return {
         .failure = PlacementFailure::None,
-        .buildCostCredits = rules.buildCostCredits,
+        .buildCostCredits = cost,
         .zocRadiusMeters = rules.zocRadiusMeters,
     };
 }
@@ -87,15 +108,19 @@ PlacementResult commitPlacementAtomically(
         *stagedFacilities.find(command.facilityId);
     const FacilityRow facility = stagedFacilities.row(facilityIndex);
     const StoreId storeId = stagedStoreIds.acquire();
+    auto position = facility.positionMeters;
+    if (economy.campaignRules()) { position.y += command.verticalSlot * economy.campaignRules()->vertical.floorHeightMeters; }
     stagedStores.append({
         .id = storeId,
         .facilityId = command.facilityId,
         .chain = command.chain,
         .dimension = facility.dimension,
-        .positionMeters = facility.positionMeters,
+        .positionMeters = position,
         .zocRadiusMeters = decision.zocRadiusMeters,
         .capturedPopulation = 0,
         .isActive = true,
+        .verticalSlot = command.verticalSlot,
+        .faith = economy.campaignRules() ? economy.campaignRules()->vertical.startingFaith : 0,
     });
     if (!stagedFacilities.setState(command.facilityId,
                                    FacilityState::Replaced)) {
@@ -116,6 +141,7 @@ PlacementResult commitPlacementAtomically(
         .command = command,
         .failure = PlacementFailure::None,
         .placedStore = storeId,
+        .replacedIntactFacility = facility.state == FacilityState::Intact,
     };
 }
 

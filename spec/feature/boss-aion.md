@@ -1,5 +1,10 @@
 # Boss — 高次元存在アイオーン
 
+> v4実装: ユーザーの判断委任とPhase 2–4実装指示に基づく具体値・暫定決定は
+> [full-campaign-baseline](full-campaign-baseline.md)を正本とする。
+> 下記の原案に残るTBDのうち実装済み項目は同baselineで解決し、
+> 追加の11種スキルは[skill-upgrades](skill-upgrades.md)で定義する。
+
 ## 登場
 
 foreign dimensionを2つ消滅させた後、高次元存在「アイオーン」が現れる。

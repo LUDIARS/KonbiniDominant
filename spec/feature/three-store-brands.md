@@ -40,7 +40,9 @@ with `KONBINI_BUILD_RENDER=ON`, `KONBINI_BUILD_FIGMENTUM_ADAPTER=OFF`, and
 lineup / DAYLARK / MOONPANTRY / SUNFOLD / FABLE-CURRENT / TOWER-30 /
 TOWER-DETAIL after eight frames each, then exits.
 The output is `build/store-gallery/*.ppm`, P6 RGB with linear HDR converted to
-sRGB. PNG copies preserve these exact pixels; HUD is excluded from readback.
+sRGB. Convert a capture with
+`node src/gallery/encode_ppm.mjs <input.ppm> <output.png>`; PNG copies preserve
+these exact pixels and the HUD is excluded from readback.
 The initial window is 1600 x 900. Camera azimuth/elevation are 72/22 degrees;
 vertical span is 17 meters for the lineup and 8 meters for individual views.
 Lighting uses the unchanged KD world shader. Storefronts use the opaque depth

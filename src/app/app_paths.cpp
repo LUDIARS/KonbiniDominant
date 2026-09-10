@@ -1,4 +1,5 @@
 #include "konbini/app/app_paths.h"
+#include "konbini/app/executable_directory.h"
 
 #include <cstdlib>
 #include <stdexcept>
@@ -72,8 +73,8 @@ AppPaths resolveAppPaths(
 
 AppPaths resolveAppPaths(const AppPathOverrides& overrides) {
     return resolveAppPaths(
-        overrides, std::filesystem::path(KONBINI_DEFAULT_CONTENT_FILE),
-        std::filesystem::path(KONBINI_DEFAULT_SHADER_DIR));
+        overrides, executableDirectory() / std::filesystem::path(KONBINI_DEFAULT_CONTENT_FILE),
+        executableDirectory() / std::filesystem::path(KONBINI_DEFAULT_SHADER_DIR));
 }
 
 // @implements spec/interface/pictor-rendering.md Failure

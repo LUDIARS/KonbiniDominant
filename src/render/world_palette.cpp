@@ -11,11 +11,13 @@ namespace konbini::render {
 // なく presentation 値なので、chain 追加時はここだけを増やす。
 // @implements spec/interface/pictor-rendering.md Game-owned render domain
 WorldColor chainColor(const sim::ChainId chain, const float alpha) {
-    if (!sim::isFirstPlayableChainId(chain) || !std::isfinite(alpha) ||
+    if (!sim::isSimulationChainId(chain) || !std::isfinite(alpha) ||
         alpha < 0.0F || alpha > 1.0F) {
         throw std::invalid_argument("invalid first-playable chain color");
     }
     switch (chain) {
+        case sim::ChainId::Aion:
+            return {0.72F, 0.20F, 0.96F, alpha};
         case sim::ChainId::Losan:
             return {0.43F, 0.22F, 0.39F, alpha};
         case sim::ChainId::Famoma:

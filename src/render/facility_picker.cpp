@@ -1,4 +1,5 @@
 #include "konbini/render/facility_picker.h"
+#include "konbini/render/facility_display_bounds.h"
 
 #include <algorithm>
 #include <array>
@@ -96,11 +97,11 @@ std::optional<FacilityPick> pickFacility(
             throw std::invalid_argument(
                 "facility picker received an invalid render facility");
         }
-        if (facility.state == sim::FacilityState::Destroyed) {
+        if (facility.state == sim::FacilityState::Destroyed && !facility.isLotRepresentation) {
             continue;
         }
         const std::optional<double> distance =
-            intersectBounds(normalizedRay, facility.boundsMeters);
+            intersectBounds(normalizedRay, facilityDisplayBounds(facility));
         if (!distance.has_value()) {
             continue;
         }
@@ -115,11 +116,11 @@ std::optional<FacilityPick> pickFacility(
 
     std::optional<FacilityPick> closest;
     for (const sim::RenderFacility& facility : facilities) {
-        if (facility.state == sim::FacilityState::Destroyed) {
+        if (facility.state == sim::FacilityState::Destroyed && !facility.isLotRepresentation) {
             continue;
         }
         const std::optional<double> distance =
-            intersectBounds(normalizedRay, facility.boundsMeters);
+            intersectBounds(normalizedRay, facilityDisplayBounds(facility));
         if (!distance.has_value() ||
             *distance > *nearestDistance + kDistanceTieEpsilon) {
             continue;

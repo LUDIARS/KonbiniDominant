@@ -1,6 +1,7 @@
 #include "konbini/render/store_placement_animation.h"
 
 #include <cmath>
+#include <numbers>
 #include <stdexcept>
 
 // @implements spec/interface/visia-presentation.md Store placement sampler
@@ -46,7 +47,8 @@ StorePlacementAnimationSpec defaultStorePlacementAnimationSpec() noexcept {
 // @implements spec/interface/visia-presentation.md Store placement sampler
 void validateStorePlacementAnimationSpec(
     const StorePlacementAnimationSpec& spec) {
-    if (!std::isfinite(spec.holdSeconds) || spec.holdSeconds < 0.0 ||
+    if (!std::isfinite(spec.spinSeconds) || spec.spinSeconds <= 0.0 ||
+        !std::isfinite(spec.holdSeconds) || spec.holdSeconds < 0.0 ||
         !std::isfinite(spec.fallSeconds) || spec.fallSeconds <= 0.0 ||
         !std::isfinite(spec.effectSeconds) || spec.effectSeconds <= 0.0 ||
         !std::isfinite(spec.spawnHeightMeters) ||
@@ -64,7 +66,7 @@ void validateStorePlacementAnimationSpec(
         throw std::invalid_argument(
             "store placement landing Visia must be a horizontal annulus");
     }
-    const double landingTime = spec.holdSeconds + spec.fallSeconds;
+    const double landingTime = spec.spinSeconds + spec.holdSeconds + spec.fallSeconds;
     if (!std::isfinite(landingTime) ||
         !std::isfinite(landingTime + spec.effectSeconds)) {
         throw std::invalid_argument(
@@ -84,7 +86,7 @@ StorePlacementAnimationSample sampleStorePlacementAnimation(
         throw std::invalid_argument("invalid store placement animation sample");
     }
 
-    const double landingTime = spec.holdSeconds + spec.fallSeconds;
+    const double landingTime = spec.spinSeconds + spec.holdSeconds + spec.fallSeconds;
     const double completionTime = landingTime + spec.effectSeconds;
     const VisiaPose spawnPose{
         .positionMeters = {
@@ -101,24 +103,31 @@ StorePlacementAnimationSample sampleStorePlacementAnimation(
     }
 
     StorePlacementAnimationSample sample;
-    if (elapsedSeconds < spec.holdSeconds) {
-        sample.storePose = spawnPose;
-    } else if (elapsedSeconds < landingTime) {
-        const double normalizedFall =
-            (elapsedSeconds - spec.holdSeconds) / spec.fallSeconds;
-        const double eased = sampleEasing(spec.fallEasing, normalizedFall);
+    const double hoverEnd = spec.spinSeconds + spec.holdSeconds;
+    if (elapsedSeconds < spec.spinSeconds) {
+        const double t = elapsedSeconds / spec.spinSeconds;
+        const double rise = 1.0 - std::pow(1.0 - t, 3.0);
+        const double turn = t * t * (3.0 - 2.0 * t);
         sample.storePose = {
-            .positionMeters = interpolate(
-                spawnPose.positionMeters,
-                targetPose.positionMeters,
-                eased),
-            .yawDegrees = interpolate(
-                spawnPose.yawDegrees,
-                targetPose.yawDegrees,
-                eased),
+            .positionMeters = interpolate(targetPose.positionMeters, spawnPose.positionMeters, rise),
+            .yawDegrees = interpolate(spawnPose.yawDegrees, targetPose.yawDegrees, turn),
         };
+        sample.stage = StorePlacementStage::Spin;
+    } else if (elapsedSeconds < hoverEnd) {
+        const double t = (elapsedSeconds - spec.spinSeconds) / spec.holdSeconds;
+        sample.storePose = targetPose;
+        sample.storePose.positionMeters.y += spec.spawnHeightMeters +
+            std::sin(t * std::numbers::pi) * 0.55;
+        sample.stage = StorePlacementStage::Hover;
+    } else if (elapsedSeconds < landingTime) {
+        const double t = (elapsedSeconds - hoverEnd) / spec.fallSeconds;
+        sample.storePose = targetPose;
+        sample.storePose.positionMeters.y += spec.spawnHeightMeters *
+            (1.0 - sampleEasing(spec.fallEasing, t));
+        sample.stage = StorePlacementStage::Fall;
     } else {
         sample.storePose = targetPose;
+        sample.stage = StorePlacementStage::Landed;
         sample.hasLanded = true;
     }
 

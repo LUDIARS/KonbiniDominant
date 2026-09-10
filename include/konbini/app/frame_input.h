@@ -1,6 +1,7 @@
 #pragma once
 
 #include <optional>
+#include "konbini/app/pointer_sample.h"
 
 #include "konbini/render/viewport_extent.h"
 #include "konbini/sim/chain_id.h"
@@ -17,6 +18,11 @@ namespace konbini::app {
 struct FrameInput {
     // presentation 時間。simulation の fixed tick とは別で、camera など
     // presentation 側の補間にだけ使う。
+    PointerSample pointer;
+    double uiScale = 1.0;
+    double pinchRatio = 1.0;
+    bool buildRequested = false;
+    std::optional<std::uint32_t> skillChoice;
     double dtSeconds = 0.0;
     render::ViewportExtent viewport{};
 
@@ -33,6 +39,11 @@ struct FrameInput {
     bool secondaryClick = false;
     bool cancel = false;
     bool toggleControls = false;
+    bool retry = false;
+    bool togglePause = false;
+    bool floorUp = false, floorDown = false, nextFreeFloor = false, groundFloor = false;
+    bool buildHeld = false, imageStrategy = false, invertStore = false;
+    bool nextDimension = false, escapeDimension = false;
 
     // camera 操作。`WASD` は正規化済みの方向、drag は pixel delta、
     // wheel は notch 数。

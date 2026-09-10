@@ -1,5 +1,8 @@
 # Verification strategy
 
+キャンペーン版の配布には [campaign-release-acceptance.md](campaign-release-acceptance.md) の
+マージ確認と統合版100倍速クリアを必須とする。未実施の項目を合格にしない。
+
 ## 原則
 
 - game resultを決めるcoreはheadless / deterministicに検証

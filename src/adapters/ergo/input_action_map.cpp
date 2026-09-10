@@ -40,13 +40,19 @@ app::FrameInput InputActionMap::sample(
     input.focusLost = bridge.consumeFocusLost();
 
     const PointerFrame pointer = bridge.pointerFrame();
-    input.cursorXPixels = pointer.xPixels;
-    input.cursorYPixels = pointer.yPixels;
+    const double sx=viewport.width/pointer.clientWidth, sy=viewport.height/pointer.clientHeight;
+    input.pointer=pointer;
+    input.pointer.xPixels*=sx;input.pointer.yPixels*=sy;
+    input.pointer.pressXPixels*=sx;input.pointer.pressYPixels*=sy;
+    input.pointer.deltaXPixels*=sx;input.pointer.deltaYPixels*=sy;
+    input.uiScale=pointer.uiScale;
+    input.cursorXPixels = input.pointer.xPixels;
+    input.cursorYPixels = input.pointer.yPixels;
     input.cursorInsideViewport =
         pointer.insideWindow && viewport.width != 0 && viewport.height != 0 &&
-        pointer.xPixels >= 0.0 && pointer.yPixels >= 0.0 &&
-        pointer.xPixels <= static_cast<double>(viewport.width) &&
-        pointer.yPixels <= static_cast<double>(viewport.height);
+        input.cursorXPixels >= 0.0 && input.cursorYPixels >= 0.0 &&
+        input.cursorXPixels < static_cast<double>(viewport.width) &&
+        input.cursorYPixels < static_cast<double>(viewport.height);
     input.zoomSteps = pointer.scrollSteps;
 
     if (input.focusLost) {
@@ -69,14 +75,25 @@ app::FrameInput InputActionMap::sample(
             input.chainRequest = sim::ChainId::SebanIleban;
         }
 
-        input.primaryClick = mouse->isButtonPressed(MouseButton::Left) &&
-                             input.cursorInsideViewport;
+        // Tap/click is resolved on release by the shared pointer controller.
         input.secondaryClick = mouse->isButtonPressed(MouseButton::Right);
     }
 
+    if(suppressed) input.pointer={};
     input.cancel =
         keyboard->isKeyPressed(KeyCode::Escape) || input.secondaryClick;
     input.toggleControls = keyboard->isKeyPressed(KeyCode::F1);
+    input.retry = !suppressed && keyboard->isKeyPressed(KeyCode::R);
+    input.togglePause = !suppressed && keyboard->isKeyPressed(KeyCode::P);
+    input.floorUp = !suppressed && keyboard->isKeyPressed(KeyCode::E);
+    input.floorDown = !suppressed && keyboard->isKeyPressed(KeyCode::Q);
+    input.nextFreeFloor = !suppressed && keyboard->isKeyPressed(KeyCode::F);
+    input.groundFloor = !suppressed && keyboard->isKeyPressed(KeyCode::G);
+    input.buildHeld = !suppressed && keyboard->isKeyDown(KeyCode::Space);
+    input.imageStrategy = !suppressed && keyboard->isKeyPressed(KeyCode::C);
+    input.invertStore = !suppressed && keyboard->isKeyPressed(KeyCode::I);
+    input.nextDimension = !suppressed && keyboard->isKeyPressed(KeyCode::Tab);
+    input.escapeDimension = !suppressed && keyboard->isKeyPressed(KeyCode::X);
 
     if (bindings_.panWithWasd) {
         const double right =
@@ -95,8 +112,8 @@ app::FrameInput InputActionMap::sample(
 
     if (bindings_.dragWithMiddleButton &&
         mouse->isButtonDown(MouseButton::Middle)) {
-        input.dragDeltaXPixels = pointer.deltaXPixels;
-        input.dragDeltaYPixels = pointer.deltaYPixels;
+        input.dragDeltaXPixels = input.pointer.deltaXPixels;
+        input.dragDeltaYPixels = input.pointer.deltaYPixels;
     }
 
     return input;

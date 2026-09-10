@@ -21,6 +21,7 @@ struct PopulationCellRow {
     std::uint32_t population = 0;
     std::optional<StoreId> assignedStore;
     std::optional<ChainId> preferredChain;
+    std::uint32_t capacity = 0;
 };
 
 class PopulationCellTable {
@@ -31,6 +32,7 @@ public:
     [[nodiscard]] PopulationCellRow row(std::size_t index) const;
     void assign(std::size_t denseIndex, std::optional<StoreId> store,
                 std::optional<ChainId> chain);
+    void setPopulation(std::size_t denseIndex, std::uint32_t population);
 
 private:
     std::vector<PopulationCellId> ids_;
@@ -38,6 +40,7 @@ private:
     std::vector<std::uint32_t> dimensions_;
     std::vector<Vec3> positionsMeters_;
     std::vector<std::uint32_t> populations_;
+    std::vector<std::uint32_t> capacities_;
     std::vector<StoreId> assignedStores_;
     std::vector<ChainId> preferredChains_;
     std::vector<std::uint8_t> hasAssignment_;

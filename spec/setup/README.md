@@ -1,7 +1,11 @@
 # setup/ — 開発環境
 
 - [native-development.md](native-development.md) — C++ / CMake / Pictor / Ergo /
-  Figmentumの予定構成
+  Figmentum の native 構成
+- [phase1-portable-build.md](phase1-portable-build.md) — Windows portable build
+- [mobile-development.md](mobile-development.md) — mobile toolchain / platform 境界の要求
+- [mobile-native.md](mobile-native.md) — Android / iOS host の実装 baseline と未検証項目
 
-現在はspec-only repositoryであり、CMake targetや実行物はまだ存在しない。
-記載コマンドは実装後のcontractで、初期spec作成時にbuild/testは実行していない。
+Native の CMake target と Android / iOS host は実装済み。mobile build、install、
+device launch、touch、lifecycle は未検証であり、`mobile-native.md` の確認項目を
+満たすまでは対応済みと扱わない。

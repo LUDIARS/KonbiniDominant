@@ -33,6 +33,7 @@ public:
         CameraControlSpec spec);
 
     void apply(const FrameInput& input);
+    void focusHeight(double meters);
 
     [[nodiscard]] const render::IsometricCameraConfig& config()
         const noexcept;

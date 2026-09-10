@@ -21,7 +21,10 @@ public:
 
     [[nodiscard]] sim::PlayerCommand placeStore(
         sim::ChainId chain, sim::FacilityId facilityId,
-        std::uint64_t targetTick);
+        std::uint64_t targetTick, std::uint32_t verticalSlot = 0);
+
+    [[nodiscard]] sim::PlayerCommand campaignAction(sim::ChainId chain, sim::CampaignAction action,
+        sim::FacilityId facility, std::uint32_t verticalSlot, std::uint32_t dimension, std::uint64_t targetTick);
 
     [[nodiscard]] std::uint64_t issuedCount() const noexcept;
 

@@ -12,7 +12,9 @@ endif()
 add_subdirectory(app)
 if(KONBINI_BUILD_RENDER)
   add_subdirectory(adapters/ergo)
-  add_subdirectory(gallery)
+  if(NOT KONBINI_MOBILE)
+    add_subdirectory(gallery)
+  endif()
 endif()
 
 # Stable aggregate used by staged local reviews.
@@ -44,7 +46,7 @@ if(KONBINI_BUILD_RENDER)
     konbini_ergo_adapter
   )
 endif()
-if(KONBINI_BUILD_RENDER AND KONBINI_BUILD_FIGMENTUM_ADAPTER)
+if(KONBINI_BUILD_RENDER AND KONBINI_BUILD_FIGMENTUM_ADAPTER AND NOT KONBINI_MOBILE)
   # native executable と、起動時に必要な shader / content を review 対象へ
   # 接続する (first-playable.md#PR acceptance)。
   add_dependencies(konbini_review konbini_dominant konbini_runtime_content)

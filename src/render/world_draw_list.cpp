@@ -1,4 +1,9 @@
 #include "konbini/render/world_draw_list.h"
+#include "konbini/render/grid_ground.h"
+#include "konbini/render/animated_store_geometry.h"
+#include "konbini/render/phase1_overlay_geometry.h"
+#include "konbini/render/campaign_floor_view.h"
+#include "konbini/render/skill_pulse_geometry.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -53,7 +58,8 @@ WorldDrawListSpec defaultWorldDrawListSpec() noexcept {
 WorldDrawList buildWorldDrawList(
     const sim::RenderSnapshot& snapshot,
     const std::optional<sim::FacilityId> selectedFacility,
-    const WorldDrawListSpec& spec) {
+    const WorldDrawListSpec& spec,
+    std::span<const StoreConstructionVisual> construction) {
     validateSpec(spec);
     if (selectedFacility.has_value() && !selectedFacility->isValid()) {
         throw std::invalid_argument(
@@ -79,15 +85,27 @@ WorldDrawList buildWorldDrawList(
             selected = &facility;
         }
 
-        // A replacement storefront owns this footprint. Keeping the original
-        // facility mesh would bury a one-story shop inside the old building.
-        if (facility.state == sim::FacilityState::Replaced) continue;
-
-        const WorldFacilityDraw draw{
+        if (spec.gridTown || facility.state == sim::FacilityState::Replaced ||
+            (spec.stackView && spec.viewedFloor >= 16) ||
+            (snapshot.hud().competitive && facility.state != sim::FacilityState::Intact)) {
+            // Storefronts own replaced footprints; campaign lots and floor bands
+            // retain their existing visibility rules.
+            continue;
+        }
+        WorldFacilityDraw draw{
             .figmentumKey = facility.figmentumKey,
             .facilityId = facility.id,
             .tint = facilityColor(facility.isBuildable, facility.state),
         };
+        if (snapshot.hud().campaign.enabled && snapshot.hud().campaign.visibleDimension != 0) {
+            for (const auto& dimension : snapshot.hud().campaign.dimensions) {
+                if (dimension.id != snapshot.hud().campaign.visibleDimension) continue;
+                // Seed-derived lighting changes the world while retaining chain colors.
+                const auto accent = static_cast<unsigned>(dimension.seed % 3);
+                for (unsigned channel = 0; channel < 3; ++channel)
+                    draw.tint[channel] *= channel == accent ? 1.0F : 0.65F;
+            }
+        }
         if (draw.tint[3] < 1.0F) {
             drawList.overlayFacilities.push_back(draw);
         } else {
@@ -99,15 +117,23 @@ WorldDrawList buildWorldDrawList(
             "selected facility is not present in the render snapshot");
     }
 
+    if (spec.gridTown) appendMesh(drawList.overlayMesh, buildGridGround(facilities));
+    const auto bandStores=spec.stackView ? storesInFloorBand(snapshot,spec.viewedFloor) : std::vector<sim::RenderStore>{};
+    const std::span<const sim::RenderStore> visibleStores=spec.stackView ? std::span<const sim::RenderStore>(bandStores) : snapshot.stores();
     appendMesh(
         drawList.overlayMesh,
         buildZocOverlayGeometry(
-            snapshot.stores(), spec.zocSegmentCount, spec.zocGroundYMeters));
-    drawList.storeMesh = buildStoreMarkerGeometry(snapshot.stores(), spec.storeMarker);
+            visibleStores, spec.zocSegmentCount, spec.zocGroundYMeters));
+    drawList.storeMesh = buildAnimatedStoreGeometry(visibleStores, spec.storeMarker, construction);
+    appendMesh(drawList.overlayMesh, buildSkillPulseGeometry(snapshot, visibleStores));
+    if (snapshot.hud().competitive) {
+        appendMesh(drawList.overlayMesh, buildPhase1OverlayGeometry(snapshot));
+    }
     if (selected != nullptr) {
         appendMesh(
             drawList.overlayMesh,
-            buildSelectionOverlayGeometry(*selected, spec.selection));
+            buildSelectionOverlayGeometry(spec.stackView ? facilityOnFloor(*selected,spec.viewedFloor,
+                snapshot.hud().campaign.floorHeightMeters) : *selected, spec.selection));
     }
     return drawList;
 }

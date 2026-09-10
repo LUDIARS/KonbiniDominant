@@ -70,19 +70,51 @@ folder からのみ行う。
 
 setup contract は [spec/setup/native-development.md](spec/setup/native-development.md)。
 
+## Grid town and 720p UI
+
+Phase 1はビルのない16×16の地面グリッド。空きマスを1回クリック／タップして正方形のコンビニを置く。
+同じチェーンを辺で隣接させると外観と看板がつながる。既定1280×720の小型UIで、Roboto Monoの輪郭をPictorからベクタ描画する。
+[変更仕様](spec/feature/grid-town-and-vector-ui.md)を参照。
+
+## Phase 1–4 campaign and skills
+
+既定の content v4 は、都市支配 → 256階の縦積み → 別次元攻略 → アイオーン戦を接続する。
+最初に選ぶチェーンは1種類だけ。アイオーン登場前に5秒のWARNINGが出る。
+集客で経験値を稼ぎ、最大3択の強化を選ぶ。スキルは11種、所持6種まで、各5段階。
+選択中はゲーム時間が止まる。上底テクニックは売上と信仰の交換、怪音波は一時的な顧客奪取。
+
+[キャンペーン仕様](spec/feature/full-campaign-baseline.md)、
+[スキル仕様](spec/feature/skill-upgrades.md)、
+[日本語の遊び方](data/distribution/README-ja.txt) を参照。
+v3のPhase 1専用設定は data/content/phase1.json に保存してある。
+Windows Releaseの起動・100倍速クリアは確認済み。統合後の受入判定は[テスト要件](spec/test/campaign-release-acceptance.md)に従う。
+
+ZIP作成: python tools/package_campaign.py --build-dir build-native --revision FULL_COMMIT_SHA --playtest-run ABSOLUTE_RUN_DIRECTORY
+
 ## Controls
 
 Original storefronts: [three-brand design and Pictor captures](spec/feature/three-store-brands.md).
 
-| 入力 | 動作 |
+マウスまたはWindowsタッチ画面だけで、チェーン選択から再挑戦まで操作できる。
+[操作仕様](spec/feature/pointer-controls.md)と[日本語の遊び方](data/distribution/README-ja.txt)を参照。
+
+| 入力／画面ボタン | 動作 |
 |---|---|
-| `1` / `2` / `3` | chain 選択 (MOONPANTRY / SUNFOLD / DAYLARK) |
-| left click | facility 選択、同じ有効候補を再clickで配置確定 |
-| right click / `Esc` | 選択解除 |
-| `WASD` / 中ボタンdrag | camera移動 |
-| wheel | zoom |
-| `F1` | 操作表示のtoggle |
-| window close | 正常終了 |
+| カードをクリック／タップ | チェーン・強化スキルを選択 |
+| 区画をクリック／タップ → BUILD | 出店（同じ区画の再クリック／再タップも対応） |
+| BUILD長押し | Phase 2以降の連続建設。成功後は次の空き階へ |
+| 地図を左ドラッグ／1本指ドラッグ | カメラ移動 |
+| ホイール／2本指ピンチ／ZOOM - / + | 拡大・縮小 |
+| FLOORS | 階移動・次の空き階・地上へ |
+| ACTIONS | イメージ戦略・次元切替・反転・逃走 |
+| DESELECT / PAUSE / HELP | 選択解除・一時停止・説明表示 |
+| PLAY AGAIN | 結果画面からチェーン選択へ戻る |
+| ウィンドウを閉じる | 正常終了 |
+
+ボタンは離した時に確定し、UI領域への操作は背後の区画へ通さない。
+DPIと画面幅へ追従する。旧キーボードショートカットは補助として保持する。
+Windowsの起動と100倍速クリアを確認済み。Android/iOSの接続コードは追加済みだが、両OSのビルド・実機タッチは未確認。
+[モバイル構成](spec/setup/mobile-native.md)と[LLM不要のBTテスト](spec/test/no-llm-native-playtest.md)を参照。
 
 ## Source
 
@@ -98,7 +130,7 @@ Original storefronts: [three-brand design and Pictor captures](spec/feature/thre
 Pictorのper-flight world targetとswapchain composite、Ergo input / frame を
 つないだ native first playable (`konbini_dominant`) まで実装済み。
 
-実機での起動確認 (Excubitor経由のsmoke) は
-[KD-FP-002](spec/plan/tasks/first-playable-validation.md) で行う。
+起動・クリアの反復検証は[LLM不要のBTテスト](spec/test/no-llm-native-playtest.md)で行う。
+テストEXEの直接起動はユーザー承認済み。Cc通知と本体フォルダ制限は維持する。
 
 ライセンスは未決定のため、この初期リポジトリには追加していない。

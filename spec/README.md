@@ -6,14 +6,16 @@ KonbiniDominant の設計仕様。AIFormat `FORMAT_SPEC.md` の標準分類を�
 
 1. [design.md](design.md) — 採用アーキテクチャ、DoD、基盤の責務境界
 2. [feature/game-flow.md](feature/game-flow.md) — 画面と Phase 状態遷移
-3. [data/world-state.md](data/world-state.md) — runtime state と system tick
-4. [interface/figmentum-city-generation.md](interface/figmentum-city-generation.md)
-5. [interface/pictor-rendering.md](interface/pictor-rendering.md)
-6. [interface/visia-presentation.md](interface/visia-presentation.md)
-7. [interface/ergo-runtime.md](interface/ergo-runtime.md)
-8. [interface/mobile-platform.md](interface/mobile-platform.md)
-9. [setup/mobile-development.md](setup/mobile-development.md)
-10. [faq/open-questions.md](faq/open-questions.md) — 実装前に残る判断
+3. [feature/full-campaign-baseline.md](feature/full-campaign-baseline.md) — Phase 1–4 の実装 baseline
+4. [data/world-state.md](data/world-state.md) — runtime state と system tick
+5. [interface/figmentum-city-generation.md](interface/figmentum-city-generation.md)
+6. [interface/pictor-rendering.md](interface/pictor-rendering.md)
+7. [interface/visia-presentation.md](interface/visia-presentation.md)
+8. [interface/ergo-runtime.md](interface/ergo-runtime.md)
+9. [interface/mobile-platform.md](interface/mobile-platform.md)
+10. [setup/mobile-development.md](setup/mobile-development.md)
+11. [setup/mobile-native.md](setup/mobile-native.md) — 実装済み host と未検証項目
+12. [faq/open-questions.md](faq/open-questions.md) — 実装前に残る判断
 
 ## 分類
 

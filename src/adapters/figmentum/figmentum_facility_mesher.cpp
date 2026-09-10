@@ -1,4 +1,6 @@
 #include "figmentum_facility_mesher.h"
+#include "figmentum_mesh_cleanup.h"
+#include <cstdio>
 
 #include <cmath>
 #include <cstddef>
@@ -86,68 +88,6 @@ fg::BuildingParams convert(const city::BuildingRecipe& recipe) {
     };
 }
 
-// @implements spec/interface/figmentum-city-generation.md Geometry generation
-sim::Vec3 subtract(const sim::Vec3 left, const sim::Vec3 right) noexcept {
-    return {left.x - right.x, left.y - right.y, left.z - right.z};
-}
-
-// @implements spec/interface/figmentum-city-generation.md Geometry generation
-sim::Vec3 cross(const sim::Vec3 left, const sim::Vec3 right) noexcept {
-    return {
-        left.y * right.z - left.z * right.y,
-        left.z * right.x - left.x * right.z,
-        left.x * right.y - left.y * right.x,
-    };
-}
-
-// @implements spec/interface/figmentum-city-generation.md Geometry generation
-void add(sim::Vec3& target, const sim::Vec3 value) noexcept {
-    target.x += value.x;
-    target.y += value.y;
-    target.z += value.z;
-}
-
-// @implements spec/interface/figmentum-city-generation.md Geometry generation
-std::vector<sim::Vec3> generateNormals(
-    const std::vector<sim::Vec3>& positions,
-    const std::vector<std::uint32_t>& indices) {
-    std::vector<sim::Vec3> accumulated(positions.size());
-    for (std::size_t triangle = 0; triangle < indices.size(); triangle += 3) {
-        const std::uint32_t indexA = indices[triangle];
-        const std::uint32_t indexB = indices[triangle + 1];
-        const std::uint32_t indexC = indices[triangle + 2];
-        if (indexA >= positions.size() || indexB >= positions.size() ||
-            indexC >= positions.size()) {
-            throw std::runtime_error(
-                "Figmentum polygonize returned an out-of-range index");
-        }
-        const sim::Vec3 normal =
-            cross(subtract(positions[indexB], positions[indexA]),
-                  subtract(positions[indexC], positions[indexA]));
-        if (!sim::isFinite(normal)) {
-            throw std::runtime_error(
-                "Figmentum polygonize produced a non-finite triangle");
-        }
-        add(accumulated[indexA], normal);
-        add(accumulated[indexB], normal);
-        add(accumulated[indexC], normal);
-    }
-
-    for (sim::Vec3& normal : accumulated) {
-        const double lengthSquared =
-            normal.x * normal.x + normal.y * normal.y + normal.z * normal.z;
-        if (!std::isfinite(lengthSquared) || lengthSquared <= 0.0) {
-            throw std::runtime_error(
-                "Figmentum polygonize produced a degenerate vertex normal");
-        }
-        const double inverseLength = 1.0 / std::sqrt(lengthSquared);
-        normal.x *= inverseLength;
-        normal.y *= inverseLength;
-        normal.z *= inverseLength;
-    }
-    return accumulated;
-}
-
 }  // namespace
 
 // @implements spec/interface/figmentum-city-generation.md Geometry generation
@@ -221,7 +161,10 @@ city::FacilityGeometry generateFacilityGeometry(
         result.positionsMeters.push_back(converted);
     }
     result.indices = mesh.indices;
-    result.normals = generateNormals(result.positionsMeters, result.indices);
+    const auto cleanup=finalizeFacilityMesh(result);
+    if(cleanup.degenerateTriangles)
+        std::fprintf(stdout,"[konbini] mesh cleanup: removed %zu zero-area triangles and %zu unused vertices\n",
+            cleanup.degenerateTriangles,cleanup.unusedVertices);
     return result;
 }
 

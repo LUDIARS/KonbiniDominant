@@ -26,13 +26,14 @@ bool SelectionController::isPlacementCandidate(
     // ここは「選択を保持してよい候補か」だけを見る前段で、資金や chain の
     // 条件は複製しない。
     return facility.isBuildable &&
-           facility.state == sim::FacilityState::Intact;
+           (facility.allowsStacking || facility.state == sim::FacilityState::Intact ||
+            (facility.isLotRepresentation && facility.state == sim::FacilityState::Destroyed));
 }
 
 // @implements spec/plan/tasks/first-playable.md Minimal controls
 SelectionOutcome SelectionController::onPrimaryClick(
     const std::optional<render::FacilityPick>& pick,
-    const sim::RenderSnapshot& snapshot) {
+    const sim::RenderSnapshot& snapshot, const bool placeImmediately) {
     if (!pick.has_value()) {
         // 何も無い場所への click は選択解除。選択を残すと、次の click が
         // 「見えていない選択の確定」になってしまう。
@@ -57,7 +58,7 @@ SelectionOutcome SelectionController::onPrimaryClick(
     const bool confirming =
         selected_.has_value() && *selected_ == facility->id;
     selected_ = facility->id;
-    return {.selected = selected_, .placementRequested = confirming};
+    return {.selected = selected_, .placementRequested = placeImmediately || confirming};
 }
 
 void SelectionController::clear() noexcept {

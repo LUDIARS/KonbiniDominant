@@ -4,11 +4,14 @@
 #include <cstddef>
 #include <cstdint>
 #include <filesystem>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 
 #include "konbini/sim/chain_id.h"
+#include "konbini/sim/phase1_content.h"
+#include "konbini/sim/campaign_content.h"
 
 // @implements spec/data/content-schema.md Root
 // @implements spec/data/content-schema.md Chain
@@ -66,6 +69,9 @@ struct FirstPlayableContent {
     ResidentPresentationContent residentPresentation;
     std::uint32_t startingStoreEquivalent = 0;
     std::array<ChainContent, kFirstPlayableChainCount> chains{};
+    // Absent only in the explicit historical contentVersion 2 profile.
+    std::optional<Phase1Content> phase1;
+    std::optional<CampaignContent> campaign;
 
     [[nodiscard]] const ChainContent& chain(ChainId id) const;
 };

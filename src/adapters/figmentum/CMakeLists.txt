@@ -32,6 +32,8 @@ add_library(
     figmentum_conversions.h
     figmentum_facility_mesher.h
     figmentum_facility_mesher.cpp
+    figmentum_mesh_cleanup.h
+    figmentum_mesh_cleanup.cpp
     figmentum_plan_projection.h
     figmentum_plan_projection.cpp
     "${PROJECT_SOURCE_DIR}/include/konbini/adapters/figmentum/figmentum_city_adapter.h"

@@ -35,13 +35,15 @@ std::vector<RenderStorePlacementCue> projectStorePlacementCues(
                 "successful placement references a missing store");
         }
         const StoreRow store = stores.row(*storeIndex);
-        if (!store.isActive || store.id != *placement.placedStore ||
+        if (store.id != *placement.placedStore ||
             store.facilityId != placement.command.facilityId ||
             store.chain != placement.command.chain ||
             !isFinite(store.positionMeters)) {
             throw std::logic_error(
                 "successful placement does not match its active store row");
         }
+        // Later destruction in the same tick must not publish a ghost landing cue.
+        if (!store.isActive) { continue; }
         cues.push_back({
             .storeId = store.id,
             .targetPositionMeters = store.positionMeters,

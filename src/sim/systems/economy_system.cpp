@@ -33,8 +33,9 @@ bool collectEconomyForCompletedTick(const std::uint64_t completedTicks,
         const ChainContent& rules = stagedEconomy.rules(store.chain);
         stagedEconomy.creditRevenue(
             store.chain,
-            calculateRevenueCredits(store.capturedPopulation,
-                                    rules.revenueMilliCreditsPerPerson));
+            calculateStoreRevenueCredits(store.capturedPopulation,
+                                         rules.revenueMilliCreditsPerPerson,
+                                         store.revenuePermille));
     }
     economy = std::move(stagedEconomy);
     return true;

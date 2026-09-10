@@ -202,9 +202,9 @@ void testMismatchedStoreRowIsRejected() {
     StoreRow inactiveRow = makeStoreRow();
     inactiveRow.isActive = false;
     const StoreTable inactiveStores = makeStores(inactiveRow);
-    CHECK_THROWS(std::logic_error,
-                 (void)projectStorePlacementCues(kCompletedTick,
-                                                 inactiveStores, placements));
+    // Placement and destruction can both succeed in one tick. A destroyed
+    // store must not emit a landing cue after it disappears.
+    CHECK(projectStorePlacementCues(kCompletedTick, inactiveStores, placements).empty());
 
     StoreRow otherFacilityRow = makeStoreRow();
     otherFacilityRow.facilityId = FacilityId{EntityId{9, 1}};

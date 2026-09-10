@@ -44,4 +44,13 @@ std::int64_t calculateRevenueCredits(
     return static_cast<std::int64_t>(wholeRevenue + fractionalRevenue);
 }
 
+std::int64_t calculateStoreRevenueCredits(
+    const std::uint64_t population, const std::int64_t milliCreditsPerPerson,
+    const std::uint32_t revenuePermille) {
+    if (revenuePermille < 1000 || revenuePermille > 10000) {
+        throw std::invalid_argument("invalid store revenue multiplier");
+    }
+    const auto base = calculateRevenueCredits(population, milliCreditsPerPerson);
+    return calculateRevenueCredits(static_cast<std::uint64_t>(base), revenuePermille);
+}
 }  // namespace konbini::sim

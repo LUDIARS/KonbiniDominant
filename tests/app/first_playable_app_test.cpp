@@ -14,6 +14,7 @@
 #include "konbini/app/frame_input.h"
 #include "konbini/app/hud_text_model.h"
 #include "konbini/app/selection_controller.h"
+#include "konbini/app/touch_contacts.h"
 #include "konbini/render/bitmap_font.h"
 #include "konbini/render/hud_text_geometry.h"
 #include "konbini/sim/chain_economy_table.h"
@@ -55,6 +56,8 @@ using konbini::app::FrameInput;
 using konbini::app::HudTextInput;
 using konbini::app::SelectionController;
 using konbini::app::SelectionOutcome;
+using konbini::app::TouchContacts;
+using konbini::app::TouchPhase;
 
 // --- fixed step ---------------------------------------------------------
 // render dt を simulation へ直接積まない、という契約の要。tick 幅と
@@ -87,6 +90,15 @@ void testFixedStepCapsCatchUpAndReportsDroppedTicks() {
     // 25 tick 相当のうち 2 tick だけ消化し、残りは捨てて報告する。
     CHECK(dropped.droppedTicks == 23);
     CHECK(strict.accumulatedSeconds() < strict.fixedDeltaSeconds());
+
+    FixedStepDriver accelerated(10, 10000);
+    std::uint32_t totalTicks = 0;
+    for (unsigned frame = 0; frame < 600; ++frame) {
+        const auto plan = accelerated.advance(1.0 / 60.0, 100.0);
+        totalTicks += plan.tickCount;
+        CHECK(plan.droppedTicks == 0);
+    }
+    CHECK(totalTicks == 10000);  // Ten wall-clock seconds at 100x.
 }
 
 void testFixedStepRejectsInvalidConfiguration() {
@@ -116,6 +128,56 @@ void testFixedStepRejectsInvalidConfiguration() {
         threwOnNegativeDelta = true;
     }
     CHECK(threwOnNegativeDelta);
+}
+
+void testTouchContactsPreserveShortTapEdges() {
+    TouchContacts contacts;
+    contacts.update(7, TouchPhase::Down, 10.0, 20.0);
+    contacts.update(7, TouchPhase::Up, 12.0, 23.0);
+
+    const auto tap = contacts.consume();
+    CHECK(tap.isTouch);
+    CHECK(tap.pressed);
+    CHECK(tap.released);
+    CHECK(!tap.down);
+    CHECK(tap.pressXPixels == 10.0 && tap.pressYPixels == 20.0);
+    CHECK(tap.xPixels == 12.0 && tap.yPixels == 23.0);
+
+    const auto next = contacts.consume();
+    CHECK(!next.pressed && !next.released);
+}
+
+void testTouchContactsAccumulateDragAndPinch() {
+    TouchContacts contacts;
+    contacts.update(1, TouchPhase::Down, 0.0, 0.0);
+    (void)contacts.consume();
+    contacts.update(1, TouchPhase::Move, 3.0, 4.0);
+    const auto drag = contacts.consume();
+    CHECK(drag.down);
+    CHECK(drag.deltaXPixels == 3.0 && drag.deltaYPixels == 4.0);
+
+    contacts.update(2, TouchPhase::Down, 13.0, 4.0);
+    (void)contacts.consume();
+    contacts.update(2, TouchPhase::Move, 23.0, 4.0);
+    const auto pinch = contacts.consume();
+    CHECK(pinch.multipleContacts);
+    CHECK(pinch.pinchRatio == 2.0);
+
+    contacts.update(2, TouchPhase::Up, 23.0, 4.0);
+    const auto oneRemaining = contacts.consume();
+    CHECK(oneRemaining.down && !oneRemaining.released);
+    contacts.update(1, TouchPhase::Up, 3.0, 4.0);
+    const auto released = contacts.consume();
+    CHECK(!released.down && released.released);
+}
+
+void testTouchContactsCancelGesture() {
+    TouchContacts contacts;
+    contacts.update(1, TouchPhase::Down, 5.0, 6.0);
+    contacts.update(0, TouchPhase::Cancel, 0.0, 0.0);
+    const auto canceled = contacts.consume();
+    CHECK(canceled.cancelled);
+    CHECK(!canceled.down);
 }
 
 // --- camera -------------------------------------------------------------
@@ -441,7 +503,7 @@ void testHudGeometryIsPixelSpaceAndBounded() {
         std::span<const std::string>(lines), style, extent);
 
     CHECK(!mesh.vertices.empty());
-    CHECK(mesh.indices.size() % 6 == 0);
+    CHECK(mesh.indices.size() % 3 == 0);  // Vector glyphs are triangle meshes.
     for (const konbini::render::WorldVertex& vertex : mesh.vertices) {
         CHECK(vertex.position[0] >= -style.panelPaddingPixels);
         CHECK(vertex.position[1] >= -style.panelPaddingPixels);
@@ -455,7 +517,7 @@ void testHudGeometryIsPixelSpaceAndBounded() {
 }
 
 void testHudGeometryRejectsUnsupportedText() {
-    const std::vector<std::string> lines{"cash"};
+    const std::vector<std::string> lines{"cash\x01"};  // Lowercase is supported; controls are not.
     bool threw = false;
     try {
         (void)konbini::render::buildHudTextMesh(
@@ -490,6 +552,9 @@ int main() {
     testFixedStepProducesWholeTicks();
     testFixedStepCapsCatchUpAndReportsDroppedTicks();
     testFixedStepRejectsInvalidConfiguration();
+    testTouchContactsPreserveShortTapEdges();
+    testTouchContactsAccumulateDragAndPinch();
+    testTouchContactsCancelGesture();
     testCameraPanUsesAzimuthBasis();
     testCameraClampsTargetToCityBounds();
     testCameraZoomIsClamped();

@@ -9,7 +9,7 @@
 struct GLFWwindow;
 
 namespace pictor {
-class GlfwSurfaceProvider;
+class ISurfaceProvider;
 class VulkanContext;
 }  // namespace pictor
 
@@ -49,12 +49,14 @@ public:
 
     // 失敗時は確保済み resource を逆順で解放してから例外を投げる。
     void initialize(const RenderDeviceConfig& config);
+    // Mobile host owns the native surface, which must outlive this device.
+    void initialize(const RenderDeviceConfig& config,::pictor::ISurfaceProvider& surface);
     void shutdown() noexcept;
 
     [[nodiscard]] bool isInitialized() const noexcept;
 
     [[nodiscard]] ::pictor::VulkanContext& vulkan();
-    [[nodiscard]] ::pictor::GlfwSurfaceProvider& surface();
+    [[nodiscard]] ::pictor::ISurfaceProvider& surface();
     [[nodiscard]] ::ergo::render::RenderContext& context();
     [[nodiscard]] GLFWwindow* window() const;
 

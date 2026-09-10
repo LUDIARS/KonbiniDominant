@@ -26,6 +26,8 @@ enum class PlacementFailure : std::uint8_t {
     FacilityUnavailable,
     FacilityOccupied,
     InsufficientCash,
+    MissingSupport,
+    DimensionCollapsed,
 };
 
 struct PlacementDecision {
@@ -38,6 +40,7 @@ struct PlacementResult {
     PlaceStoreCommand command{};
     PlacementFailure failure = PlacementFailure::None;
     std::optional<StoreId> placedStore;
+    bool replacedIntactFacility = false;
 };
 
 [[nodiscard]] PlacementDecision validatePlacement(

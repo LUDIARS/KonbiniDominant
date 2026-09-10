@@ -36,7 +36,7 @@ sim::PlayerCommand CommandComposer::selectChain(
 // @implements spec/feature/phase-1-dominant-triangle.md 店舗配置
 sim::PlayerCommand CommandComposer::placeStore(
     const sim::ChainId chain, const sim::FacilityId facilityId,
-    const std::uint64_t targetTick) {
+    const std::uint64_t targetTick, const std::uint32_t verticalSlot) {
     if (!sim::isFirstPlayableChainId(chain)) {
         throw std::invalid_argument(
             "place store command requires a first-playable chain");
@@ -49,12 +49,16 @@ sim::PlayerCommand CommandComposer::placeStore(
         .order = nextOrder(targetTick),
         .chain = chain,
         .facilityId = facilityId,
-        // first playable の垂直 slot は地上のみ。Phase 2 で slot を扱う際に
-        // ここが唯一の発行点になる。
-        .verticalSlot = 0,
+        .verticalSlot = verticalSlot,
     };
 }
 
+sim::PlayerCommand CommandComposer::campaignAction(const sim::ChainId chain, const sim::CampaignAction action,
+    const sim::FacilityId facility, const std::uint32_t verticalSlot, const std::uint32_t dimension,
+    const std::uint64_t targetTick) {
+    if (!sim::isFirstPlayableChainId(chain)) throw std::invalid_argument("invalid player chain");
+    return sim::CampaignCommand{nextOrder(targetTick),chain,action,facility,verticalSlot,dimension};
+}
 std::uint64_t CommandComposer::issuedCount() const noexcept {
     return sequence_;
 }

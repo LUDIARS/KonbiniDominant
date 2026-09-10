@@ -4,19 +4,43 @@ add_library(
     commands/command_queue.cpp
     commands/structural_command_buffer.cpp
     content/first_playable_content.cpp
+    content/phase1_content.cpp
+    content/skill_content.cpp
+    content/skill_content_parser.cpp
+    systems/skill_progression.cpp
+    systems/skill_modifiers.cpp
+    systems/skill_pulses.cpp
+    content/campaign_content.cpp
+    content/campaign_content_parser.cpp
     content/json_document.cpp
     content/json_document.h
     counter_rng.cpp
     economy/revenue_math.cpp
+    economy/vertical_build_cost.cpp
     first_playable_simulation.cpp
     snapshots/canonical_snapshot.cpp
     snapshots/placement_cue_projection.cpp
     snapshots/resident_presentation.cpp
     snapshots/render_snapshot.cpp
+    snapshots/campaign_hud.cpp
     storage/chain_economy_table.cpp
     storage/facility_table.cpp
     storage/population_cell_table.cpp
     storage/store_table.cpp
+    storage/store_growth.cpp
+    systems/competitive_zoc_system.cpp
+    systems/dimension_system.cpp
+    systems/dimension_conquest.cpp
+    systems/campaign_command_system.cpp
+    systems/campaign_progression.cpp
+    systems/aion_invasion_system.cpp
+    systems/aion_maxvalue_system.cpp
+    systems/faith_system.cpp
+    systems/dominant_triangle.cpp
+    systems/encirclement_system.cpp
+    systems/opponent_ai_system.cpp
+    systems/phase1_outcome_system.cpp
+    systems/population_change_system.cpp
     systems/economy_system.cpp
     systems/placement_system.cpp
     systems/population_initializer.cpp
