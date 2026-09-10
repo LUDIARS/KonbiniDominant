@@ -46,6 +46,11 @@ function(konbini_enable_warnings target)
   endif()
 endfunction()
 
+if(EMSCRIPTEN)
+  add_subdirectory(web)
+  return()
+endif()
+
 if(KONBINI_BUILD_RENDER)
   set(
     KONBINI_PICTOR_REVISION

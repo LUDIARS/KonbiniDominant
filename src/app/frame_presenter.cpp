@@ -20,8 +20,7 @@ void FramePresenter::advance(double dt) { construction_.advance(dt); }
 void FramePresenter::reset() { construction_.reset(); }
 
 // @implements spec/feature/ui-ux.md Common HUD
-void FramePresenter::present(
-    render::WorldRenderLayer& worldLayer, render::HudOverlayLayer& hudLayer,
+render::PreparedFrame FramePresenter::compose(
     const sim::RenderSnapshot& snapshot,
     const render::IsometricCamera& camera,
     const std::optional<sim::FacilityId> selectedFacility,
@@ -42,7 +41,7 @@ void FramePresenter::present(
     drawList.overlayMesh.vertices.insert(drawList.overlayMesh.vertices.end(),
                                          particles.vertices.begin(), particles.vertices.end());
     for (const auto index : particles.indices) drawList.overlayMesh.indices.push_back(particleBase + index);
-    worldLayer.publishFrame(camera, std::move(drawList));
+
 
     auto mesh=render::buildHudTextMesh(controls.statusLines,controls.statusStyle,camera.extent);
     const auto warning = controls.modal ? render::WorldMesh{} : render::buildAionWarningGeometry(snapshot.hud(), camera.extent);
@@ -53,7 +52,7 @@ void FramePresenter::present(
     const auto buttonOffset=static_cast<std::uint32_t>(mesh.vertices.size());
     mesh.vertices.insert(mesh.vertices.end(),buttons.vertices.begin(),buttons.vertices.end());
     for(const auto index:buttons.indices) mesh.indices.push_back(buttonOffset+index);
-    hudLayer.publishFrame(std::move(mesh), camera.extent);
+    return {camera, std::move(drawList), std::move(mesh)};
 }
 
 const render::WorldDrawListSpec& FramePresenter::drawListSpec()

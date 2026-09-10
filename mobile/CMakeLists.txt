@@ -1,5 +1,6 @@
 add_library(konbini_mobile_game STATIC
   ../src/app/game_session.cpp
+  ../src/app/native_game_session.cpp
   ../src/app/frame_presenter.cpp
   ../src/app/native_mobile_runtime.cpp)
 target_link_libraries(konbini_mobile_game PUBLIC konbini_app_domain konbini_figmentum_adapter

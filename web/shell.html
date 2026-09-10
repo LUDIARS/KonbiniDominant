@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#141e24">
+<title>Konbini Dominant</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main id="game" aria-label="Konbini Dominant">
+  <canvas id="canvas" width="1280" height="720" tabindex="0" aria-label="ゲーム画面"></canvas>
+  <section id="loading" class="message" role="status"><strong>KONBINI DOMINANT</strong><p id="progress">街を準備しています…</p></section>
+  <section id="portrait" class="message" hidden><strong>横向きでプレイ</strong><p>端末を横向きにしてください。</p></section>
+  <section id="failure" class="message" role="alert" hidden><strong>ゲームを開始できませんでした</strong><p id="failure-text"></p><button id="reload" type="button">再読み込み</button></section>
+</main>
+<footer><span>KONBINI DOMINANT</span><span>タップで選択・出店 / ドラッグで移動 / ピンチでズーム</span><button id="fullscreen" type="button">全画面</button></footer>
+<script src="browser.js"></script>
+{{{ SCRIPT }}}
+</body>
+</html>

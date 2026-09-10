@@ -9,9 +9,6 @@
 #include <stdexcept>
 #include <utility>
 
-#include "konbini/adapters/ergo/world_frame_graph.h"
-#include "konbini/adapters/figmentum/figmentum_city_adapter.h"
-#include "konbini/adapters/pictor/world_geometry_loader.h"
 #include "konbini/app/camera_controller.h"
 #include "konbini/app/campaign_input_controller.h"
 #include "konbini/render/campaign_floor_view.h"
@@ -63,7 +60,7 @@ render::WorldDrawListSpec drawSpecFor(const city::CityManifest& manifest) {
 }
 }
 struct GameSession::Impl {
-    Impl(const std::filesystem::path& contentFile,const std::uint32_t maxTicks,PlaytestOptions options)
+    Impl(const std::filesystem::path& contentFile,const city::ICityGenerator& cityGenerator,const std::uint32_t maxTicks,PlaytestOptions options)
         : playtest(std::move(options)),report(playtest),simulation(contentFile,cityGenerator),
           camera(makeInitialCamera(simulation.city().manifest),simulation.city().manifest.boundsMeters,{}),
           fixedStep(simulation.content().simulation.ticksPerSecond,std::max(maxTicks,static_cast<std::uint32_t>(
@@ -72,7 +69,6 @@ struct GameSession::Impl {
     PlaytestOptions playtest;
     PlaytestReport report;
     PlaytestPilot pilot;
-    adapters::figmentum::FigmentumCityAdapter cityGenerator;
     SimulationHost simulation;
     CameraController camera;
     FixedStepDriver fixedStep;
@@ -88,19 +84,17 @@ struct GameSession::Impl {
     std::optional<sim::CampaignFailure> lastCampaignFailure;
     std::uint32_t lastDroppedTicks = 0;
 };
-GameSession::GameSession(const std::filesystem::path& file,const std::uint32_t maxTicks,PlaytestOptions playtest)
-    : impl_(std::make_unique<Impl>(file,maxTicks,std::move(playtest))) {}
+GameSession::GameSession(const std::filesystem::path& file,const city::ICityGenerator& generator,const std::uint32_t maxTicks,PlaytestOptions playtest)
+    : impl_(std::make_unique<Impl>(file,generator,maxTicks,std::move(playtest))) {}
+const city::GeneratedCity& GameSession::city() const noexcept { return impl_->simulation.city(); }
 GameSession::~GameSession()=default;
+std::uint64_t GameSession::completedTicks() const noexcept { return impl_->simulation.completedTicks(); }
 void GameSession::notifyPresented() {impl_->report.presented(*impl_->simulation.snapshot());}
 void GameSession::suspend() noexcept {
     impl_->fixedStep.drain();
     impl_->pointerInput.cancelGesture();
 }
-void GameSession::uploadGeometry(adapters::ergo::WorldFrameGraph& graph) {
-    const auto report=adapters::pictor::loadCityGeometry(impl_->simulation.city(),graph.geometryCache());
-    std::fprintf(stdout,"[konbini] uploaded %zu facility meshes (%zu shared)\n",report.uploaded,report.deduplicated);
-}
-void GameSession::frame(FrameInput input,const render::ViewportExtent extent,adapters::ergo::WorldFrameGraph& graph) {
+render::PreparedFrame GameSession::frame(FrameInput input,const render::ViewportExtent extent) {
     const double deltaSeconds=input.dtSeconds;
     impl_->presenter.advance(impl_->isPaused ? 0.0 : deltaSeconds);
     auto snapshot=impl_->simulation.snapshot();
@@ -270,8 +264,8 @@ void GameSession::frame(FrameInput input,const render::ViewportExtent extent,ada
     hudInput.droppedTicks = impl_->lastDroppedTicks;
     hudInput.isPaused = impl_->isPaused;
 
-    impl_->presenter.present(
-        graph.worldLayer(), graph.hudLayer(), *snapshot,
+    return impl_->presenter.compose(
+        *snapshot,
         camera, impl_->selection.selected(), hudInput,
         buildPointerControls(hudInput,extent,impl_->pointerInput.page(),input.uiScale),impl_->pointerInput.pressed());
 

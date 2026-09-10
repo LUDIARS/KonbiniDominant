@@ -36,7 +36,8 @@ def request(url, body=None):
 
 
 class TestingClaim:
-    def __init__(self, evidence, body):
+    def __init__(self, evidence, body, note=None):
+        self.note = note
         self.evidence = evidence
         self.body = body
         self.session = None
@@ -61,7 +62,7 @@ class TestingClaim:
         self.cc_url = local_http_base_url(
             os.environ.get("CONCORDIA_URL", ""), "CONCORDIA_URL")
         body = {"session_id": own["session_id"], "service": "konbini-dominant-app",
-                "note": "Local deterministic BT playtest, direct native EXE from project body, 100x normal rules. No LLM."}
+                "note": self.note or "Local deterministic BT playtest, direct native EXE from project body, 100x normal rules. No LLM."}
         path = self.evidence / "claim-request.json"
         path.write_text(json.dumps(body, ensure_ascii=False), encoding="utf-8")
         request(self.cc_url + "/v1/testing/claim", json.loads(path.read_text(encoding="utf-8")))

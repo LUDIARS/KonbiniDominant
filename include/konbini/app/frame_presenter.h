@@ -5,11 +5,10 @@
 
 #include "konbini/app/hud_text_model.h"
 #include "konbini/app/pointer_controls.h"
-#include "konbini/render/hud_overlay_layer.h"
+#include "konbini/render/prepared_frame.h"
 #include "konbini/render/hud_text_geometry.h"
 #include "konbini/render/isometric_camera.h"
 #include "konbini/render/world_draw_list.h"
-#include "konbini/render/world_render_layer.h"
 #include "konbini/sim/render_snapshot.h"
 
 // @implements spec/interface/pictor-rendering.md `RenderSnapshot`
@@ -18,7 +17,7 @@
 namespace konbini::app {
 
 // tick 終端の immutable snapshot だけを読み、world draw list と HUD geometry
-// を組んで layer へ publish する。simulation table へは触れない。
+// を組んで GPU 非依存の frame として返す。simulation table へは触れない。
 class FramePresenter {
 public:
     FramePresenter(
@@ -28,9 +27,7 @@ public:
     void advance(double deltaSeconds);
     void reset();
 
-    void present(
-        render::WorldRenderLayer& worldLayer,
-        render::HudOverlayLayer& hudLayer,
+    [[nodiscard]] render::PreparedFrame compose(
         const sim::RenderSnapshot& snapshot,
         const render::IsometricCamera& camera,
         std::optional<sim::FacilityId> selectedFacility,

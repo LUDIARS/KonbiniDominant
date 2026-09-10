@@ -98,6 +98,7 @@ if(KONBINI_BUILD_RENDER AND KONBINI_BUILD_FIGMENTUM_ADAPTER AND NOT KONBINI_MOBI
       app_runner.cpp
       frame_presenter.cpp
       game_session.cpp
+      native_game_session.cpp
       native_mobile_runtime.cpp
       main.cpp
       "${PROJECT_SOURCE_DIR}/include/konbini/app/app_runner.h"
