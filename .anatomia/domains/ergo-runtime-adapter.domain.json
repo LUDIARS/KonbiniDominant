@@ -1,6 +1,6 @@
 {
   "name": "ergo-runtime-adapter",
-  "description": "Ergo/Pictor runtime adapter: GLFW input injection, window and Vulkan device ownership, the FrameComposer pass graph, layer initialization rollback, and swapchain recovery classification.",
+  "description": "Ergo/Pictor runtime adapter: GLFW and native Windows touch input, desktop or host-supplied mobile surface ownership, Vulkan device ownership, the FrameComposer pass graph, layer initialization rollback, and swapchain recovery classification.",
   "presetRules": [],
   "templateRules": [],
   "membership": [
@@ -8,12 +8,14 @@
     { "pathPattern": "(^|/)src/adapters/ergo/[^/]+\\.(cpp|h)$" },
     { "pathPattern": "(^|/)tests/adapters/[^/]+\\.cpp$" }
   ],
-  "cardTemplate": "Summarise the ergo-runtime-adapter domain: how pinned Ergo/Pictor gaps (no initialize rollback, folded acquire results, no rebuild notification) are contained behind game-owned owners.",
+  "cardTemplate": "Summarise the ergo-runtime-adapter domain: how native touch, desktop/mobile surfaces, and pinned Ergo/Pictor lifecycle gaps are contained behind game-owned resource owners.",
   "source": "spec",
   "specRefs": [
     "spec/interface/ergo-runtime.md#input-adapter",
     "spec/interface/ergo-runtime.md#render-host",
-    "spec/interface/pictor-rendering.md#offscreen-world-composition"
+    "spec/interface/pictor-rendering.md#offscreen-world-composition",
+    "spec/feature/pointer-controls.md",
+    "spec/setup/mobile-native.md"
   ],
-  "updatedAt": "2026-08-21T00:00:00.000Z"
+  "updatedAt": "2026-09-10T00:00:00.000Z"
 }

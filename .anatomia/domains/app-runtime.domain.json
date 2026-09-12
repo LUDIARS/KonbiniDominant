@@ -1,6 +1,6 @@
 {
   "name": "app-runtime",
-  "description": "Native application layer: content and city bootstrap, fixed-step clock, camera, selection, command issuance, HUD text model, and the frame loop composition root.",
+  "description": "Native application layer: content and city bootstrap, fixed-step clock, camera and floor selection, pointer/touch intent translation, campaign command issuance, HUD/control models, deterministic playtest automation, and desktop/mobile frame-loop composition.",
   "presetRules": [],
   "templateRules": [],
   "membership": [
@@ -8,13 +8,16 @@
     { "pathPattern": "(^|/)src/app/[^/]+\\.(cpp|h)$" },
     { "pathPattern": "(^|/)tests/app/[^/]+\\.cpp$" }
   ],
-  "cardTemplate": "Summarise the app-runtime domain: how the native executable wires content, city generation, fixed ticks, input intents, camera, selection, HUD and presentation without a god class.",
+  "cardTemplate": "Summarise the app-runtime domain: how desktop and mobile hosts wire content, city generation, fixed ticks, pointer/touch intents, campaign controls, camera, selection, HUD, deterministic playtest automation and presentation without a god class.",
   "source": "spec",
   "specRefs": [
     "spec/plan/tasks/first-playable.md#build-and-process-boundary",
     "spec/plan/tasks/first-playable.md#minimal-controls",
     "spec/interface/ergo-runtime.md#frame--simulation",
-    "spec/feature/ui-ux.md#common-hud"
+    "spec/feature/ui-ux.md#common-hud",
+    "spec/feature/pointer-controls.md",
+    "spec/feature/full-campaign-baseline.md#controls-and-validation",
+    "spec/test/no-llm-native-playtest.md"
   ],
-  "updatedAt": "2026-08-21T00:00:00.000Z"
+  "updatedAt": "2026-09-10T00:00:00.000Z"
 }
