@@ -24,6 +24,19 @@
     },
     {
       "pathPattern": "(^|/)tools/(package_.*|playtest_.*|run_native_playtest|pe_dependencies)\\.py$"
+    },
+    {
+      "pathPattern": "(^|/)tools/(bake_vector_font|build_web|run_web_playtest).py$"
+    },
+    {
+      "pathPattern": "(^|/)tools/web_playtest.mjs$"
     }
+  ],
+  "specRefs": [
+    "spec/ux/product.md",
+    "spec/design.md",
+    "spec/feature/game-flow.md",
+    "spec/feature/pointer-controls.md",
+    "spec/feature/ui-ux.md"
   ]
 }

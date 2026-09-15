@@ -9,6 +9,15 @@
     },
     {
       "pathPattern": "(^|/)include/(?:.*/)?render/(?:.*/)?[^/]+$"
+    },
+    {
+      "pathPattern": "(^|/)src/gallery/[^/]+$"
     }
+  ],
+  "specRefs": [
+    "spec/ux/product.md",
+    "spec/design.md",
+    "spec/interface/pictor-rendering.md",
+    "spec/feature/grid-town-and-vector-ui.md"
   ]
 }

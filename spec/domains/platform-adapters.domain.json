@@ -15,6 +15,17 @@
     },
     {
       "pathPattern": "(^|/)cmake/(MobileVulkan|mobile/FindVulkan)\\.cmake$"
+    },
+    {
+      "pathPattern": "(^|/)web/[^/]+.(?:cpp|h|js)$"
     }
+  ],
+  "specRefs": [
+    "spec/ux/product.md",
+    "spec/design.md",
+    "spec/interface/ergo-runtime.md",
+    "spec/interface/mobile-platform.md",
+    "spec/interface/pictor-rendering.md",
+    "spec/feature/web-pictor.md"
   ]
 }

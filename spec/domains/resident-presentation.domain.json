@@ -53,6 +53,7 @@
   "specRefs": [
     "REQ-NPC-01",
     "REQ-PLACE-FEEDBACK-01",
-    "REQ-VISIA-01"
+    "REQ-VISIA-01",
+    "spec/ux/product.md"
   ]
 }

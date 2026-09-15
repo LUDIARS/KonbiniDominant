@@ -10,5 +10,13 @@
     {
       "pathPattern": "(^|/)include/(?:.*/)?sim/(?:.*/)?[^/]+$"
     }
+  ],
+  "specRefs": [
+    "spec/ux/product.md",
+    "spec/design.md",
+    "spec/data/world-state.md",
+    "spec/feature/full-campaign-baseline.md",
+    "spec/feature/phase-1-game-loop.md",
+    "spec/feature/economy-and-population.md"
   ]
 }
