@@ -1,5 +1,6 @@
 #include "konbini/adapters/ergo/render_device_host.h"
 #include "render_device_platform.h"
+#include "konbini/adapters/ergo/render_readiness.h"
 #include <cmath>
 #include <algorithm>
 #include <stdexcept>
@@ -58,15 +59,16 @@ void RenderDeviceHost::initialize(const RenderDeviceConfig& config,::pictor::ISu
         throw std::runtime_error("Pictor did not create the default swapchain render pass");
     }
     impl_->context.vk=&impl_->vulkan;
-    // Pinned Ergo keeps a desktop-only optional surface pointer. The game host
-    // handles mobile lifecycle; FrameComposer and game layers use context.vk.
-#ifdef KONBINI_DESKTOP_WINDOW
-    impl_->context.surface=impl_->desktop.get();
-#else
-    impl_->context.surface=nullptr;
-#endif
+    // Pinned Ergo borrows the platform-neutral provider. Desktop passes the
+    // GLFW provider and mobile hosts their native provider through the same
+    // boundary; Ergo checks it every frame for surface loss.
+    impl_->context.surface=&surface;
     impl_->context.renderer=nullptr;impl_->context.anim=nullptr;
     impl_->context.shader_dir=config.shaderDirectory;impl_->context.asset_root=config.assetRoot;
+    // Never continue as a render-less host: a missing backend or surface is a
+    // startup error, not a headless success.
+    try {requireRenderReady(impl_->context,"render device host");}
+    catch(...) {shutdown();throw;}
 }
 void RenderDeviceHost::shutdown() noexcept {
     if(!impl_) return;

@@ -23,9 +23,14 @@ Vulkan非依存でbuildできる設計にする。
 
 | dependency | inspected `origin/main` |
 |---|---|
-| Pictor | `c088e8d1b7b9e2625b7a8d923c89d4d684566c16` |
-| Ergo | `771b027f0e5492015b27f54c3bab1fd5c1ae4790` |
+| Pictor | `c6b1c7538ad00623221cea041e525342374f6126` |
+| Ergo | `7f0d6bbd34dced4fc6664a5f04bce9910e893537` |
 | Figmentum | `3ee998f487d984f54003c4ec3c4f7ba00b53eec3` |
+
+Pictorの旧pin `c088e8d1b7b9e2625b7a8d923c89d4d684566c16`は2026-07の履歴
+書き換えでremoteから取得できなくなった。`c6b1c7538ad00623221cea041e525342374f6126`
+は同じmerge (#105) の書き換え後commitで、差分はheader commentの伏せ字1行と
+docsだけである (KD-MOB-001で更新)。
 
 floating `main` は使わない。Figmentum は `FetchContent` でpopulateした後、
 exact HEADとclean worktreeを検証してからdependency CMakeを評価する。

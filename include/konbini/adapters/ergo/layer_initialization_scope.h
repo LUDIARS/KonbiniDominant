@@ -16,7 +16,7 @@ namespace konbini::adapters::ergo {
 
 // 初期化済み layer を登録順に覚え、失敗時に逆順で解放する owner。
 //
-// pinned Ergo (771b027f) の `FrameComposer::initialize()` は全 layer の
+// pinned Ergo (7f0d6bbd) の `FrameComposer::initialize()` は全 layer の
 // `initialize()` が終わってから `initialized_` を立てるため、途中の layer が
 // 例外を投げると composer は「未初期化」のまま残る。その状態では destructor
 // の `shutdown()` が no-op になり、既に GPU resource を確保した layer が

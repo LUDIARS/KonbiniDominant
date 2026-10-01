@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "implementations": [
+    {
+      "source": "src/adapters/ergo/render_readiness.cpp",
+      "tests": [
+        "tests/adapters/render_readiness_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/adapters/ergo/render_readiness.h",
+      "tests": [
+        "tests/adapters/render_readiness_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/adapters/ergo/render_device_host.cpp",
+      "tests": [
+        "tests/adapters/render_readiness_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/adapters/ergo/world_frame_graph.cpp",
+      "tests": [
+        "tests/adapters/render_readiness_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "cmake/RequireErgoRealRender.cmake",
+      "tests": [
+        "tests/cmake/ergo_real_render_contract_test.cmake"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "CMakeLists.txt",
+      "tests": [
+        "tests/cmake/ergo_real_render_contract_test.cmake",
+        "tests/adapters/render_readiness_test.cpp"
+      ],
+      "contracts": []
+    }
+  ]
+}

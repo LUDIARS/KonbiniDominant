@@ -64,8 +64,8 @@ folder からのみ行う。
 
 | 依存 | pinned revision |
 |---|---|
-| Pictor | `c088e8d1b7b9e2625b7a8d923c89d4d684566c16` |
-| Ergo | `771b027f0e5492015b27f54c3bab1fd5c1ae4790` |
+| Pictor | `c6b1c7538ad00623221cea041e525342374f6126` |
+| Ergo | `7f0d6bbd34dced4fc6664a5f04bce9910e893537` |
 | Figmentum | `3ee998f487d984f54003c4ec3c4f7ba00b53eec3` |
 
 setup contract は [spec/setup/native-development.md](spec/setup/native-development.md)。

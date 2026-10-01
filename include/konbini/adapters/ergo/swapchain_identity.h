@@ -40,9 +40,9 @@ struct SwapchainIdentity {
 [[nodiscard]] SwapchainIdentity sampleSwapchainIdentity(
     const ::pictor::VulkanContext& context) noexcept;
 
-// pinned Pictor (c088e8d1) の `acquire_next_image()` は out-of-date (内部で
+// pinned Pictor (c6b1c753) の `acquire_next_image()` は out-of-date (内部で
 // 再生成済み) と device / surface lost を同じ `UINT32_MAX` へ畳み、
-// `present()` も戻り値を見ずに再生成する。pinned Ergo (771b027f) の
+// `present()` も戻り値を見ずに再生成する。pinned Ergo (7f0d6bbd) の
 // `run_frame()` はどちらでも `true` を返す。この分類はその情報を frame 前後
 // の identity と present 有無から復元するためのもので、混同したまま
 // 「回復可能」として回し続けないための入口になる。

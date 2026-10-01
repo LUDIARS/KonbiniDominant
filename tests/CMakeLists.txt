@@ -125,7 +125,38 @@ if(KONBINI_BUILD_RENDER)
     COMMAND konbini_render_adapter_tests
   )
   add_dependencies(konbini_review konbini_render_adapter_tests)
+
+  # pinned Ergo の render backend 契約と、RenderContext の借用 handle 検査。
+  # Vulkan device は作らない (起動テストではない)。
+  add_executable(
+    konbini_render_readiness_tests
+    adapters/render_readiness_test.cpp
+  )
+  target_link_libraries(
+    konbini_render_readiness_tests
+    PRIVATE
+      konbini_ergo_adapter
+      pictor
+      Vulkan::Vulkan
+  )
+  if(WIN32)
+    target_compile_definitions(konbini_render_readiness_tests PRIVATE NOGDI)
+  endif()
+  konbini_enable_warnings(konbini_render_readiness_tests)
+  add_test(
+    NAME konbini_render_readiness_tests
+    COMMAND konbini_render_readiness_tests
+  )
+  add_dependencies(konbini_review konbini_render_readiness_tests)
 endif()
+
+# configure 時の Ergo real render 契約 (desktop / Android / iOS の選択)。
+# toolchain 不要の script mode で評価する。
+add_test(
+  NAME konbini_ergo_real_render_contract_tests
+  COMMAND "${CMAKE_COMMAND}" -P
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ergo_real_render_contract_test.cmake"
+)
 
 add_executable(konbini_grid_town_ui_tests render/grid_town_ui_test.cpp)
 target_link_libraries(konbini_grid_town_ui_tests PRIVATE konbini_app_domain konbini_render_domain)

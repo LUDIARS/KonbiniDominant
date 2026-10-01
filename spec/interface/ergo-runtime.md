@@ -5,7 +5,9 @@
 Ergoから入力、frame clock、render host、UI/audio等の共通機能を利用し、
 game-specific ruleやmass entity storageをErgoへ持ち込まない。
 
-調査対象: `LUDIARS/Ergo@771b027f0e5492015b27f54c3bab1fd5c1ae4790`
+調査対象: `LUDIARS/Ergo@7f0d6bbd34dced4fc6664a5f04bce9910e893537`
+(KD-MOB-001でplatform-neutral render contractを含むrevisionへ更新。
+以前の調査対象は`771b027f0e5492015b27f54c3bab1fd5c1ae4790`)
 
 ## 利用候補module
 
@@ -122,6 +124,30 @@ upstreamのtyped result / rebuild通知が入るまで、game側が次の3つを
    extent不一致をhostが検出した場合は、input / presentation publishより前に
    device idle → composer破棄 → `VulkanContext::recreate_swapchain()` →
    scene target / composer再構築を行い、そのframeはskipする。
+
+## Render readiness
+
+pinned Ergo `7f0d6bbd`の`ergo_render`はplatform-neutralなrender contractを持つ。
+(contract自体は`b618de7a`で入り、`7f0d6bbd`はMSVCでreal render有効時の
+`ERGO_RENDER_VULKAN_SOURCE`二重エスケープを直したrevision。これより前へは戻さない。)
+KonbiniDominantはこのcontractを次のconsumer境界で使う。
+
+| 境界 | contract | owner |
+|---|---|---|
+| surface | `RenderContext::surface`は`pictor::ISurfaceProvider*`を借用する。desktopは`GlfwSurfaceProvider`、Android / iOSはnative hostのproviderを同じ境界で渡す | `RenderDeviceHost` |
+| configure | `ERGO_RENDER_REQUIRE_REAL=ON`で起動し、`ergo_render`の`ERGO_RENDER_HAS_VULKAN=1`と期待platform (`DESKTOP` / `ANDROID` / `IOS`) を検査する | `cmake/RequireErgoRealRender.cmake` |
+| startup | `render_backend_contract()`が実描画有効かつ期待platformであること、`check_render_requirements(context)`が`None`であることを要求する | `requireRenderReady()` |
+| composer | `FrameComposer::initialize()`の`RenderBackendError`を捨てない。`None`以外ならcomposerをshutdownして明示errorにする | `WorldFrameGraph` |
+
+- 失敗は`RenderUnavailableError`として`RenderBackendError`を保持したまま
+  起動経路へ投げる。Vulkan-free / headless成功へ縮退しない。
+- 判定の正本はPictorの`PICTOR_HAS_VULKAN`をErgoが解決した結果であり、
+  desktop専用`Vulkan::Vulkan`の有無ではない。mobile configureは
+  `cmake/MobileVulkan.cmake`がtarget Vulkanを用意し、Pictorが
+  `PICTOR_HAS_VULKAN`を公開する。
+- surface lost中の`run_frame()`は`SurfaceNotReady`で`true`を返しframeを
+  skipする。これは既存の`classifyFrameOutcome()`がsurface lostとして扱う。
+- touch、native host lifecycle、packagingはKD-MOB-003〜006で扱う。
 
 ## Ergoを使わない領域
 

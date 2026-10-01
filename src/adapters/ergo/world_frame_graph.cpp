@@ -7,9 +7,11 @@
 
 #include "ergo/render/frame_composer.h"
 #include "ergo/render/frame_context.h"
+#include "ergo/render/render_backend.h"
 #include "ergo/render/render_context.h"
 #include "konbini/adapters/ergo/layer_initialization_scope.h"
 #include "konbini/adapters/ergo/render_device_host.h"
+#include "konbini/adapters/ergo/render_readiness.h"
 #include "konbini/adapters/ergo/tracked_render_layer.h"
 #include "konbini/adapters/pictor/world_geometry_cache.h"
 #include "konbini/adapters/pictor/world_scene_targets.h"
@@ -129,13 +131,23 @@ void WorldFrameGraph::buildComposer() {
         0, &worldFramebufferProvider, &impl_->targets);
     composer->set_pre_pass_hook(1, &compositeBarrierHook, &impl_->targets);
 
+    ::ergo::render::RenderBackendError readiness =
+        ::ergo::render::RenderBackendError::None;
     try {
         // pinned Ergo は途中失敗した initialize の rollback を持たないので、
         // scope が初期化済み layer を逆順で解放する。
-        composer->initialize(impl_->host->context());
+        readiness = composer->initialize(impl_->host->context());
     } catch (...) {
         impl_->scope.rollback();
         throw;
+    }
+    if (readiness != ::ergo::render::RenderBackendError::None) {
+        // Ergo は前提不成立でも layer を初期化して「描かない composer」を
+        // 返す。成功扱いにせず、composer 経由で layer を逆順に解放してから
+        // 明示 error にする。
+        composer->shutdown();
+        impl_->scope.rollback();
+        requireRenderReady(readiness, "world frame graph");
     }
     impl_->composer = std::move(composer);
     // Successful initialization transfers normal shutdown ownership to the

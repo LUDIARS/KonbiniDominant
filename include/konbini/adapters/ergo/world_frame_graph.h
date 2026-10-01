@@ -27,7 +27,7 @@ class RenderDeviceHost;
 // offscreen world pass -> barrier -> swapchain composite -> HUD の 2 pass 構成
 // と、その pass 列を保持する `FrameComposer` の所有者。
 //
-// pinned Ergo (771b027f) の `FrameComposer` は `add_pass()` 時の
+// pinned Ergo (7f0d6bbd) の `FrameComposer` は `add_pass()` 時の
 // `VkRenderPass` を後から差し替えられないため、swapchain 再生成では composer
 // ごと作り直す。layer は composer の `shutdown()` で逆順に解放され、
 // scene target を作り直してから同じ順で再初期化する。

@@ -5,6 +5,9 @@
   "templateRules": [],
   "membership": [
     {
+      "pathPattern": "^CMakeLists\\.txt$"
+    },
+    {
       "pathPattern": "(^|/)src/adapters/(?:.*/)?[^/]+$"
     },
     {
@@ -14,7 +17,7 @@
       "pathPattern": "(^|/)mobile/(?:.*/)?[^/]+$"
     },
     {
-      "pathPattern": "(^|/)cmake/(MobileVulkan|mobile/FindVulkan)\\.cmake$"
+      "pathPattern": "(^|/)cmake/(MobileVulkan|mobile/FindVulkan|RequireErgoRealRender|VerifyExactGitSource)\\.cmake$"
     },
     {
       "pathPattern": "(^|/)web/[^/]+.(?:cpp|h|js)$"
@@ -26,6 +29,7 @@
     "spec/interface/ergo-runtime.md",
     "spec/interface/mobile-platform.md",
     "spec/interface/pictor-rendering.md",
+    "spec/setup/native-development.md",
     "spec/feature/web-pictor.md"
   ]
 }

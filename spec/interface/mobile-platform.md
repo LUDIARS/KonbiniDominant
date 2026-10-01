@@ -26,7 +26,7 @@ package形式だけをplatform差分とする。
 ## Inspected dependency capability
 
 固定Pictor
-`c088e8d1b7b9e2625b7a8d923c89d4d684566c16`には次の足場がある。
+`c6b1c7538ad00623221cea041e525342374f6126`には次の足場がある。
 
 - platform-neutral `ISurfaceProvider`
 - `AndroidSurfaceProvider` / `IOSSurfaceProvider`
@@ -39,12 +39,18 @@ package形式だけをplatform差分とする。
 touch入力、asset packaging、actual-device成功を意味しない。
 
 固定Ergo
-`771b027f0e5492015b27f54c3bab1fd5c1ae4790`には次のgapがある。
+`7f0d6bbd34dced4fc6664a5f04bce9910e893537` (KD-MOB-001で更新) は次を満たす。
 
-- `ergo::render::RenderContext::surface`が
-  `pictor::GlfwSurfaceProvider*`へ固定されている
-- real render pathの判定がdesktop `find_package(Vulkan)` /
-  `Vulkan::Vulkan`を前提にする
+- `ergo::render::RenderContext::surface`は`pictor::ISurfaceProvider*`を借用し、
+  公開render headerは`GlfwSurfaceProvider`具象型を要求しない
+- real render pathの判定はPictorの`PICTOR_HAS_VULKAN`を正本とし、
+  Android / iOSでdesktop `Vulkan::Vulkan`不在だけでrenderを無効化しない
+- 実描画不可は`RenderBackendError`の型付き値で返し、mobile configureは
+  real render不成立を構成errorにする
+
+consumer側の検査は[Ergo runtime contract](ergo-runtime.md#render-readiness)。
+残るgapは次の通りで、後続taskで扱う。
+
 - UI pointerはsingle pointerで、finger ID / pinch / touch cancelを持たない
 - asset pathは通常filesystem上のpathを前提にする
 

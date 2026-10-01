@@ -5,7 +5,7 @@
 Pictorへgame stateを漏らさず、読み取り専用snapshotから大量の都市施設・店舗・
 effectを描画する。
 
-調査対象: `LUDIARS/Pictor@c088e8d1b7b9e2625b7a8d923c89d4d684566c16`
+調査対象: `LUDIARS/Pictor@c6b1c7538ad00623221cea041e525342374f6126`
 
 ## Ownership
 

@@ -29,7 +29,7 @@ struct PointerFrame : app::PointerSample {
 
 // GLFW callback を Ergo の inject API へ変換する adapter。
 //
-// pinned Ergo (771b027f) の `ergo_input` は platform poll が no-op なので、
+// pinned Ergo (7f0d6bbd) の `ergo_input` は platform poll が no-op なので、
 // device 状態は host が inject するしかない。raw callback から simulation
 // state を触らず、Ergo の double buffer へ入れるだけに留める。
 //

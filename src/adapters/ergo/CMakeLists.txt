@@ -8,6 +8,7 @@ add_library(
     construction_particle_presets.cpp
     construction_particle_geometry.cpp
     render_device_host.cpp
+    render_readiness.cpp
     swapchain_identity.cpp
     tracked_render_layer.cpp
     world_frame_graph.cpp
@@ -15,6 +16,7 @@ add_library(
     "${PROJECT_SOURCE_DIR}/include/konbini/adapters/ergo/input_action_map.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/adapters/ergo/layer_initialization_scope.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/adapters/ergo/render_device_host.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/adapters/ergo/render_readiness.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/adapters/ergo/swapchain_identity.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/adapters/ergo/tracked_render_layer.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/adapters/ergo/world_frame_graph.h"

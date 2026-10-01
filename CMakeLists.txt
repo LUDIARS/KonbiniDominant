@@ -14,6 +14,7 @@ endif()
 
 include(FetchContent)
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/VerifyExactGitSource.cmake")
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/RequireErgoRealRender.cmake")
 
 option(
   KONBINI_BUILD_FIGMENTUM_ADAPTER
@@ -54,11 +55,11 @@ endif()
 if(KONBINI_BUILD_RENDER)
   set(
     KONBINI_PICTOR_REVISION
-    "c088e8d1b7b9e2625b7a8d923c89d4d684566c16"
+    "c6b1c7538ad00623221cea041e525342374f6126"
   )
   set(
     KONBINI_ERGO_REVISION
-    "771b027f0e5492015b27f54c3bab1fd5c1ae4790"
+    "7f0d6bbd34dced4fc6664a5f04bce9910e893537"
   )
 
   if(KONBINI_MOBILE)
@@ -94,6 +95,10 @@ if(KONBINI_BUILD_RENDER)
   set(ERGO_BUILD_DUMMY OFF CACHE BOOL "" FORCE)
   set(ERGO_BUILD_BENCHMARKS OFF CACHE BOOL "" FORCE)
   set(ERGO_BUILD_RENDER ON CACHE BOOL "" FORCE)
+  # The game has no Vulkan-free render mode. Make Ergo fail configure on
+  # desktop too instead of warning and building a render-less ergo_render
+  # (spec/interface/ergo-runtime.md#Render readiness).
+  set(ERGO_RENDER_REQUIRE_REAL ON CACHE BOOL "" FORCE)
   # GLFW callback を受ける input adapter と frame clock は KD-FP-000J で
   # 使うので有効にする (spec/interface/ergo-runtime.md#利用候補module)。
   set(ERGO_BUILD_INPUT ON CACHE BOOL "" FORCE)
@@ -154,6 +159,7 @@ if(KONBINI_BUILD_RENDER)
     "${ergo_BINARY_DIR}"
     EXCLUDE_FROM_ALL
   )
+  konbini_require_ergo_real_render()
 endif()
 
 add_subdirectory(src)
