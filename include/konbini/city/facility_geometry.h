@@ -21,6 +21,20 @@ inline constexpr std::uint32_t kFirstPlayableFacilityLod = 0;
 inline constexpr std::uint32_t kFacilityGeometryCacheSchemaVersion = 3;
 inline constexpr std::uint32_t kFacilityVertexFormatVersion = 1;
 
+// Polygonize resolution and LOD level a city generator meshes facilities at.
+// Desktop keeps the first-playable finest level; a mobile graphics profile
+// declares a coarser one (KD-MOB-005). Both values enter the cache key.
+// @implements spec/interface/mobile-platform.md Assets and generated geometry
+struct FacilityMeshDetail {
+    std::int32_t polygonizeResolution = kFirstPlayableFacilityPolygonizeResolution;
+    std::uint32_t lod = kFirstPlayableFacilityLod;
+
+    friend bool operator==(const FacilityMeshDetail&, const FacilityMeshDetail&) =
+        default;
+};
+
+inline constexpr FacilityMeshDetail kFirstPlayableFacilityMeshDetail{};
+
 // recipe hash だけでなく generator revision / 解像度 / LOD / vertex format も
 // key に含める。どれか 1 つでも動くと同じ recipe から別 mesh が出るため、古い
 // geometry を再利用してはいけない。

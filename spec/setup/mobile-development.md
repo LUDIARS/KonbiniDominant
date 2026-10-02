@@ -50,6 +50,56 @@ Pictor mobile buildはNDK Vulkanを利用し、GLFWを要求しない。
 Ergo render targetがdesktop `find_package(Vulkan)`によりno-renderへ縮退しない
 ことをconfigure時に検証する。
 
+### Installed Android toolchain (KD-MOB-005, 2026-10-02)
+
+KD-MOB-005で開発機へ導入・使用した版。システム環境変数 (setx / レジストリ) は
+変更せず、command単位で`JAVA_HOME` / `ANDROID_HOME` / `ANDROID_SDK_ROOT`を
+指定する。
+
+| 項目 | 版 | 場所 |
+|---|---|---|
+| Android SDK root | — | `E:/Android/Sdk` (`mobile/android/local.properties`の`sdk.dir`。gitignore対象) |
+| NDK (Side by side) | 27.2.12479018 (r27c) | `E:/Android/Sdk/ndk/27.2.12479018` |
+| SDK CMake | 3.31.1 | `E:/Android/Sdk/cmake/3.31.1` |
+| SDK Platform | android-35 | `E:/Android/Sdk/platforms/android-35` |
+| Build-Tools | 35.0.0 | `E:/Android/Sdk/build-tools/35.0.0` |
+| JDK | 17.0.8.101 (hotspot) | `C:/Program Files (x86)/Android/openjdk/jdk-17.0.8.101-hotspot` |
+| sdkmanager | cmdline-tools 11.0 | `C:/Program Files (x86)/Android/android-sdk/cmdline-tools/11.0/bin` |
+| Gradle | 8.11.1 (wrapper、`distributionSha256Sum`固定) | `mobile/android/gradlew(.bat)`, `mobile/android/gradle/wrapper/` |
+| AGP | 8.9.2 | `mobile/android/build.gradle` |
+| host glslc | Vulkan SDK 1.4.341.1 | `VULKAN_SDK` (`C:/VulkanSDK/1.4.341.1`) |
+
+導入command:
+
+```text
+JAVA_HOME=<JDK 17> sdkmanager --sdk_root=E:/Android/Sdk --licenses
+JAVA_HOME=<JDK 17> sdkmanager --sdk_root=E:/Android/Sdk "ndk;27.2.12479018" "cmake;3.31.1" "platforms;android-35" "build-tools;35.0.0"
+```
+
+package build (`mobile/android`):
+
+```text
+set JAVA_HOME=<JDK 17>
+set ANDROID_HOME=E:\Android\Sdk
+gradlew.bat --no-daemon :app:assembleDebug
+```
+
+`assembleDebug`は`verifyKonbiniDebugApk`で終わる。APKに
+`mobile/android/required-assets.txt`の全asset、`lib/arm64-v8a/libkonbini_mobile.so`
+が無い、またはarm64-v8a以外のABIがある場合はbuild失敗にする。
+`mergeDebugAssets`前の`verifyKonbiniDebugStagedAssets`はCMakeがstageした
+`build-mobile-assets/debug`を同じlistで検査する。
+
+### NDK libc++ compatibility
+
+NDK r27のlibc++ 18は浮動小数点`std::from_chars`を持たない (libc++ 20で追加)。
+pinned Figmentum (`src/garment/profile.cpp`) とPictor (`src/visus/visus_json.cpp`)
+がこれを使うため、Android buildだけ`mobile/android/compat/libcxx_float_from_chars.h`
+をそれらのtargetへforce-includeし、定義は`konbini_mobile`へcompileする。
+上流sourceは編集しない。KD自身のJSON parserは`__cpp_lib_to_chars`が無い環境で
+classic locale streamを使い、shimに依存しない。NDKのlibc++が20以上になれば
+shimは無効化される。
+
 ## iOS
 
 必要な構成:

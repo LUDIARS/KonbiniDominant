@@ -234,6 +234,50 @@ Figmentum geometry cache keyは`schemaVersion` (recipe/schema version、3)、
 `generatorRevision`、`recipeHash`、`polygonizeResolution`、`lod`、
 `vertexFormatVersion`を持つ。first playableのLODは0 (最精細) だけである。
 
+### Android package host (KD-MOB-005)
+
+`mobile/android/`のthin NativeActivity hostは責務別に分ける。OS headerを含むのは
+このdirectoryだけで、game stateは変更しない。
+
+| 責務 | 置き場所 | 契約 |
+|---|---|---|
+| looper entry | `native_main.cpp` | `android_main`。boot後にcallbackを`AndroidHost`へ渡すだけ |
+| lifecycle / window owner | `AndroidHost` | `APP_CMD_*`を`LifecycleEventQueue`へ積み、owner threadで`LifecycleState`が決めた効果を`NativeMobileRuntime`へ適用する。`TERM_WINDOW`はcallback内で同期detachしてから`SurfaceLost`を積む |
+| touch | `forwardMotionEvent` | pointer ID、phase、window pixel、event時刻 (CLOCK_MONOTONIC) を`normalizeTouchSample`へ渡す。`ACTION_CANCEL`は全pointerをcancel |
+| insets | `safeAreaFromContentRect` | `android_app::contentRect`外のwindow端をsafe areaにする (window内へclamp) |
+| memory | `APP_CMD_LOW_MEMORY` | `MemoryPressure(Critical)`。`NativeMobileRuntime::memoryPressure`が`FigmentumCityAdapter`の再生成可能CPU geometryを段階evictする。描画中GPU bufferとsimulationは保持 |
+| thermal | `AndroidThermalMonitor` | API 30の`AThermal`をruntime解決し、binder threadから`ThermalPressure`をpushする。API 29ではstatus無し (`thermal=unavailable`) |
+| package asset | `AndroidAssetReader` / `materializePackagedAssets` | APKが正本。`requiredPackagedAssets()`を全件検査してから`<cacheDir>/konbini/package`へmirrorする (`.partial`→rename) |
+| writable root | `androidWritableRoots` | save / replay / settings / diagnosticsは`<filesDir>/konbini`、geometry cacheは`<cacheDir>/konbini/geometry`。作成失敗は`WritableRootUnavailable` |
+
+Activity pause (`APP_CMD_PAUSE`) とfocus喪失はどちらも「inactive」で、
+両者を合わせた変化だけを`Pause` / `Resume`として積む。`START` / `STOP`は
+`EnterForeground` / `EnterBackground`。`EnterBackground`の`checkpointRequested`は
+canonical save形式が未決のためlogだけ残す (simulationはholdされresetしない)。
+
+#### Mobile graphics profile
+
+`MobileGraphicsProfile` (version 1) はgameが宣言するmobile profileである。
+
+| profile | world color / depth | render scale | facility polygonize / LOD |
+|---|---|---|---|
+| desktop (参考) | RGBA16F / D32 | 1.0 | 24 / 0 |
+| `MobileHigh` | RGBA16F / D32 | 1.0 | 16 / 1 |
+| `MobileLow` | RGBA16F / D32 | 1.0 | 12 / 2 |
+
+`selectMobileGraphicsProfile`はboot時のthermal levelだけで選ぶ (serious /
+criticalなら`MobileLow`、それ以外とstatus無しは`MobileHigh`)。端末名は読まない。
+world formatは`WorldSceneTargets`がdevice init時にcapability検査し、未対応端末は
+`RenderInitError`でboot失敗にする (別formatへのsilent fallbackはしない)。
+選択結果は`GraphicsProfileDiagnostic`が`diagnostics/graphics-profile.log`へ書き、
+logcatにも出す。boot後のthermal変化はprofileを切り替えず「held」として追記する
+(facility mesh levelはboot時に固定。runtime切替はKD-MOB-007の実機計測後に判断)。
+
+Figmentum `planCity()`とfacilityごとの`polygonize`は`NativeMobileRuntime`の
+構築時 (最初のframe前) に端末process内で1回だけ実行し、frame loopでは
+polygonizeしない。`FacilityMeshDetail`はcache keyの`polygonizeResolution` / `lod`へ
+そのまま入る。
+
 ## Build and package contract
 
 toolchainとpackage layoutは

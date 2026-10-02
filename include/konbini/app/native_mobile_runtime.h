@@ -1,8 +1,11 @@
 #pragma once
+#include <cstddef>
 #include <filesystem>
 #include <memory>
 #include "konbini/adapters/ergo/render_lifecycle.h"
 #include "konbini/app/platform/display_metrics.h"
+#include "konbini/app/platform/memory_pressure.h"
+#include "konbini/city/facility_geometry.h"
 #include "konbini/app/touch_contacts.h"
 #include "konbini/render/viewport_extent.h"
 namespace pictor {class ISurfaceProvider;}
@@ -12,6 +15,10 @@ namespace konbini::app {
 class NativeMobileRuntime {
 public:
     explicit NativeMobileRuntime(const std::filesystem::path& assets);
+    // Plans the Figmentum city in this process and polygonizes every facility
+    // once at `facilityMesh` (the selected mobile graphics profile's level)
+    // before the first frame. The frame loop never polygonizes.
+    NativeMobileRuntime(const std::filesystem::path& assets,city::FacilityMeshDetail facilityMesh);
     ~NativeMobileRuntime();
     // Initializes the render device on a host-owned surface. Throws
     // `adapters::ergo::RenderInitError` with Pictor's typed init status.
@@ -28,6 +35,9 @@ public:
     // frame. Selection and simulation state are kept.
     void displayMetrics(const DisplayMetrics& metrics);
     void pause(bool paused) noexcept;
+    // Drops regenerable CPU facility geometry per the staged policy. GPU
+    // buffers being drawn and the simulation are kept. Returns dropped entries.
+    std::size_t memoryPressure(MemoryPressureLevel level);
     // Normalized native contact. Dropped while presentation may not submit
     // (paused, background, surface lost) so no contact survives a pause.
     void touch(const TouchSample& sample);

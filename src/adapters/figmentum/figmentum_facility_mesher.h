@@ -13,8 +13,10 @@ struct PreparedFacilityGeometry {
     fg::Aabb bounds;
 };
 
+// `detail.polygonizeResolution` below 1 is rejected (`std::invalid_argument`).
 [[nodiscard]] PreparedFacilityGeometry prepareFacilityGeometry(
-    const city::ManifestFacility& facility);
+    const city::ManifestFacility& facility,
+    city::FacilityMeshDetail detail = city::kFirstPlayableFacilityMeshDetail);
 
 [[nodiscard]] city::FacilityGeometry generateFacilityGeometry(
     const PreparedFacilityGeometry& prepared);

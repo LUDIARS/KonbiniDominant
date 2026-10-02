@@ -1,4 +1,13 @@
 plugins { id 'com.android.application' }
+
+// Native library, ABI and assets the package must carry. A package that
+// misses any of them is a failed build, not an installable candidate.
+def requiredAssets = file('../required-assets.txt').readLines()
+        .collect { it.trim() }
+        .findAll { it && !it.startsWith('#') }
+def packageAbi = 'arm64-v8a'
+def nativeLibrary = "lib/${packageAbi}/libkonbini_mobile.so".toString()
+
 android {
     namespace 'com.ludiars.konbinidominant'
     compileSdk 35
@@ -9,7 +18,7 @@ android {
         targetSdk 34
         versionCode 1
         versionName '0.1.0'
-        ndk { abiFilters 'arm64-v8a' }
+        ndk { abiFilters packageAbi }
         externalNativeBuild {
             cmake {
                 arguments '-DKONBINI_BUILD_TESTS=OFF'
@@ -23,7 +32,43 @@ android {
         release { assets.srcDirs = ['../../../build-mobile-assets/release'] }
     }
 }
-tasks.configureEach {
-    if (name == 'mergeDebugAssets') dependsOn 'externalNativeBuildDebug'
-    if (name == 'mergeReleaseAssets') dependsOn 'externalNativeBuildRelease'
+
+['Debug', 'Release'].each { variant ->
+    def stagingDir = file("../../../build-mobile-assets/${variant.toLowerCase()}")
+    // CMake stages content + SPIR-V while building the native library; the
+    // merge must not package a staging directory that lacks any of them.
+    def verifyStaged = tasks.register("verifyKonbini${variant}StagedAssets") {
+        dependsOn "externalNativeBuild${variant}"
+        doLast {
+            def missing = requiredAssets.findAll { !new File(stagingDir, it).isFile() }
+            if (missing) {
+                throw new GradleException("Konbini ${variant}: staged package assets missing: ${missing}")
+            }
+        }
+    }
+    def verifyApk = tasks.register("verifyKonbini${variant}Apk") {
+        doLast {
+            def apkDir = layout.buildDirectory.dir("outputs/apk/${variant.toLowerCase()}").get().asFile
+            def apks = (apkDir.listFiles() ?: []).findAll { it.name.endsWith('.apk') }
+            if (apks.size() != 1) {
+                throw new GradleException("Konbini ${variant}: expected one APK in ${apkDir}, found ${apks*.name}")
+            }
+            def entries = new java.util.zip.ZipFile(apks[0]).withCloseable { zip ->
+                zip.entries().toList().collect { it.name.toString() } as Set
+            }
+            def missing = (requiredAssets.collect { "assets/${it}".toString() } + nativeLibrary).findAll { !entries.contains(it) }
+            if (missing) {
+                throw new GradleException("Konbini ${variant}: APK ${apks[0].name} lacks ${missing}")
+            }
+            def foreignAbi = entries.findAll { it.startsWith('lib/') && !it.startsWith("lib/${packageAbi}/") }
+            if (foreignAbi) {
+                throw new GradleException("Konbini ${variant}: APK carries an unsupported ABI: ${foreignAbi}")
+            }
+            logger.lifecycle("Konbini ${variant}: verified ${apks[0]} (${requiredAssets.size()} assets, ${nativeLibrary})")
+        }
+    }
+    tasks.configureEach {
+        if (name == "merge${variant}Assets") dependsOn verifyStaged
+        if (name == "assemble${variant}") finalizedBy verifyApk
+    }
 }

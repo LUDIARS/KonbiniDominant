@@ -1,6 +1,6 @@
 # Native mobile build (implementation baseline)
-Status: Android / iOS builds and device launches NOT VERIFIED.
-Date: 2026-09-09
+Status: Android debug APK build verified (KD-MOB-005, 2026-10-02). Android install / device launch and all iOS builds NOT VERIFIED.
+Date: 2026-09-09 (Android package section updated 2026-10-02)
 
 ## Shared behavior
 Renderer stays Pictor, with the pinned Ergo frame composer and Figmentum city generator.
@@ -13,14 +13,17 @@ Background/focus loss pauses ticks and cancels contacts. Android window recreati
 ## Android Studio
 Open mobile/android. This is a native C++ NativeActivity application, arm64-v8a only.
 Prerequisites: JDK 17, Gradle 8.11.1, Android SDK 35, NDK 27.2.12479018, CMake 3.31.1 (>=3.28 required by this repository).
-The Gradle wrapper is not bundled. Install Gradle 8.11.1, then run 'gradle wrapper --gradle-version 8.11.1' in mobile/android before opening/syncing.
-Configure sdk.dir and, if using an external CMake, cmake.dir in mobile/android/local.properties.
+The Gradle 8.11.1 wrapper is bundled (mobile/android/gradlew, gradlew.bat, gradle/wrapper/) with a pinned distribution checksum.
+Configure sdk.dir (forward slashes, e.g. 'sdk.dir=E\:/Android/Sdk') and, if using an external CMake, cmake.dir in mobile/android/local.properties.
+Installed versions and locations on the development machine: mobile-development.md, "Installed Android toolchain".
 Install a host Vulkan SDK / glslc and set VULKAN_SDK. glslc runs on the build host; target Vulkan comes from the NDK.
 Git access to the three fixed dependency repositories is required for FetchContent.
 Build with 'gradlew.bat :app:assembleDebug' on Windows or './gradlew :app:assembleDebug' on macOS/Linux.
 Output: mobile/android/app/build/outputs/apk/debug/app-debug.apk.
 Supported device declaration: Android 10+ with Vulkan 1.2, arm64, touch screen. Actual supported GPU list is not established.
-The APK contains content JSON and six compiled SPIR-V shaders. NativeActivity extracts these into private application storage before startup.
+The APK contains content JSON and six compiled SPIR-V shaders (the HUD shaders are the UI assets; HUD glyphs are code-generated). At boot the host checks every required asset through AAssetManager, then mirrors them into <cacheDir>/konbini/package. Save / replay / settings / diagnostics live under <filesDir>/konbini, the regenerable geometry cache under <cacheDir>/konbini/geometry.
+The selected mobile graphics profile (MobileHigh / MobileLow) is logged and written to <filesDir>/konbini/diagnostics/graphics-profile.log.
+assembleDebug fails when the APK lacks a required asset or libkonbini_mobile.so, or carries another ABI.
 CMake stages assets before the Gradle merge-assets task. Rebuild after changing content or shaders.
 Release signing is not configured. No Play Store publication was performed.
 
@@ -36,7 +39,7 @@ A game-owned creation adapter enables the portability extensions that MoltenVK a
 No IPA, signing, simulator run, or physical-device run has been performed.
 
 ## Outstanding verification
-- Android Studio Gradle sync, NDK compile/link, APK asset inspection.
+- Android Studio IDE sync (command-line Gradle build, NDK compile/link and APK asset inspection were done in KD-MOB-005).
 - Xcode compile/link, signing, bundle resources, MoltenVK device/simulator compatibility.
 - Native startup, actual picture, landscape rotation, safe-area/notch/navigation-bar layout.
 - Tap/build/skill selection, drag/pinch, cancellation and background/foreground recovery on both platforms.

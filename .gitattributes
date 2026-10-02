@@ -8,3 +8,6 @@
 *.gltf text eol=lf
 *.spv binary
 *.wav binary
+*.jar binary
+*.bat text eol=crlf
+/mobile/android/gradlew text eol=lf

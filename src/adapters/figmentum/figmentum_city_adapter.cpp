@@ -32,6 +32,20 @@ std::shared_ptr<const city::FacilityGeometry> bindToFacility(
 
 }  // namespace
 
+FigmentumCityAdapter::FigmentumCityAdapter(
+    const city::FacilityMeshDetail meshDetail) noexcept
+    : meshDetail_(meshDetail) {}
+
+city::FacilityMeshDetail FigmentumCityAdapter::meshDetail() const noexcept {
+    return meshDetail_;
+}
+
+// @implements spec/interface/mobile-platform.md Assets and generated geometry
+std::size_t FigmentumCityAdapter::evictDerivedGeometry(
+    const city::GeometryEvictionScope scope) const {
+    return geometryCache_.evict(city::DerivedGeometryCachePolicy{}, scope);
+}
+
 // @implements spec/interface/figmentum-city-generation.md Required game-side boundary
 city::CityManifest FigmentumCityAdapter::planFirstPlayableCity(
     sim::GenerationalIdPool<sim::FacilityId>& facilityIds) const {
@@ -45,7 +59,7 @@ std::shared_ptr<const city::FacilityGeometry>
 FigmentumCityAdapter::buildFacility(
     const city::ManifestFacility& facility) const {
     const PreparedFacilityGeometry prepared =
-        prepareFacilityGeometry(facility);
+        prepareFacilityGeometry(facility, meshDetail_);
     if (const auto cached = geometryCache_.find(prepared.cacheKey);
         cached != nullptr) {
         return bindToFacility(cached, facility.figmentumKey);

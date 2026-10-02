@@ -3,6 +3,7 @@
 #include "konbini/app/app_paths.h"
 #include "konbini/adapters/ergo/render_device_host.h"
 #include "konbini/adapters/ergo/world_frame_graph.h"
+#include "konbini/adapters/figmentum/figmentum_city_adapter.h"
 #include <cmath>
 #include <algorithm>
 #include <stdexcept>
@@ -14,9 +15,11 @@ namespace {
 constexpr unsigned kMaxReinitializeWithoutPresent=2;
 }
 struct NativeMobileRuntime::Impl {
-    explicit Impl(const std::filesystem::path& root)
-        : assets(root),game(root/"data/content/first-playable.json") {}
+    Impl(const std::filesystem::path& root,city::FacilityMeshDetail facilityMesh)
+        : assets(root),cityGenerator(facilityMesh),game(root/"data/content/first-playable.json",cityGenerator) {}
     std::filesystem::path assets;
+    // Kept for the session so its derived geometry cache can be evicted.
+    adapters::figmentum::FigmentumCityAdapter cityGenerator;
     GameSession game;
     adapters::ergo::RenderDeviceHost device;
     adapters::ergo::WorldFrameGraph graph;
@@ -31,7 +34,10 @@ struct NativeMobileRuntime::Impl {
     // Simulation state is kept: only accumulated wall time and touches go.
     void holdSimulation() noexcept {game.suspend();contacts.cancel();lastSeconds=0;}
 };
-NativeMobileRuntime::NativeMobileRuntime(const std::filesystem::path& assets):impl_(std::make_unique<Impl>(assets)) {}
+NativeMobileRuntime::NativeMobileRuntime(const std::filesystem::path& assets)
+    :NativeMobileRuntime(assets,city::kFirstPlayableFacilityMeshDetail) {}
+NativeMobileRuntime::NativeMobileRuntime(const std::filesystem::path& assets,const city::FacilityMeshDetail facilityMesh)
+    :impl_(std::make_unique<Impl>(assets,facilityMesh)) {}
 NativeMobileRuntime::~NativeMobileRuntime() {detach();}
 // @implements spec/interface/pictor-rendering.md Surface / device recovery
 void NativeMobileRuntime::attach(::pictor::ISurfaceProvider& surface,render::ViewportExtent extent,double density) {
@@ -91,6 +97,10 @@ void NativeMobileRuntime::pause(bool paused) noexcept {
     impl_->lifecycle.setPaused(paused);
     impl_->applyPresentationGate();
     impl_->holdSimulation();
+}
+// @implements spec/interface/mobile-platform.md Lifecycle
+std::size_t NativeMobileRuntime::memoryPressure(const MemoryPressureLevel level) {
+    return impl_->cityGenerator.evictDerivedGeometry(geometryEvictionScope(level));
 }
 void NativeMobileRuntime::touch(const TouchSample& sample) {
     if(impl_->lifecycle.maySubmit()) impl_->contacts.update(sample);

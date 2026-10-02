@@ -48,6 +48,10 @@ add_library(
     platform/directory_asset_reader.cpp
     platform/required_packaged_assets.cpp
     platform/writable_paths.cpp
+    platform/mobile_graphics_profile.cpp
+    platform/graphics_profile_diagnostic.cpp
+    platform/android_host_mapping.cpp
+    platform/packaged_asset_mirror.cpp
     "${PROJECT_SOURCE_DIR}/include/konbini/app/app_paths.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/app/camera_controller.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/app/command_composer.h"
@@ -76,6 +80,10 @@ add_library(
     "${PROJECT_SOURCE_DIR}/include/konbini/app/platform/directory_asset_reader.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/app/platform/required_packaged_assets.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/app/platform/writable_paths.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/app/platform/mobile_graphics_profile.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/app/platform/graphics_profile_diagnostic.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/app/platform/android_host_mapping.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/app/platform/packaged_asset_mirror.h"
 )
 
 target_include_directories(

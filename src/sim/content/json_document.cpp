@@ -3,15 +3,34 @@
 #include <charconv>
 #include <cmath>
 #include <cstdint>
+#include <locale>
+#include <sstream>
 #include <stdexcept>
+#include <string_view>
 #include <system_error>
 #include <utility>
+#include <version>
 
 // @implements spec/data/content-schema.md Validation
 
 namespace konbini::sim::json {
 
 namespace {
+
+// Locale-independent decimal parse of an already validated JSON number.
+// The Android NDK libc++ has no floating-point `std::from_chars`; there the
+// classic "C" locale stream gives the same correctly rounded value.
+[[nodiscard]] bool parseJsonDouble(const std::string_view text, double& value) {
+#if defined(__cpp_lib_to_chars)
+    const auto parsed = std::from_chars(text.data(), text.data() + text.size(), value);
+    return parsed.ec == std::errc{} && parsed.ptr == text.data() + text.size();
+#else
+    std::istringstream stream{std::string(text)};
+    stream.imbue(std::locale::classic());
+    stream >> value;
+    return !stream.fail() && stream.peek() == std::char_traits<char>::eof();
+#endif
+}
 
 class Parser {
 public:
@@ -227,8 +246,8 @@ private:
         double value = 0.0;
         const char* begin = input_.data() + start;
         const char* end = input_.data() + position_;
-        const auto parsed = std::from_chars(begin, end, value);
-        if (parsed.ec != std::errc{} || parsed.ptr != end || !std::isfinite(value)) {
+        if (!parseJsonDouble(std::string_view(begin, static_cast<std::size_t>(end - begin)), value) ||
+            !std::isfinite(value)) {
             fail("invalid or non-finite number");
         }
         return {

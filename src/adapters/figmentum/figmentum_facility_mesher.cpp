@@ -93,7 +93,12 @@ fg::BuildingParams convert(const city::BuildingRecipe& recipe) {
 // @implements spec/interface/figmentum-city-generation.md Geometry generation
 // @implements spec/interface/figmentum-city-generation.md Error contract
 PreparedFacilityGeometry prepareFacilityGeometry(
-    const city::ManifestFacility& facility) {
+    const city::ManifestFacility& facility,
+    const city::FacilityMeshDetail detail) {
+    if (detail.polygonizeResolution < 1) {
+        throw std::invalid_argument(
+            "facility polygonize resolution must be at least 1");
+    }
     require(facility.id.isValid(), "facility game id is invalid");
     require(facility.figmentumKey.isValid(),
             "facility Figmentum key is invalid");
@@ -121,9 +126,8 @@ PreparedFacilityGeometry prepareFacilityGeometry(
                 .generatorRevision = std::string(city::kFigmentumRevision),
                 .recipeHash =
                     city::buildingRecipeFingerprint(facility.recipe),
-                .polygonizeResolution =
-                    city::kFirstPlayableFacilityPolygonizeResolution,
-                .lod = city::kFirstPlayableFacilityLod,
+                .polygonizeResolution = detail.polygonizeResolution,
+                .lod = detail.lod,
                 .vertexFormatVersion = city::kFacilityVertexFormatVersion,
             },
         .recipe = recipe,
@@ -143,7 +147,7 @@ city::FacilityGeometry generateFacilityGeometry(
         [&model](const fg::Vec3 point) { return model.eval(point); },
         prepared.bounds.min,
         prepared.bounds.max,
-        city::kFirstPlayableFacilityPolygonizeResolution);
+        prepared.cacheKey.polygonizeResolution);
     if (mesh.vertices.empty() || mesh.indices.empty() ||
         mesh.indices.size() % 3 != 0) {
         throw std::runtime_error("Figmentum polygonize returned empty geometry");

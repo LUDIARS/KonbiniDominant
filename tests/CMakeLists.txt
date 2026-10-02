@@ -272,6 +272,15 @@ konbini_add_test(
   app/platform/asset_boundary_test.cpp
   konbini_app_domain
 )
+# KD-MOB-005 Android package contract: profile selection / diagnostic, host
+# value mapping, writable roots, packaged asset mirror and the Gradle list.
+konbini_add_test(
+  konbini_android_package_contract_tests
+  app/platform/android_package_contract_test.cpp
+  konbini_app_domain
+)
+target_compile_definitions(konbini_android_package_contract_tests PRIVATE
+  "KONBINI_ANDROID_REQUIRED_ASSETS_FILE=\"${PROJECT_SOURCE_DIR}/mobile/android/required-assets.txt\"")
 konbini_add_test(
   konbini_derived_geometry_cache_tests
   city/derived_geometry_cache_policy_test.cpp
@@ -331,4 +340,13 @@ if(KONBINI_BUILD_FIGMENTUM_ADAPTER)
     COMMAND konbini_figmentum_pedestrian_path_tests
   )
   add_dependencies(konbini_review konbini_figmentum_pedestrian_path_tests)
+
+  # Mobile graphics profile mesh level and staged derived-geometry eviction
+  # over the pinned Figmentum generator (KD-MOB-005).
+  konbini_add_test(
+    konbini_figmentum_mesh_detail_tests
+    adapters/figmentum_mesh_detail_test.cpp
+    konbini_figmentum_adapter
+  )
+  target_link_libraries(konbini_figmentum_mesh_detail_tests PRIVATE konbini_app_domain)
 endif()

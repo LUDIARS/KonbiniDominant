@@ -265,7 +265,8 @@
     {
       "source": "src/adapters/figmentum/figmentum_city_adapter.cpp",
       "tests": [
-        "tests/adapters/figmentum_pedestrian_path_test.cpp"
+        "tests/adapters/figmentum_pedestrian_path_test.cpp",
+        "tests/adapters/figmentum_mesh_detail_test.cpp"
       ],
       "contracts": []
     },
@@ -498,7 +499,8 @@
     {
       "source": "include/konbini/city/facility_geometry.h",
       "tests": [
-        "tests/city/derived_geometry_cache_policy_test.cpp"
+        "tests/city/derived_geometry_cache_policy_test.cpp",
+        "tests/adapters/figmentum_mesh_detail_test.cpp"
       ],
       "contracts": []
     },
@@ -1035,6 +1037,92 @@
       "source": "src/render/generated/noto_sans_jp_speech_mesh.inc",
       "tests": [
         "tests/tools/speech_font_assets_test.py"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/app/platform/mobile_graphics_profile.h",
+      "tests": [
+        "tests/app/platform/android_package_contract_test.cpp",
+        "tests/adapters/figmentum_mesh_detail_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/app/platform/mobile_graphics_profile.cpp",
+      "tests": [
+        "tests/app/platform/android_package_contract_test.cpp",
+        "tests/adapters/figmentum_mesh_detail_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/app/platform/graphics_profile_diagnostic.h",
+      "tests": [
+        "tests/app/platform/android_package_contract_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/app/platform/graphics_profile_diagnostic.cpp",
+      "tests": [
+        "tests/app/platform/android_package_contract_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/app/platform/android_host_mapping.h",
+      "tests": [
+        "tests/app/platform/android_package_contract_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/app/platform/android_host_mapping.cpp",
+      "tests": [
+        "tests/app/platform/android_package_contract_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/app/platform/packaged_asset_mirror.h",
+      "tests": [
+        "tests/app/platform/android_package_contract_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/app/platform/packaged_asset_mirror.cpp",
+      "tests": [
+        "tests/app/platform/android_package_contract_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "mobile/android/required-assets.txt",
+      "tests": [
+        "tests/app/platform/android_package_contract_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/adapters/figmentum/figmentum_city_adapter.h",
+      "tests": [
+        "tests/adapters/figmentum_mesh_detail_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/adapters/figmentum/figmentum_facility_mesher.cpp",
+      "tests": [
+        "tests/adapters/figmentum_mesh_detail_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/adapters/figmentum/figmentum_facility_mesher.h",
+      "tests": [
+        "tests/adapters/figmentum_mesh_detail_test.cpp"
       ],
       "contracts": []
     }

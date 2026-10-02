@@ -1,0 +1,10 @@
+# Package-relative assets the APK must contain. Mirrors
+# konbini::app::requiredPackagedAssets() (src/app/platform/required_packaged_assets.cpp);
+# konbini_android_package_contract_tests fails when the two lists drift.
+data/content/first-playable.json
+shaders/konbini_world.vert.spv
+shaders/konbini_world.frag.spv
+shaders/konbini_composite.vert.spv
+shaders/konbini_composite.frag.spv
+shaders/konbini_hud.vert.spv
+shaders/konbini_hud.frag.spv
