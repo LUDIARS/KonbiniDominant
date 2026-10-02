@@ -51,7 +51,7 @@ int main() {
             if (windowExtent != device.swapchainExtent()) graph.requestRebuild();
             if (graph.rebuildPending()) {
                 const auto outcome = graph.runFrame(0.0F);
-                if (kd::adapters::ergo::isFatal(outcome)) {
+                if (kd::adapters::ergo::requiresReinitialize(outcome)) {
                     throw std::runtime_error("gallery swapchain rebuild failed");
                 }
                 continue;
@@ -99,7 +99,7 @@ int main() {
             style.glyphPixelScale = 2.0F;
             graph.hudLayer().publishFrame(kd::render::buildHudTextMesh(labels, style, extent), extent);
             const auto outcome = graph.runFrame(1.0F / 60.0F);
-            if (kd::adapters::ergo::isFatal(outcome)) {
+            if (kd::adapters::ergo::requiresReinitialize(outcome)) {
                 throw std::runtime_error(kd::adapters::ergo::describeFrameOutcome(outcome));
             }
             if (++renderedFrames % 8U == 0) {

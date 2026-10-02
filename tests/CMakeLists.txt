@@ -102,7 +102,8 @@ add_test(NAME konbini_app_tests COMMAND konbini_app_tests)
 add_dependencies(konbini_review konbini_app_tests)
 
 if(KONBINI_BUILD_RENDER)
-  # swapchain out-of-date / device lost の分類と、layer 初期化の逆順 rollback。
+  # Pictor typed FrameResult の分類、mobile render lifecycle、初期化失敗の
+  # typed status、layer 初期化の逆順 rollback。
   # Vulkan の型を使うが device は作らない (起動テストではない)。
   add_executable(
     konbini_render_adapter_tests
@@ -152,6 +153,13 @@ endif()
 
 # configure 時の Ergo real render 契約 (desktop / Android / iOS の選択)。
 # toolchain 不要の script mode で評価する。
+# CMake の Pictor / Ergo pin と setup spec / README の依存表の一致。
+add_test(
+  NAME konbini_dependency_pin_contract_tests
+  COMMAND "${CMAKE_COMMAND}" -P
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependency_pin_contract_test.cmake"
+)
+
 add_test(
   NAME konbini_ergo_real_render_contract_tests
   COMMAND "${CMAKE_COMMAND}" -P

@@ -26,14 +26,25 @@ package形式だけをplatform差分とする。
 ## Inspected dependency capability
 
 固定Pictor
-`c6b1c7538ad00623221cea041e525342374f6126`には次の足場がある。
+`02ea861c1657f1f7f3b4d41c361388e7646cbe47` (KD-MOB-002で更新、Pictor #2243)
+には次の足場がある。
 
 - platform-neutral `ISurfaceProvider`
-- `AndroidSurfaceProvider` / `IOSSurfaceProvider`
+- `AndroidSurfaceProvider` / `IOSSurfaceProvider` (host所有のまま)
 - Android Vulkan / iOS MoltenVK向けCMake分岐
 - pause / resume / suspend / surface loss
 - memory pressure / thermal state
 - `MobileLow` / `MobileHigh` profile
+- typed `FrameResult` (`Ready` / `RecreateSwapchain` / `SurfaceLost` /
+  `DeviceLost` / `Suspended` / `NotInitialized` / `Error`) と
+  `swapchain_recreated`
+- `VulkanContext::set_presentation_suspended()`による停止中のGPU submission抑止
+- `ContextInitStatus` (`SurfaceUnavailable` / `MissingInstanceExtension` /
+  `MissingDeviceExtension` / `MissingCapability` ほか) とMoltenVK
+  portabilityのcapability検査
+
+KDでの対応付けは
+[Pictor rendering contract](pictor-rendering.md#surface--device-recovery)。
 
 これらはhostから接続するlibrary APIであり、KonbiniDominantのAPK / iOS app、
 touch入力、asset packaging、actual-device成功を意味しない。

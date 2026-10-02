@@ -8,7 +8,7 @@
 #include "konbini/adapters/ergo/ergo_input_bridge.h"
 #include "konbini/adapters/ergo/input_action_map.h"
 #include "konbini/adapters/ergo/render_device_host.h"
-#include "konbini/adapters/ergo/swapchain_identity.h"
+#include "konbini/adapters/ergo/frame_outcome.h"
 #include "konbini/adapters/ergo/world_frame_graph.h"
 
 namespace konbini::app {
@@ -105,8 +105,16 @@ int AppRunner::run() {
             // Rebuild before sampling input or publishing presentation state.
             // Otherwise this frame would pick against the old extent and the
             // rebuild would discard the world/HUD state just published.
-            (void)impl_->graph.runFrame(0.0F);
+            const adapters::ergo::FrameOutcome rebuilt =
+                impl_->graph.runFrame(0.0F);
             impl_->bridge.endFrame();
+            if (adapters::ergo::requiresReinitialize(rebuilt)) {
+                std::fprintf(
+                    stderr, "[konbini] fatal render state: %s\n",
+                    adapters::ergo::describeFrameOutcome(rebuilt));
+                exitCode = 2;
+                break;
+            }
             continue;
         }
 
@@ -124,9 +132,10 @@ int AppRunner::run() {
 
         const adapters::ergo::FrameOutcome outcome =
             impl_->graph.runFrame(static_cast<float>(deltaSeconds));
-        if(outcome==adapters::ergo::FrameOutcome::Presented || outcome==adapters::ergo::FrameOutcome::PresentedAfterRebuild)
-            impl_->game.notifyPresented();
-        if (adapters::ergo::isFatal(outcome)) {
+        if(adapters::ergo::wasPresented(outcome)) impl_->game.notifyPresented();
+        // Desktop has no surface hand-back path: a GLFW window loss or device
+        // loss ends the run instead of being retried as a resize.
+        if (adapters::ergo::requiresReinitialize(outcome)) {
             std::fprintf(
                 stderr, "[konbini] fatal render state: %s\n",
                 adapters::ergo::describeFrameOutcome(outcome));

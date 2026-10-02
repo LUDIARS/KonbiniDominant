@@ -1,10 +1,12 @@
 #include "konbini/adapters/ergo/render_device_host.h"
 #include "render_device_platform.h"
 #include "konbini/adapters/ergo/render_readiness.h"
+#include "konbini/adapters/ergo/render_init_error.h"
 #include <cmath>
 #include <algorithm>
 #include <stdexcept>
 #include "ergo/render/render_context.h"
+#include "pictor/surface/frame_gate.h"
 #include "pictor/surface/surface_provider.h"
 #include "pictor/surface/vulkan_context.h"
 #ifdef KONBINI_DESKTOP_WINDOW
@@ -50,8 +52,11 @@ void RenderDeviceHost::initialize(const RenderDeviceConfig& config,::pictor::ISu
     vk.app_name="KonbiniDominant";vk.validation=config.validation;
     vk.create_default_render_pass=true;vk.frames_in_flight=config.framesInFlight;
     if(!impl_->vulkan.initialize(&surface,vk)) {
+        // Keep Pictor's typed reason: a missing native window is retryable
+        // after the host hands the surface back, a capability gap is not.
+        const ::pictor::ContextInitResult result=impl_->vulkan.init_result();
         shutdown();
-        throw std::runtime_error("failed to initialize the Pictor Vulkan context");
+        throw RenderInitError(result);
     }
     impl_->vulkanCreated=true;
     if(impl_->vulkan.default_render_pass()==VK_NULL_HANDLE) {
@@ -78,6 +83,25 @@ void RenderDeviceHost::shutdown() noexcept {
 #ifdef KONBINI_DESKTOP_WINDOW
     impl_->desktop.reset();
 #endif
+}
+// @implements spec/interface/pictor-rendering.md Surface / device recovery
+void RenderDeviceHost::setPresentationSuspended(const bool suspended) noexcept {
+    if(impl_ && impl_->vulkanCreated) impl_->vulkan.set_presentation_suspended(suspended);
+}
+// @implements spec/interface/pictor-rendering.md Surface / device recovery
+::pictor::FrameResult RenderDeviceHost::gateFrame() const noexcept {
+    // Same predicate Pictor applies inside acquire / present and Ergo applies
+    // before acquire. Evaluating it first keeps a stale last_frame_result()
+    // from being read when Ergo returns early on a missing native window.
+    ::pictor::FrameGateInput input;
+    input.initialized=isInitialized();
+    if(input.initialized) {
+        input.latched=impl_->vulkan.last_frame_result().status;
+        input.presentation_suspended=impl_->vulkan.presentation_suspended();
+    }
+    input.native_surface_available=impl_->surface!=nullptr &&
+        impl_->surface->get_native_handle().type!=::pictor::NativeWindowHandle::Type::None;
+    return ::pictor::gate_frame(input);
 }
 bool RenderDeviceHost::isInitialized() const noexcept {
     return impl_ && impl_->vulkanCreated && impl_->vulkan.is_initialized();

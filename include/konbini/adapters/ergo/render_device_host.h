@@ -5,6 +5,7 @@
 #include <string>
 
 #include "konbini/render/viewport_extent.h"
+#include "pictor/surface/frame_result.h"
 
 struct GLFWwindow;
 
@@ -47,13 +48,23 @@ public:
     RenderDeviceHost(const RenderDeviceHost&) = delete;
     RenderDeviceHost& operator=(const RenderDeviceHost&) = delete;
 
-    // 失敗時は確保済み resource を逆順で解放してから例外を投げる。
+    // 失敗時は確保済み resource を逆順で解放してから例外を投げる。Pictor の
+    // 初期化失敗は `RenderInitError` (typed `ContextInitStatus`) で返す。
     void initialize(const RenderDeviceConfig& config);
     // Mobile host owns the native surface, which must outlive this device.
     void initialize(const RenderDeviceConfig& config,::pictor::ISurfaceProvider& surface);
     void shutdown() noexcept;
 
     [[nodiscard]] bool isInitialized() const noexcept;
+
+    // Host lifecycle gate (pause / background / surface release). While set,
+    // Pictor issues no acquire, submit, present or swapchain recreation.
+    void setPresentationSuspended(bool suspended) noexcept;
+
+    // Pictor's `gate_frame()` over the current context and provider state.
+    // `Ready` means the next frame may touch the native API; any other status
+    // is the frame's typed result and no GPU work may be issued.
+    [[nodiscard]] ::pictor::FrameResult gateFrame() const noexcept;
 
     [[nodiscard]] ::pictor::VulkanContext& vulkan();
     [[nodiscard]] ::pictor::ISurfaceProvider& surface();

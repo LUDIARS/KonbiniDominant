@@ -7,17 +7,21 @@ add_library(
     construction_presentation.cpp
     construction_particle_presets.cpp
     construction_particle_geometry.cpp
+    frame_outcome.cpp
     render_device_host.cpp
+    render_init_error.cpp
+    render_lifecycle.cpp
     render_readiness.cpp
-    swapchain_identity.cpp
     tracked_render_layer.cpp
     world_frame_graph.cpp
     "${PROJECT_SOURCE_DIR}/include/konbini/adapters/ergo/ergo_input_bridge.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/adapters/ergo/frame_outcome.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/adapters/ergo/render_init_error.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/adapters/ergo/render_lifecycle.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/adapters/ergo/input_action_map.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/adapters/ergo/layer_initialization_scope.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/adapters/ergo/render_device_host.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/adapters/ergo/render_readiness.h"
-    "${PROJECT_SOURCE_DIR}/include/konbini/adapters/ergo/swapchain_identity.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/adapters/ergo/tracked_render_layer.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/adapters/ergo/world_frame_graph.h"
 )
@@ -43,6 +47,8 @@ target_link_libraries(
   PUBLIC
     ergo_input
     ergo_render
+    # Public headers expose Pictor's typed FrameResult / ContextInitResult.
+    pictor
     konbini_app_domain
     konbini_hud_overlay
     konbini_pictor_scene_targets
@@ -50,7 +56,6 @@ target_link_libraries(
     konbini_world_composite
     konbini_world_render
   PRIVATE
-    pictor
     ergo_particle
     Vulkan::Vulkan
 )

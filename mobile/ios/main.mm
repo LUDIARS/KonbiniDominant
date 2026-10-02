@@ -79,7 +79,16 @@
 }
 - (void)frame:(CADisplayLink*)link {
     if(!_game || self.failed) return;
-    try {_game->frame(link.timestamp);}
+    try {
+        _game->frame(link.timestamp);
+        if(_game->renderState()==konbini::adapters::ergo::RenderLifecycleState::ReinitializeRequired) {
+            // Surface / device loss with the layer still owned by the view:
+            // explicit teardown + reinitialize, never a resize.
+            NSLog(@"[konbini] render %s; reinitializing",
+                konbini::adapters::ergo::describeFrameOutcome(_game->renderLossCause()));
+            _game->reinitializeRender();
+        }
+    }
     catch(const std::exception& error) {[self showError:error.what()];}
 }
 - (void)suspend {

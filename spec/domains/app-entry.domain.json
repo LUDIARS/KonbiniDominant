@@ -37,6 +37,8 @@
     "spec/design.md",
     "spec/feature/game-flow.md",
     "spec/feature/pointer-controls.md",
-    "spec/feature/ui-ux.md"
+    "spec/feature/ui-ux.md",
+    "spec/interface/pictor-rendering.md",
+    "spec/interface/mobile-platform.md"
   ]
 }

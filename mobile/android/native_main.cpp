@@ -109,6 +109,13 @@ extern "C" void android_main(android_app* app) {
         if(host.surface && host.focused && !host.failed) try {
             const double now=std::chrono::duration<double>(std::chrono::steady_clock::now().time_since_epoch()).count();
             host.game->frame(now);
+            if(host.game->renderState()==konbini::adapters::ergo::RenderLifecycleState::ReinitializeRequired) {
+                // Surface / device loss with the window still owned by the
+                // host: explicit teardown + reinitialize, never a resize.
+                __android_log_print(ANDROID_LOG_WARN,"KonbiniDominant","render %s; reinitializing",
+                    konbini::adapters::ergo::describeFrameOutcome(host.game->renderLossCause()));
+                host.game->reinitializeRender();
+            }
         } catch(const std::exception& error) {host.error(error.what());}
     }
     if(host.game) host.game->detach();

@@ -18,14 +18,16 @@
     {
       "source": "src/adapters/ergo/render_device_host.cpp",
       "tests": [
-        "tests/adapters/render_readiness_test.cpp"
+        "tests/adapters/render_readiness_test.cpp",
+        "tests/adapters/swapchain_recovery_test.cpp"
       ],
       "contracts": []
     },
     {
       "source": "src/adapters/ergo/world_frame_graph.cpp",
       "tests": [
-        "tests/adapters/render_readiness_test.cpp"
+        "tests/adapters/render_readiness_test.cpp",
+        "tests/adapters/swapchain_recovery_test.cpp"
       ],
       "contracts": []
     },
@@ -40,7 +42,78 @@
       "source": "CMakeLists.txt",
       "tests": [
         "tests/cmake/ergo_real_render_contract_test.cmake",
-        "tests/adapters/render_readiness_test.cpp"
+        "tests/adapters/render_readiness_test.cpp",
+        "tests/cmake/dependency_pin_contract_test.cmake"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/adapters/ergo/frame_outcome.h",
+      "tests": [
+        "tests/adapters/swapchain_recovery_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/adapters/ergo/frame_outcome.cpp",
+      "tests": [
+        "tests/adapters/swapchain_recovery_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/adapters/ergo/render_lifecycle.h",
+      "tests": [
+        "tests/adapters/swapchain_recovery_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/adapters/ergo/render_lifecycle.cpp",
+      "tests": [
+        "tests/adapters/swapchain_recovery_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/adapters/ergo/render_init_error.h",
+      "tests": [
+        "tests/adapters/swapchain_recovery_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/adapters/ergo/render_init_error.cpp",
+      "tests": [
+        "tests/adapters/swapchain_recovery_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/adapters/ergo/render_device_host.h",
+      "tests": [
+        "tests/adapters/swapchain_recovery_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/adapters/ergo/world_frame_graph.h",
+      "tests": [
+        "tests/adapters/swapchain_recovery_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/app/native_mobile_runtime.cpp",
+      "tests": [
+        "tests/adapters/swapchain_recovery_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/app/native_mobile_runtime.h",
+      "tests": [
+        "tests/adapters/swapchain_recovery_test.cpp"
       ],
       "contracts": []
     }

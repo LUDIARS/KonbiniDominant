@@ -213,20 +213,27 @@ render::ViewportExtent WorldFrameGraph::extent() const {
 }
 
 // @implements spec/interface/ergo-runtime.md Render host
+// @implements spec/interface/pictor-rendering.md Surface / device recovery
 FrameOutcome WorldFrameGraph::runFrame(const float deltaSeconds) {
     if (!isInitialized()) {
         throw std::logic_error("world frame graph is not initialized");
     }
+    // Gate before any GPU work, the swapchain rebuild included. Suspension
+    // and surface / device loss return here with no acquire, submit, present
+    // or recreation; a loss stays latched in Pictor until reinitialize.
+    const ::pictor::FrameResult gate = impl_->host->gateFrame();
+    if (gate.status != ::pictor::FrameStatus::Ready) {
+        return classifyFrameResult(gate, false);
+    }
     if (impl_->rebuildPending) {
         const render::ViewportExtent framebuffer =
             impl_->host->framebufferExtent();
-        if (framebuffer.width == 0 || framebuffer.height == 0 ||
-            !recreateSwapchainAndRebuild()) {
+        if (framebuffer.width == 0 || framebuffer.height == 0) {
             return FrameOutcome::SkippedWhileMinimized;
         }
         // Rebuild clears the layers' published CPU frame state. Do not enter
         // the new composer until the app loop republishes at the new extent.
-        return FrameOutcome::SkippedForRebuild;
+        return recreateSwapchainAndRebuild();
     }
     if (impl_->composer == nullptr) {
         throw std::logic_error("world frame graph has no active composer");
@@ -239,30 +246,27 @@ FrameOutcome WorldFrameGraph::runFrame(const float deltaSeconds) {
     frame.extent = extent;
     frame.frame_index = impl_->composer->frame_count();
 
-    const SwapchainIdentity before = sampleSwapchainIdentity(vulkan);
     const std::uint64_t framesBefore = impl_->composer->frame_count();
     if (!impl_->composer->run_frame(frame)) {
         // record / submit の失敗。回復手段が無いので host へ返す。
         throw std::runtime_error(
             "frame composer failed to record or submit a frame");
     }
-    const SwapchainIdentity after = sampleSwapchainIdentity(vulkan);
     const bool presented = impl_->composer->frame_count() != framesBefore;
-    // present していない frame だけ device lost を確認する。present 済みの
-    // frame で待つと、正常時に毎 frame の同期待ちを増やしてしまう。
-    const bool deviceLost =
-        !presented && probeDeviceLost(vulkan.device());
-
+    // Pinned Ergo calls the legacy acquire / present wrappers, which fold the
+    // typed result into UINT32_MAX / bool. Pictor keeps the full result of the
+    // last call; the gate above guarantees it belongs to this frame.
     const FrameOutcome outcome =
-        classifyFrameOutcome(before, after, presented, deviceLost);
+        classifyFrameResult(vulkan.last_frame_result(), presented);
     if (requiresDependentRebuild(outcome)) {
         rebuild();
     } else if (outcome == FrameOutcome::SkippedWhileMinimized) {
-        // Pictor can encounter a minimize race after the app sampled a
-        // non-zero framebuffer. Its internal recreate then has no usable
-        // swapchain; remember to perform an explicit recreate after restore.
+        // Pictor kept the old swapchain because the surface has no area.
+        // Remember to perform an explicit recreate after restore.
         impl_->rebuildPending = true;
     }
+    // SurfaceLost / DeviceLost / RenderFailed: no rebuild and no retry. The
+    // host owns teardown + reinitialize.
     return outcome;
 }
 
@@ -315,21 +319,25 @@ void WorldFrameGraph::rebuild() {
     finishRebuild();
 }
 
-bool WorldFrameGraph::recreateSwapchainAndRebuild() {
+// @implements spec/interface/pictor-rendering.md Surface / device recovery
+FrameOutcome WorldFrameGraph::recreateSwapchainAndRebuild() {
     ::pictor::VulkanContext& vulkan = impl_->host->vulkan();
     vulkan.device_wait_idle();
+    // Composite descriptors sample the scene targets and pass 1 uses the
+    // default render pass that the replacement retires, so the composer goes
+    // first. Pictor itself keeps the old swapchain until its replacement is
+    // usable, and WorldSceneTargets::resize() creates the replacement targets
+    // before retiring the old ones.
     resetComposer();
     if (!vulkan.recreate_swapchain()) {
         impl_->rebuildPending = true;
-        const render::ViewportExtent framebuffer =
-            impl_->host->framebufferExtent();
-        if (framebuffer.width == 0 || framebuffer.height == 0) {
-            return false;
-        }
-        throw std::runtime_error("explicit swapchain recreation failed");
+        // Zero area keeps `RecreateSwapchain` without a replacement; a loss
+        // stays a loss and is never retried as a resize.
+        return classifyFrameResult(vulkan.last_frame_result(), false);
     }
     finishRebuild();
-    return !impl_->rebuildPending;
+    return impl_->rebuildPending ? FrameOutcome::SkippedWhileMinimized
+                                 : FrameOutcome::SkippedForRebuild;
 }
 
 }  // namespace konbini::adapters::ergo

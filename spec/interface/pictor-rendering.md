@@ -5,7 +5,8 @@
 Pictorへgame stateを漏らさず、読み取り専用snapshotから大量の都市施設・店舗・
 effectを描画する。
 
-調査対象: `LUDIARS/Pictor@c6b1c7538ad00623221cea041e525342374f6126`
+調査対象: `LUDIARS/Pictor@02ea861c1657f1f7f3b4d41c361388e7646cbe47`
+(KD-MOB-002で更新。surface / device recoveryの型付き契約を含む)
 
 ## Ownership
 
@@ -305,6 +306,84 @@ threshold、draw count、GPU memory、target FPSは `TBD-PERF-01`。
 - facility replacementはgeometry swapとsimulation transactionを分離
 - reality collapseはpost-processやshader eventとしてphaseに応じて強化
 - source parody名をtextureへ焼き込む前にIP review
+
+## Surface / device recovery
+
+固定Pictor `02ea861c1657f1f7f3b4d41c361388e7646cbe47` (Pictor #2243) の
+型付きsurface / device recovery契約をKonbiniDominantのapp lifecycleと
+render resource ownerへ対応付ける。再構築順の正本はPictorの
+`spec/feature/portability/mobile-surface-recovery.md` §5。固定Ergo
+`7f0d6bbd34dced4fc6664a5f04bce9910e893537`の`FrameComposer::run_frame()`は
+legacyの`acquire_next_image()` / `present()`を呼ぶので、KD側は次の2点で
+型付き結果を取り出す。
+
+1. frame前に`RenderDeviceHost::gateFrame()` (Pictorの`gate_frame()`) を
+   評価する。`Ready`以外ならacquire / submit / present / swapchain再生成を
+   一切行わず、そのstatusをframe結果とする。Ergoがnative window不在で
+   `run_frame()`を早期returnしたときに古い`last_frame_result()`を読む誤りも
+   ここで防ぐ (Ergoの判定とPictorのgateは同じ`NativeWindowHandle::Type`述語)。
+2. frame後は`VulkanContext::last_frame_result()`と
+   `FrameComposer::frame_count()`の進み (presented) から
+   `classifyFrameResult()`で分類する。swapchain handleの同一性比較や
+   `vkDeviceWaitIdle`によるdevice lost推定 (旧`SwapchainIdentity`) は廃止した。
+
+### FrameResult → FrameOutcome
+
+| Pictor `FrameStatus` | `swapchain_recreated` | presented | KD `FrameOutcome` | owner の処理 |
+|---|---|---|---|---|
+| `Ready` | — | true | `Presented` | なし |
+| `Ready` | — | false | `RenderFailed` | 再初期化必須。skipとして回し続けない |
+| `RecreateSwapchain` | true | true | `PresentedAfterRebuild` | `WorldFrameGraph`がswapchain依存resourceを再構築 |
+| `RecreateSwapchain` | true | false | `SkippedForRebuild` | 同上。frameは捨てる |
+| `RecreateSwapchain` | false | 任意 | `SkippedWhileMinimized` | 面積0。旧swapchainを保持し、復帰後に明示再生成 |
+| `Suspended` | — | false | `Suspended` | GPU workなし。復帰はhostが抑止を解くだけ |
+| `SurfaceLost` | 任意 | 任意 | `SurfaceLost` | 再初期化必須。simulation保持 |
+| `DeviceLost` | 任意 | 任意 | `DeviceLost` | 再初期化必須。resizeとして再試行しない |
+| `NotInitialized` / `Error` | 任意 | 任意 | `RenderFailed` | 再初期化必須 |
+
+loss系statusは`presented`より優先する。Ergoはpresentがlossを返したframeも
+presentedと数えるため。`requiresReinitialize()`はPictorの
+`frame_status_requires_reinitialize()`の集合を必ず含む。
+
+`ContextInitStatus`は`RenderInitError`として型を保ったままhostへ返す。
+`SurfaceUnavailable`だけがnative surfaceの再受け渡し後に再試行でき、
+extension / capability欠落 (`MissingInstanceExtension` /
+`MissingDeviceExtension` / `MissingCapability`) と`NoSuitableDevice` /
+`Failed`は欠落名を含む構成errorにする。
+
+### Lifecycle owner
+
+| owner | 役割 |
+|---|---|
+| `RenderLifecycle` (adapter, GPU非依存) | attached / paused / drawable area / lossから`Running` / `Suspended` / `ReinitializeRequired` / `Detached`を決め、`maySubmit()`と`presentationSuspended()`を出す |
+| `RenderDeviceHost` | `setPresentationSuspended()`でPictorへ抑止を反映、`gateFrame()`、初期化失敗の`RenderInitError` |
+| `WorldFrameGraph` | gate、frame分類、swapchain依存resourceの再構築。lossは再構築も再試行もせずhostへ返す |
+| `NativeMobileRuntime` | pause / resize / lossをlifecycleへ渡し、`Running`以外ではgame frameもGPU workも出さない。lossではsimulationを保持し`ReinitializeRequired`を公開する |
+| Android / iOS host | `ReinitializeRequired`を見て`reinitializeRender()`を明示的に呼ぶ。surface破棄時は`detach()` |
+| desktop `AppRunner` | GLFW windowを差し戻す経路が無いので、`requiresReinitialize`ならexit code 2で終了する |
+
+`ReinitializeRequired`はresize、resume、後続のrecoverable frameでは解除されない。
+`attached()` (= teardown + initialize完了) だけが解除する。
+`reinitializeRender()`がpresented frameに届かないまま2回を超えて続いた場合は
+永続的なdevice faultとして例外にし、teardown / initializeを無限に繰り返さない。
+
+### 再構築順
+
+- `RecreateSwapchain` (Pictor §5.1): Pictorが旧swapchain一式を代替の作成後に
+  退役させる。KDは`swapchain_recreated`を見て、device idle → composer破棄
+  (composite descriptorとpass 1が旧default render passを参照するため) →
+  `WorldSceneTargets::resize()` (代替のscene targetを作ってから旧targetを
+  退役) → composer / layer再初期化、の順でreplacement-before-retireを守る。
+  host起点のresizeでは同じ順でcomposer破棄後に`recreate_swapchain()`を呼ぶ。
+  再生成が失敗した場合は`last_frame_result()`で分類し、面積0だけを保留にする。
+- surface消失 (Pictor §5.2): `detach()`が`setPresentationSuspended(true)` →
+  `WorldFrameGraph::shutdown()` (device idle → host所有GPU resource解放) →
+  `RenderDeviceHost::shutdown()` (context) の順で解放する。`GameSession`は
+  触らない。復帰時は`attach()`がcontext → frame graph → geometry uploadの順で
+  作り直す。
+- device消失 / Error (Pictor §5.3): native windowはhostが保持したまま、
+  `reinitializeRender()`が上と同じteardown / initializeを行う。
+
 
 ## Failure
 

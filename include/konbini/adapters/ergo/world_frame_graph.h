@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <memory>
 
-#include "konbini/adapters/ergo/swapchain_identity.h"
+#include "konbini/adapters/ergo/frame_outcome.h"
 #include "konbini/render/viewport_extent.h"
 
 namespace konbini::adapters::pictor {
@@ -56,9 +56,11 @@ public:
     // 現在の scene target extent。camera と picker はこの extent を使う。
     [[nodiscard]] render::ViewportExtent extent() const;
 
-    // 1 frame 記録して present する。swapchain の out-of-date と device /
-    // surface lost を分類し、再生成が起きていれば依存 resource を作り直す。
-    // 致命 (`isFatal`) の場合も例外は投げず、判断は host のループへ返す。
+    // 1 frame 記録して present する。先に Pictor の `gate_frame()` を見て、
+    // suspend / surface lost / device lost なら GPU work を一切出さずにその
+    // 結果を返す。frame 後は Pictor の typed `last_frame_result()` で分類し、
+    // swapchain が作り直されていれば依存 resource を作り直す。
+    // `requiresReinitialize` の結果は再試行せず、host へ返す。
     [[nodiscard]] FrameOutcome runFrame(float deltaSeconds);
 
     // 最小化などで再構築を保留した状態か。
@@ -79,7 +81,7 @@ private:
     void resetComposer();
     void finishRebuild();
     void rebuild();
-    [[nodiscard]] bool recreateSwapchainAndRebuild();
+    [[nodiscard]] FrameOutcome recreateSwapchainAndRebuild();
 
     std::unique_ptr<Impl> impl_;
 };
