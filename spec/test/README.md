@@ -9,6 +9,7 @@
 - [accelerated-playthrough.md](accelerated-playthrough.md) — 100倍速モードの操作・ログ・起動手順
 
 - [no-llm-native-playtest.md](no-llm-native-playtest.md) — BTとローカルランナーによるLLM不要の反復テスト
+- [first-playable-smoke-results.md](first-playable-smoke-results.md) — KD-FP-002 startup smokeの実施記録
 
 初期spec作成セッションでは、ユーザ方針に従いbuild、unit、integration、
 game起動を実行していない。
