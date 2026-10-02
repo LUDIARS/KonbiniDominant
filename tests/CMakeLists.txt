@@ -157,6 +157,29 @@ if(KONBINI_BUILD_RENDER)
     COMMAND konbini_render_readiness_tests
   )
   add_dependencies(konbini_review konbini_render_readiness_tests)
+
+  # Gate 5 bridge: GpuAssetStore lifetime、IBatchGpuSource resolution、
+  # FacilityId <-> ObjectId 差分、Pictor 実 SceneRegistry / BatchBuilder を
+  # 通した instance path。Vulkan device は作らない (起動テストではない)。
+  add_executable(
+    konbini_pictor_bridge_tests
+    adapters/pictor_bridge_test.cpp
+    check.h
+  )
+  target_link_libraries(
+    konbini_pictor_bridge_tests
+    PRIVATE
+      konbini_pictor_bridge
+  )
+  if(WIN32)
+    target_compile_definitions(konbini_pictor_bridge_tests PRIVATE NOGDI)
+  endif()
+  konbini_enable_warnings(konbini_pictor_bridge_tests)
+  add_test(
+    NAME konbini_pictor_bridge_tests
+    COMMAND konbini_pictor_bridge_tests
+  )
+  add_dependencies(konbini_review konbini_pictor_bridge_tests)
 endif()
 
 # configure 時の Ergo real render 契約 (desktop / Android / iOS の選択)。

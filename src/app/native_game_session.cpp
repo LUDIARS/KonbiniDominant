@@ -14,7 +14,7 @@ GameSession::GameSession(const std::filesystem::path& file,
                   maxTicks, std::move(playtest)) {}
 
 void GameSession::uploadGeometry(adapters::ergo::WorldFrameGraph& graph) {
-    const auto report = adapters::pictor::loadCityGeometry(city(), graph.geometryCache());
+    const auto report = adapters::pictor::loadCityGeometry(city(), graph.assetStore());
     std::fprintf(stdout, "[konbini] uploaded %zu facility meshes (%zu shared)\n",
                  report.uploaded, report.deduplicated);
 }

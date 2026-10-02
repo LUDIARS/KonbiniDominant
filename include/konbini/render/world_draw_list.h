@@ -46,6 +46,10 @@ struct WorldDrawListSpec {
 // depth test あり / depth write なしの overlay pipeline で合成する。
 // 「破壊済み facility をどう描くか」の正本はこの分類。
 struct WorldDrawList {
+    // `RenderSnapshot::completedTicks()` of the source snapshot. Renderers
+    // keep it apart from their own frame counter: one tick may be drawn by
+    // several frames.
+    std::uint64_t snapshotTick = 0;
     std::vector<WorldFacilityDraw> baseFacilities;
     std::vector<WorldFacilityDraw> overlayFacilities;
     WorldMesh storeMesh;

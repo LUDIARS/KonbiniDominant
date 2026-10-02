@@ -2,7 +2,7 @@
 
 #include <cstddef>
 
-#include "konbini/adapters/pictor/world_geometry_cache.h"
+#include "konbini/adapters/pictor/gpu_asset_store.h"
 #include "konbini/city/facility_geometry.h"
 
 // @implements spec/interface/pictor-rendering.md Geometry conversion
@@ -17,12 +17,12 @@ struct WorldGeometryLoadReport {
     std::size_t deduplicated = 0;
 };
 
-// 生成済み都市の CPU geometry を GPU 常駐 cache へ載せる。startup で 1 回
+// 生成済み都市の CPU geometry を `GpuAssetStore` へ載せる。startup で 1 回
 // 呼び、frame loop では呼ばない (first-playable.md#City)。
 //
 // null geometry、変換に失敗する mesh は例外で、無言で飛ばさない。飛ばすと
 // 描画時に「未登録 key」として初めて分かることになる。
 [[nodiscard]] WorldGeometryLoadReport loadCityGeometry(
-    const city::GeneratedCity& city, WorldGeometryCache& cache);
+    const city::GeneratedCity& city, GpuAssetStore& assets);
 
 }  // namespace konbini::adapters::pictor

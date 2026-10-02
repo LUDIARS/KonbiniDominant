@@ -69,6 +69,7 @@ WorldDrawList buildWorldDrawList(
     const std::span<const sim::RenderFacility> facilities =
         snapshot.facilities();
     WorldDrawList drawList;
+    drawList.snapshotTick = snapshot.completedTicks();
     drawList.baseFacilities.reserve(facilities.size());
     const sim::RenderFacility* selected = nullptr;
     for (const sim::RenderFacility& facility : facilities) {

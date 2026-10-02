@@ -508,6 +508,76 @@
         "tests/cmake/sim_platform_isolation_test.cmake"
       ],
       "contracts": []
+    },
+    {
+      "source": "src/adapters/pictor/gpu_asset_store.cpp",
+      "tests": [
+        "tests/adapters/pictor_bridge_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/adapters/pictor/gpu_asset_store.h",
+      "tests": [
+        "tests/adapters/pictor_bridge_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/adapters/pictor/konbini_batch_gpu_source.cpp",
+      "tests": [
+        "tests/adapters/pictor_bridge_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/adapters/pictor/konbini_batch_gpu_source.h",
+      "tests": [
+        "tests/adapters/pictor_bridge_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/adapters/pictor/pictor_scene_sync.cpp",
+      "tests": [
+        "tests/adapters/pictor_bridge_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/adapters/pictor/pictor_scene_sync.h",
+      "tests": [
+        "tests/adapters/pictor_bridge_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/adapters/pictor/pictor_batch_plan.cpp",
+      "tests": [
+        "tests/adapters/pictor_bridge_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/adapters/pictor/pictor_batch_plan.h",
+      "tests": [
+        "tests/adapters/pictor_bridge_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/adapters/pictor/world_frustum.cpp",
+      "tests": [
+        "tests/adapters/pictor_bridge_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/adapters/pictor/world_frustum.h",
+      "tests": [
+        "tests/adapters/pictor_bridge_test.cpp"
+      ],
+      "contracts": []
     }
   ]
 }

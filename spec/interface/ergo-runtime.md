@@ -100,6 +100,14 @@ origin/main調査では`FrameComposer`のlayer initializationとrender pass設�
 
 問題をadapterの呼出順偶然で隠さない。必要ならErgoへupstream fixをPRする。
 
+3はGate 5で`PictorFrameBridge`として統合した
+([pictor-rendering.md](pictor-rendering.md#gate-5-の実装経路))。frame lifecycle
+(acquire / submit / present / resize) は`FrameComposer`の正本のまま、bridgeは
+`WorldRenderLayer`がpass 0 (HDR world pass) の中でcull / batch / recordを呼ぶ。
+bridgeのPictor sceneは`WorldFrameGraph`が所有してcomposer再構築を跨いで保ち、
+pipeline / instance bufferだけがworld layerのinitialize / set_render_pass /
+shutdownに従う。
+
 ### pinned Ergo / Pictorのgapに対するgame-owned owner
 
 pinned Ergoのgapに対して、game側が次を所有する。いずれも回避策であり、

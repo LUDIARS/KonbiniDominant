@@ -10,10 +10,10 @@
 namespace konbini::adapters::pictor {
 
 WorldGeometryLoadReport loadCityGeometry(
-    const city::GeneratedCity& city, WorldGeometryCache& cache) {
-    if (!cache.isInitialized()) {
+    const city::GeneratedCity& city, GpuAssetStore& assets) {
+    if (!assets.isInitialized()) {
         throw std::logic_error(
-            "world geometry cache must be initialized before loading a city");
+            "GPU asset store must be initialized before loading a city");
     }
     if (city::isGridTown(city.manifest)) {
         city::validateCityManifest(city.manifest);
@@ -32,13 +32,13 @@ WorldGeometryLoadReport loadCityGeometry(
             throw std::invalid_argument(
                 "generated city contains a null facility geometry");
         }
-        if (cache.contains(geometry->figmentumKey)) {
+        if (assets.contains(geometry->figmentumKey)) {
             ++report.deduplicated;
             continue;
         }
-        cache.insert(
+        static_cast<void>(assets.insert(
             geometry->figmentumKey,
-            render::buildFacilityWorldMesh(*geometry));
+            render::buildFacilityWorldMesh(*geometry)));
         ++report.uploaded;
     }
     return report;

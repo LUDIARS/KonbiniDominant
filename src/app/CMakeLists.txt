@@ -147,7 +147,7 @@ if(KONBINI_BUILD_RENDER AND KONBINI_BUILD_FIGMENTUM_ADAPTER AND NOT KONBINI_MOBI
       konbini_ergo_adapter
       konbini_figmentum_adapter
       konbini_hud_overlay
-      konbini_pictor_world_geometry
+      konbini_pictor_bridge
       konbini_world_render
   )
   # SPIR-V が無いと起動時に fail-fast するので、実行ファイルと同じ build で

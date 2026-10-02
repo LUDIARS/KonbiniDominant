@@ -14,7 +14,7 @@
 #include "ergo/render/render_layer.h"
 
 namespace konbini::adapters::pictor {
-class WorldGeometryCache;
+class PictorFrameBridge;
 class WorldSceneTargets;
 }  // namespace konbini::adapters::pictor
 
@@ -27,16 +27,22 @@ namespace konbini::render {
 // 描画を既定 pass へ直接記録しないという pass 構成の不変条件を、layer 側でも
 // 守るため。合成側は `WorldCompositeLayer` が pass 1 で行う。
 //
-// 破棄順は world layer -> scene targets / geometry cache -> VulkanContext。
-// `targets`、`geometryCache`、`initialize()` に渡す RenderContext はすべて
-// 借用で、この layer より長生きしなければならない。
+// facility は `PictorFrameBridge` が Pictor の scene / batch / recorder 経由で
+// 記録し、毎フレーム作り直す store / overlay mesh だけをこの layer が
+// per-flight buffer で直接記録する。bridge の device 側 resource (pipeline /
+// instance buffer) はこの layer の initialize / set_render_pass / shutdown に
+// 合わせて attach / 再生成 / detach する。
+//
+// 破棄順は world layer -> bridge -> scene targets / asset store ->
+// VulkanContext。`targets`、`bridge`、`initialize()` に渡す RenderContext は
+// すべて借用で、この layer より長生きしなければならない。
 //
 // @implements spec/interface/pictor-rendering.md Offscreen world composition
 class WorldRenderLayer final : public ::ergo::render::IRenderLayer {
 public:
     WorldRenderLayer(
         adapters::pictor::WorldSceneTargets& targets,
-        adapters::pictor::WorldGeometryCache& geometryCache);
+        adapters::pictor::PictorFrameBridge& bridge);
     ~WorldRenderLayer() override;
 
     WorldRenderLayer(const WorldRenderLayer&) = delete;
@@ -50,14 +56,15 @@ public:
     // frame ごとに host が publish する。camera の extent は記録時の
     // swapchain extent と一致必須。未 publish のまま `record()` すると、
     // 空の world を描いて「simulation が止まっている」のか「publish 漏れ」
-    // なのか判別できなくなるため例外にする。
+    // なのか判別できなくなるため例外にする。facility draw はここで bridge へ
+    // 差分同期され、未 upload の geometry を指す draw list は例外になる。
     void publishFrame(const IsometricCamera& camera, WorldDrawList drawList);
 
 private:
     struct Impl;
 
     adapters::pictor::WorldSceneTargets* targets_ = nullptr;
-    adapters::pictor::WorldGeometryCache* geometryCache_ = nullptr;
+    adapters::pictor::PictorFrameBridge* bridge_ = nullptr;
     std::unique_ptr<Impl> impl_;
 };
 

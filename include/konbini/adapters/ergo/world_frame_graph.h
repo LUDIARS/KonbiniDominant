@@ -7,7 +7,8 @@
 #include "konbini/render/viewport_extent.h"
 
 namespace konbini::adapters::pictor {
-class WorldGeometryCache;
+class GpuAssetStore;
+class PictorFrameBridge;
 class WorldSceneTargets;
 }
 
@@ -47,7 +48,10 @@ public:
     [[nodiscard]] bool isInitialized() const noexcept;
 
     // 都市 geometry の upload 先。startup で 1 回だけ載せる。
-    [[nodiscard]] pictor::WorldGeometryCache& geometryCache();
+    [[nodiscard]] pictor::GpuAssetStore& assetStore();
+    // facility を Pictor の scene / batch 経由で記録する bridge。stats は
+    // 計測値 (draw call / instance / 可視数) の正本。
+    [[nodiscard]] const pictor::PictorFrameBridge& frameBridge() const;
     [[nodiscard]] const pictor::WorldSceneTargets& sceneTargets() const;
 
     [[nodiscard]] render::WorldRenderLayer& worldLayer();

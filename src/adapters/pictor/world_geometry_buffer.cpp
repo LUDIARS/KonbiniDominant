@@ -6,6 +6,8 @@
 #include <stdexcept>
 #include <string>
 
+#include "konbini/adapters/pictor/host_visible_memory.h"
+
 // @implements spec/interface/pictor-rendering.md Required bridge
 
 namespace konbini::adapters::pictor {
@@ -16,30 +18,6 @@ namespace {
     throw std::runtime_error(
         std::string(operation) + " failed with VkResult " +
         std::to_string(static_cast<int>(result)));
-}
-
-// CPU から毎フレーム書ける HOST_VISIBLE | HOST_COHERENT のみを対象にする。
-// COHERENT を必須にしているのは、非 coherent メモリの明示 flush を省くため
-// ではなく、flush 範囲を nonCoherentAtomSize へ丸める責務をこの owner へ
-// 持ち込まないため。該当が無い device は fallback せず失敗させる。
-[[nodiscard]] std::uint32_t findHostVisibleMemoryType(
-    const VkPhysicalDevice physicalDevice,
-    const std::uint32_t typeBits) {
-    VkPhysicalDeviceMemoryProperties properties{};
-    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &properties);
-    constexpr VkMemoryPropertyFlags kRequired =
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-        VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-    for (std::uint32_t index = 0; index < properties.memoryTypeCount;
-         ++index) {
-        if ((typeBits & (1U << index)) != 0U &&
-            (properties.memoryTypes[index].propertyFlags & kRequired) ==
-                kRequired) {
-            return index;
-        }
-    }
-    throw std::runtime_error(
-        "no host-visible coherent memory type for world geometry");
 }
 
 }  // namespace
@@ -95,7 +73,7 @@ void WorldGeometryBuffer::initialize(
             const VkMemoryAllocateInfo allocateInfo{
                 .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
                 .allocationSize = requirements.size,
-                .memoryTypeIndex = findHostVisibleMemoryType(
+                .memoryTypeIndex = findHostVisibleCoherentMemoryType(
                     physicalDevice, requirements.memoryTypeBits),
             };
             result = vkAllocateMemory(

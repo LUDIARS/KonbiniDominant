@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "ergo/render/render_context.h"
-#include "konbini/adapters/pictor/world_geometry_cache.h"
+#include "konbini/adapters/pictor/pictor_frame_bridge.h"
 #include "konbini/adapters/pictor/world_overlay_buffers.h"
 #include "konbini/adapters/pictor/world_scene_targets.h"
 #include "pictor/surface/vulkan_context.h"
@@ -41,9 +41,9 @@ struct WorldRenderLayer::Impl {
 
 WorldRenderLayer::WorldRenderLayer(
     adapters::pictor::WorldSceneTargets& targets,
-    adapters::pictor::WorldGeometryCache& geometryCache)
+    adapters::pictor::PictorFrameBridge& bridge)
     : targets_(&targets),
-      geometryCache_(&geometryCache),
+      bridge_(&bridge),
       impl_(std::make_unique<Impl>()) {}
 
 WorldRenderLayer::~WorldRenderLayer() {
@@ -59,14 +59,15 @@ void WorldRenderLayer::initialize(::ergo::render::RenderContext& context) {
         context.vk->device() == VK_NULL_HANDLE ||
         context.vk->physical_device() == VK_NULL_HANDLE ||
         context.shader_dir.empty() || targets_ == nullptr ||
-        !targets_->isInitialized() || geometryCache_ == nullptr ||
-        !geometryCache_->isInitialized()) {
+        !targets_->isInitialized() || bridge_ == nullptr ||
+        !bridge_->isInitialized()) {
         throw std::invalid_argument(
             "world render layer initialization prerequisites failed");
     }
 
     const std::uint32_t flightCount = context.vk->frames_in_flight();
-    if (flightCount == 0 || targets_->flightCount() != flightCount) {
+    if (flightCount == 0 || targets_->flightCount() != flightCount ||
+        bridge_->flightCount() != flightCount) {
         throw std::invalid_argument(
             "world scene targets do not match the Pictor frame host");
     }
@@ -80,6 +81,9 @@ void WorldRenderLayer::initialize(::ergo::render::RenderContext& context) {
             context.vk->physical_device(), impl_->device, flightCount);
         impl_->storeBuffers.initialize(
             context.vk->physical_device(), impl_->device, flightCount);
+        bridge_->attachDevice(
+            context.vk->physical_device(), impl_->device,
+            std::filesystem::path(context.shader_dir));
     } catch (...) {
         shutdown();
         throw;
@@ -116,6 +120,7 @@ void WorldRenderLayer::set_render_pass(const VkRenderPass renderPass) {
         impl_->context->vk->device_wait_idle();
     }
     impl_->pipelines.setRenderPass(renderPass);
+    bridge_->setRenderPass(renderPass);
 }
 
 // @implements spec/interface/pictor-rendering.md `RenderSnapshot`
@@ -125,6 +130,10 @@ void WorldRenderLayer::publishFrame(
         throw std::invalid_argument(
             "world render layer requires a non-zero camera viewport");
     }
+    // Sync facilities before keeping the frame: a draw list that references
+    // geometry the asset store does not hold fails here, with the previous
+    // frame still intact.
+    bridge_->consume(drawList, camera.viewProjection);
     impl_->camera = camera;
     impl_->drawList = std::move(drawList);
     impl_->hasFrame = true;
@@ -138,7 +147,7 @@ void WorldRenderLayer::record(
         !impl_->context->vk->is_initialized() ||
         impl_->context->vk->device() != impl_->device ||
         targets_ == nullptr || !targets_->isInitialized() ||
-        geometryCache_ == nullptr || !geometryCache_->isInitialized() ||
+        bridge_ == nullptr || !bridge_->isAttached() ||
         commandBuffer == VK_NULL_HANDLE ||
         !impl_->pipelines.hasPipelines()) {
         throw std::logic_error(
@@ -161,7 +170,8 @@ void WorldRenderLayer::record(
         targets_->flightCount() != flightCount ||
         impl_->overlayBuffers.flightCount() != flightCount ||
         impl_->storeBuffers.flightCount() != flightCount ||
-        impl_->pipelines.renderPass() != targets_->renderPass()) {
+        impl_->pipelines.renderPass() != targets_->renderPass() ||
+        bridge_->renderPass() != targets_->renderPass()) {
         throw std::runtime_error(
             "world render layer has stale render targets");
     }
@@ -184,84 +194,59 @@ void WorldRenderLayer::record(
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-    WorldPushConstants push{
+    // Cull / batch / instance upload for this flight. acquire_next_image()
+    // already waited the flight's fence, so its instance buffer is free.
+    bridge_->prepareFrame(flight);
+
+    // 記録順は base facility -> store -> 半透明 facility -> ZOC / selection。
+    // base facility と store だけが depth を書き、以降は書かれた depth に
+    // 対して test する。facility は Pictor の batch recorder が記録する。
+    bridge_->recordOpaque(commandBuffer, extent);
+
+    // The bridge recorded with its own pipeline layout and its own viewport
+    // writes; restore both for the per-flight meshes below.
+    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+    const WorldPushConstants push{
         .viewProjection = impl_->camera.viewProjection,
         .tint = kNeutralTint,
     };
     const VkPipelineLayout layout = impl_->pipelines.layout();
-    const auto recordFacility =
-        [&](const WorldFacilityDraw& draw) {
-            // 未登録 key はここで例外になる。missing geometry を飛ばすと
-            // 「生成漏れ」と「そこに建物が無い」が区別できなくなる。
-            const adapters::pictor::WorldGeometryBuffer& geometry =
-                geometryCache_->find(draw.figmentumKey);
-            if (geometry.indexCount() == 0) {
-                throw std::runtime_error(
-                    "cached facility geometry has no indices");
+    const auto recordMesh =
+        [&](const adapters::pictor::WorldGeometryBuffer& mesh) {
+            if (mesh.indexCount() == 0) {
+                return;
             }
-            push.tint = draw.tint;
             vkCmdPushConstants(
                 commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0,
                 static_cast<std::uint32_t>(sizeof(push)), &push);
-            const VkBuffer vertexBuffer = geometry.vertexBuffer();
+            const VkBuffer vertexBuffer = mesh.vertexBuffer();
             const VkDeviceSize vertexOffset = 0;
             vkCmdBindVertexBuffers(
                 commandBuffer, 0, 1, &vertexBuffer, &vertexOffset);
             vkCmdBindIndexBuffer(
-                commandBuffer, geometry.indexBuffer(), 0,
-                VK_INDEX_TYPE_UINT32);
-            vkCmdDrawIndexed(
-                commandBuffer, geometry.indexCount(), 1, 0, 0, 0);
+                commandBuffer, mesh.indexBuffer(), 0, VK_INDEX_TYPE_UINT32);
+            vkCmdDrawIndexed(commandBuffer, mesh.indexCount(), 1, 0, 0, 0);
         };
-
-    // 記録順は base facility -> 半透明 facility -> ZOC / store / selection。
-    // base だけが depth を書き、以降は書かれた depth に対して test する。
-    vkCmdBindPipeline(
-        commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-        impl_->pipelines.basePipeline());
-    for (const WorldFacilityDraw& draw : impl_->drawList.baseFacilities) {
-        recordFacility(draw);
-    }
 
     // Storefront components must occlude each other; ZOC stays in the
     // depth-read-only overlay pass below.
-    const auto& stores = impl_->storeBuffers.upload(flight, impl_->drawList.storeMesh);
-    if (stores.indexCount() != 0) {
-        push.tint = kNeutralTint;
-        vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0,
-                           static_cast<std::uint32_t>(sizeof(push)), &push);
-        const VkBuffer vertices = stores.vertexBuffer();
-        const VkDeviceSize offset = 0;
-        vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertices, &offset);
-        vkCmdBindIndexBuffer(commandBuffer, stores.indexBuffer(), 0, VK_INDEX_TYPE_UINT32);
-        vkCmdDrawIndexed(commandBuffer, stores.indexCount(), 1, 0, 0, 0);
-    }
-
     vkCmdBindPipeline(
         commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-        impl_->pipelines.overlayPipeline());
-    for (const WorldFacilityDraw& draw : impl_->drawList.overlayFacilities) {
-        recordFacility(draw);
-    }
+        impl_->pipelines.basePipeline());
+    recordMesh(impl_->storeBuffers.upload(flight, impl_->drawList.storeMesh));
+
+    bridge_->recordTranslucent(commandBuffer, extent);
 
     // acquire_next_image() がこの flight の fence を待った後なので、同 flight
     // の buffer を上書きしても直前の submit とは競合しない。
-    const adapters::pictor::WorldGeometryBuffer& overlay =
-        impl_->overlayBuffers.upload(flight, impl_->drawList.overlayMesh);
-    if (overlay.indexCount() != 0) {
-        push.tint = kNeutralTint;
-        vkCmdPushConstants(
-            commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0,
-            static_cast<std::uint32_t>(sizeof(push)), &push);
-        const VkBuffer vertexBuffer = overlay.vertexBuffer();
-        const VkDeviceSize vertexOffset = 0;
-        vkCmdBindVertexBuffers(
-            commandBuffer, 0, 1, &vertexBuffer, &vertexOffset);
-        vkCmdBindIndexBuffer(
-            commandBuffer, overlay.indexBuffer(), 0, VK_INDEX_TYPE_UINT32);
-        vkCmdDrawIndexed(
-            commandBuffer, overlay.indexCount(), 1, 0, 0, 0);
-    }
+    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+    vkCmdBindPipeline(
+        commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+        impl_->pipelines.overlayPipeline());
+    recordMesh(
+        impl_->overlayBuffers.upload(flight, impl_->drawList.overlayMesh));
 }
 
 // @implements spec/interface/pictor-rendering.md Offscreen world composition
@@ -279,6 +264,7 @@ void WorldRenderLayer::shutdown() {
     }
 
     impl_->context->vk->device_wait_idle();
+    bridge_->detachDevice();
     impl_->overlayBuffers.shutdown();
     impl_->storeBuffers.shutdown();
     impl_->pipelines.shutdown();

@@ -79,6 +79,7 @@ if(KONBINI_BUILD_RENDER)
     konbini_composite.frag
     konbini_world.vert
     konbini_world.frag
+    konbini_world_instanced.vert
     konbini_hud.vert
     konbini_hud.frag
   )
@@ -157,6 +158,7 @@ if(KONBINI_BUILD_RENDER)
     konbini_world_render
     PUBLIC
       ergo_render
+      konbini_pictor_bridge
       konbini_pictor_scene_targets
       konbini_pictor_world_geometry
       konbini_render_domain

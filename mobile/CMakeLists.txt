@@ -4,7 +4,7 @@ add_library(konbini_mobile_game STATIC
   ../src/app/frame_presenter.cpp
   ../src/app/native_mobile_runtime.cpp)
 target_link_libraries(konbini_mobile_game PUBLIC konbini_app_domain konbini_figmentum_adapter
-  konbini_ergo_adapter konbini_pictor_world_geometry konbini_hud_overlay konbini_world_render)
+  konbini_ergo_adapter konbini_pictor_bridge konbini_hud_overlay konbini_world_render)
 konbini_enable_warnings(konbini_mobile_game)
 if(ANDROID)
   enable_language(C)

@@ -160,6 +160,68 @@ vertex layout / winding / coordinate handednessはPictor pipelineと一致させ
 
 これらが実装・統合されるまで「Pictor描画完了」としない。
 
+### Gate 5 の実装経路
+
+[KD Gate 5 task](../tasks/2026-10-02-kd-gate5-pictor-ergo-bridge.md)で、facility描画を
+pinned Pictorの`SceneRegistry` → `CullingSystem` → `BatchBuilder` →
+`CompiledBatchRecorder`へ載せた。責務とfileの対応は次のとおり。
+
+| 責務 | 実装 (`adapters/pictor/`) |
+|---|---|
+| VkBuffer / memory所有、vertex / index upload | `VulkanGpuMeshUploader` (`IGpuMeshUploader`) |
+| asset key → `MeshHandle` / buffer、参照数、遅延eviction、逆順解放 | `GpuAssetStore` |
+| `MeshHandle` → buffer、shader key + pass → pipeline、missing記録 | `KonbiniBatchGpuSource` |
+| FacilityId ↔ ObjectId差分同期 | `PictorSceneSync` |
+| batchのpass分割、sorted順のinstance data | `buildPictorBatchPlan` |
+| per-flight instance storage buffer / descriptor | `WorldInstanceBuffers` |
+| opaque / translucent instanced pipeline | `WorldInstancedPipelines` |
+| consume / cull / batch / record、tickとframe番号の分離 | `PictorFrameBridge` |
+
+- `GpuAssetStore`は`insert()`がreturnした時点でuploadが完了している
+  (HOST_VISIBLE | HOST_COHERENTへの直接書込み)。publishされる`MeshHandle`は
+  すべてresidentなので、「upload完了前objectの可視」は型の上で起きない。
+  `MeshHandle`は再利用しないので、evict後のstale handleは別meshへ解決されない。
+- 参照数0のmeshは、参照が落ちたframeからflight数ぶん後の
+  `evictUnreferenced()`で初めて解放する。Figmentumのpolygonizeはframe loopで
+  行えないので、first playableは都市meshを自動evictしない (明示APIのみ)。
+- `KonbiniBatchGpuSource::resolve()`の`false`はPictor recorderでは「skipして
+  計上」になる。sourceは失敗理由を記録し、`PictorFrameBridge`は記録が1件でも
+  あればframeを`std::runtime_error`にする。placeholderで描かない。
+- Pictorの`BatchBuilder`は連続するshader key + material keyが等しいobjectを
+  1 batchへ畳み、先頭objectのmeshで描く。material keyへmesh handleを入れて
+  meshごとにbatchを分け、同じmeshを共有するfacilityは1回のinstanced drawにする。
+- bridgeはshader keyでopaque / translucentのbatch列へ分け、Pictorの透過区分
+  (`RenderBatch::transparency`) と一致しないbatchを拒否する。recorderへは
+  passごとの列と同じ`CompiledPass::filter_mask`
+  (`RenderBatchFilter::OPAQUE` / `TRANSPARENT`) を渡し、filterで落ちたbatchが
+  あればframe errorにする。
+- 色とmodel行列はper-instance storage buffer (`WorldInstanceRecord`) から
+  `konbini_world_instanced.vert`が`instances[gl_InstanceIndex]`で読む。
+  recorderはbatchごとのpush constant hookを持たないため、push constantは
+  camera (`viewProjection`) だけにする。
+- frame acquire / submit / present、attachment / render pass / framebuffer
+  registry、resizeは`WorldFrameGraph` / `WorldSceneTargets`がErgo
+  `FrameComposer`上で持つ ([ergo-runtime.md](ergo-runtime.md#render-host))。
+  Pictorの`PipelineCompiler` / `CompiledGraph`によるpass graph compileは使わず、
+  bridgeはFrameComposerが開始したworld pass内で記録する。
+- swapchain再構築ではbridgeのpipeline / instance bufferだけを作り直し、Pictor
+  scene (登録済みobject) は保つ。shutdown順はworld layer (detach) → bridge →
+  asset store → uploader → scene targets。
+- device / surface loss後の再初期化 (Surface / device recovery) はgraphごと
+  shutdown → initialize → `uploadGeometry`で作り直すので、asset store、
+  Pictor scene、bridgeのGPU resourceは旧deviceと一緒に解放され、新deviceで
+  再uploadされる。旧deviceのhandleを持ち越さない。
+
+BASE-GATE5-POOL-01: pinned Pictorの`CompiledBatchRecorder`は
+`firstInstance = batch.startIndex`で描き、その位置からobjectへ戻れるのは
+DYNAMIC poolの`BatchBuilder::sorted_indices()`だけ。STATIC poolのsorted順は
+公開されず、GPU_DRIVEN poolはCPU batchを持たない。facilityはDYNAMIC poolへ置き、
+他poolのobjectがあればbatch planは`std::logic_error`にする。STATIC / GPU-driven /
+LOD選択はupstreamがstatic sorted indexを公開するまで扱わない。
+
+store / ZOC / selection / effectのmeshは毎frame作り直すため、Pictor objectには
+せず従来のper-flight buffer経路 (`WorldOverlayBuffers`) で記録する。
+
 ## Offscreen world composition
 
 depth付きworld描画をPictor既定swapchain passへ直接記録しない。first playableは
@@ -246,6 +308,9 @@ overlayがdepth writeを行うとoverlay同士が互いを消すため、depth�
 depth writeが連動するので、この2本はgame側で組む。
 
 記録順は`baseFacilities` → `storeMesh` → `overlayFacilities` → `overlayMesh`。
+`baseFacilities` / `overlayFacilities`は`PictorFrameBridge`がPictor recorder経由で
+opaque / translucent instanced pipelineへ記録し、深度・blend構成はbase / overlayと
+同じにする。
 店舗は base pipeline で depth write し、外壁・看板・庇の前後関係を保つ。
 `overlayMesh`はZOC → selectionの順に結合し、snapshot内の順序をそのまま使う。
 `Replaced` facility の旧メッシュは店舗を隠さないよう描画しない。
@@ -261,10 +326,10 @@ alpha値自体は`facilityColor()`が持つ。
 
 ### Geometry ownership
 
-`WorldGeometryCache`はFigmentum stable keyからGPU常駐geometryを引く。keyは
-geometryの同一性だけを表し、facility stateやchain色は含まない。色はdraw単位の
-tintで与えるので、state変化でupload をやり直さない。未登録keyは例外とし、
-missing geometryをsilentに飛ばさない。
+`GpuAssetStore`はFigmentum stable keyからGPU常駐geometryを引く。keyは
+geometryの同一性だけを表し、facility stateやchain色は含まない。色はinstance
+単位のtintで与えるので、state変化でupload をやり直さない。未登録keyは
+`PictorSceneSync`が例外とし、missing geometryをsilentに飛ばさない。
 
 `WorldGeometryBuffer`はvertex / index bufferをHOST_VISIBLE | HOST_COHERENTで
 所有し、capacity超過とvertex範囲外indexをupload前に弾く。解放はindex →

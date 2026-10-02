@@ -13,7 +13,9 @@
 #include "konbini/adapters/ergo/render_device_host.h"
 #include "konbini/adapters/ergo/render_readiness.h"
 #include "konbini/adapters/ergo/tracked_render_layer.h"
-#include "konbini/adapters/pictor/world_geometry_cache.h"
+#include "konbini/adapters/pictor/gpu_asset_store.h"
+#include "konbini/adapters/pictor/pictor_frame_bridge.h"
+#include "konbini/adapters/pictor/vulkan_gpu_mesh_uploader.h"
 #include "konbini/adapters/pictor/world_scene_targets.h"
 #include "konbini/render/hud_overlay_layer.h"
 #include "konbini/render/world_composite_layer.h"
@@ -56,7 +58,11 @@ void compositeBarrierHook(
 struct WorldFrameGraph::Impl {
     RenderDeviceHost* host = nullptr;
     pictor::WorldSceneTargets targets;
-    pictor::WorldGeometryCache geometryCache;
+    // Declared in borrow order: the bridge borrows the store, the store the
+    // uploader. Destruction runs in reverse.
+    pictor::VulkanGpuMeshUploader uploader;
+    pictor::GpuAssetStore assets;
+    pictor::PictorFrameBridge bridge;
     std::optional<render::WorldRenderLayer> worldLayer;
     std::optional<render::WorldCompositeLayer> compositeLayer;
     render::HudOverlayLayer hudLayer;
@@ -91,17 +97,23 @@ void WorldFrameGraph::initialize(RenderDeviceHost& host) {
     impl_->rebuildPending = false;
     try {
         impl_->targets.initialize(host.vulkan());
-        impl_->geometryCache.initialize(
+        const std::uint32_t flights = host.vulkan().frames_in_flight();
+        impl_->uploader.initialize(
             host.vulkan().physical_device(), host.vulkan().device());
-        impl_->worldLayer.emplace(impl_->targets, impl_->geometryCache);
+        // An unreferenced mesh may still be read by every flight in flight.
+        impl_->assets.initialize(impl_->uploader, flights);
+        impl_->bridge.initialize(impl_->assets, flights);
+        impl_->worldLayer.emplace(impl_->targets, impl_->bridge);
         impl_->compositeLayer.emplace(impl_->targets);
         buildComposer();
     } catch (...) {
-        // 逆順解放。composer -> layer -> geometry cache -> scene target。
+        // 逆順解放。composer -> layer -> bridge -> asset store -> scene target。
         resetComposer();
         impl_->compositeLayer.reset();
         impl_->worldLayer.reset();
-        impl_->geometryCache.shutdown();
+        impl_->bridge.shutdown();
+        impl_->assets.shutdown();
+        impl_->uploader.shutdown();
         impl_->targets.shutdown();
         impl_->host = nullptr;
         throw;
@@ -166,7 +178,10 @@ void WorldFrameGraph::shutdown() noexcept {
     resetComposer();
     impl_->compositeLayer.reset();
     impl_->worldLayer.reset();
-    impl_->geometryCache.shutdown();
+    // bridge が mesh 参照を返してから asset store が buffer を逆順に解放する。
+    impl_->bridge.shutdown();
+    impl_->assets.shutdown();
+    impl_->uploader.shutdown();
     impl_->targets.shutdown();
     impl_->host = nullptr;
     impl_->rebuildPending = false;
@@ -182,11 +197,18 @@ const pictor::WorldSceneTargets& WorldFrameGraph::sceneTargets() const {
     return impl_->targets;
 }
 
-pictor::WorldGeometryCache& WorldFrameGraph::geometryCache() {
+pictor::GpuAssetStore& WorldFrameGraph::assetStore() {
     if (!isInitialized()) {
         throw std::logic_error("world frame graph is not initialized");
     }
-    return impl_->geometryCache;
+    return impl_->assets;
+}
+
+const pictor::PictorFrameBridge& WorldFrameGraph::frameBridge() const {
+    if (!isInitialized()) {
+        throw std::logic_error("world frame graph is not initialized");
+    }
+    return impl_->bridge;
 }
 
 render::WorldRenderLayer& WorldFrameGraph::worldLayer() {
@@ -298,8 +320,8 @@ void WorldFrameGraph::finishRebuild() {
     const VkExtent2D extent = impl_->host->vulkan().swapchain_extent();
 
     if (extent.width == 0 || extent.height == 0) {
-        // 最小化中は scene target を作れない。geometry cache と layer 実体は
-        // 残したまま、次 frame へ再構築を持ち越す。
+        // 最小化中は scene target を作れない。asset store、bridge の scene と
+        // layer 実体は残したまま、次 frame へ再構築を持ち越す。
         impl_->rebuildPending = true;
         return;
     }

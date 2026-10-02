@@ -27,9 +27,10 @@
 | `konbini_sim_tests` | `deterministic_primitives_test.cpp` | ID / bounds / counter RNG |
 | `konbini_app_tests` | `first_playable_app_test.cpp` | fixed step、camera、選択、command、HUD |
 | `konbini_render_adapter_tests` | `swapchain_recovery_test.cpp` | swapchain分類、layer初期化rollback |
+| `konbini_pictor_bridge_tests` | `adapters/pictor_bridge_test.cpp` | Gate 5 bridgeのasset lifetime、batch resolution、scene差分、instance path |
 
-`konbini_render_adapter_tests`はVulkanの型を使うがdeviceを作らない。実行は
-セッションのユーザ指示に従い、起動testとは分けて扱う。
+`konbini_render_adapter_tests`と`konbini_pictor_bridge_tests`はVulkanの型を使うが
+deviceを作らない。実行はセッションのユーザ指示に従い、起動testとは分けて扱う。
 
 ## 2. Deterministic simulation
 
@@ -108,6 +109,21 @@ Boss:
 - GLFW callback→Ergo input→PlayerCommand
 
 fake buffer / no-op presentではproduction gateを満たさない。
+
+`konbini_pictor_bridge_tests`はPictorの実`SceneRegistry` / `CullingSystem` /
+`BatchBuilder`と本作の`GpuAssetStore` / `KonbiniBatchGpuSource` /
+`PictorSceneSync` / batch planを結合し、次をdevice無しで固定する。
+buffer / pipeline handleは同一性比較だけの偽値で、GPU upload、記録、present
+の検証には数えない。
+
+- `GpuAssetStore` lifetime: upload前検証、参照数、flight数ぶん遅延したeviction、
+  200回のcreate / destroyでlive buffer 0、shutdownの逆順解放、stale handle
+- `IBatchGpuSource` resolution: mesh / pipeline解決、pass違いとunknown meshの
+  失敗記録
+- facility置換 / store spawnの同frame差分、mesh / pass変更の再登録、
+  visible dimension変更相当のbulk unregister、不正snapshotでsceneを変えない
+- instance path: 同じmeshの2 facilityが1 batch × 2 instance、translucentの
+  pass分割、frustum cull、DYNAMIC以外のpoolとmapping無しobjectの拒否
 
 ## 6. Save / migration
 

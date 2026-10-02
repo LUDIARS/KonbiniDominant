@@ -38,6 +38,7 @@ if(KONBINI_BUILD_RENDER)
   add_dependencies(
     konbini_review
     konbini_shaders
+    konbini_pictor_bridge
     konbini_pictor_scene_targets
     konbini_pictor_world_geometry
     konbini_world_composite

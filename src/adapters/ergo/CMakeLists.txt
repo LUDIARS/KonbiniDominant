@@ -51,6 +51,7 @@ target_link_libraries(
     pictor
     konbini_app_domain
     konbini_hud_overlay
+    konbini_pictor_bridge
     konbini_pictor_scene_targets
     konbini_pictor_world_geometry
     konbini_world_composite

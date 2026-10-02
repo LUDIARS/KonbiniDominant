@@ -135,6 +135,12 @@ health:
 より小さい実経路で成立するかを現行APIから判断し、選んだ経路を
 `spec/interface/` と実装コメントへ反映する。
 
+first playable は当初 host-driven upload (`WorldGeometryCache`) の小さい実経路で
+成立させ、Gate 5 ([task](../../tasks/2026-10-02-kd-gate5-pictor-ergo-bridge.md))
+で facility 描画を `GpuAssetStore` / `KonbiniBatchGpuSource` /
+`PictorFrameBridge` の production 経路へ置き換えた。経路と upstream gap は
+[pictor-rendering.md](../../interface/pictor-rendering.md#gate-5-の実装経路) が正本。
+
 ## Minimal controls
 
 | input | action |
