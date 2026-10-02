@@ -77,13 +77,19 @@ add_library(
     pictor_batch_plan.cpp
     pictor_frame_bridge.cpp
     pictor_scene_sync.cpp
+    presentation_geometry_loader.cpp
+    presentation_object_sync.cpp
     vulkan_gpu_mesh_uploader.cpp
     world_frustum.cpp
     world_geometry_loader.cpp
     world_instance_buffers.cpp
     world_instanced_pipelines.cpp
     "${PROJECT_SOURCE_DIR}/include/konbini/adapters/pictor/gpu_asset_store.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/adapters/pictor/gpu_mesh_key.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/adapters/pictor/gpu_mesh_uploader.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/adapters/pictor/object_tint_source.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/adapters/pictor/presentation_geometry_loader.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/adapters/pictor/presentation_object_sync.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/adapters/pictor/konbini_batch_gpu_source.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/adapters/pictor/pictor_batch_plan.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/adapters/pictor/pictor_frame_bridge.h"

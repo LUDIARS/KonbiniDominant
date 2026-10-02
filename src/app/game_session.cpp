@@ -26,6 +26,7 @@
 #include "konbini/render/grid_ground.h"
 #include "konbini/city/grid_town.h"
 #include "konbini/render/isometric_camera.h"
+#include "konbini/render/speech_line_catalog.h"
 
 namespace konbini::app {
 namespace {
@@ -85,7 +86,11 @@ struct GameSession::Impl {
     std::uint32_t lastDroppedTicks = 0;
 };
 GameSession::GameSession(const std::filesystem::path& file,const city::ICityGenerator& generator,const std::uint32_t maxTicks,PlaytestOptions playtest)
-    : impl_(std::make_unique<Impl>(file,generator,maxTicks,std::move(playtest))) {}
+    : impl_(std::make_unique<Impl>(file,generator,maxTicks,std::move(playtest))) {
+    // Every remark the content can emit must resolve to a localized line
+    // whose glyphs are baked; fail at startup, not at the first bubble.
+    render::validateSpeechLineKeys(impl_->simulation.content().residentPresentation.remarks);
+}
 const city::GeneratedCity& GameSession::city() const noexcept { return impl_->simulation.city(); }
 GameSession::~GameSession()=default;
 std::uint64_t GameSession::completedTicks() const noexcept { return impl_->simulation.completedTicks(); }

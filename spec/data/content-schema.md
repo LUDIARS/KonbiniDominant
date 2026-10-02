@@ -71,7 +71,10 @@ chain差、経済式、phase条件、boss設定をコード分岐ではなくver
 resident値はrender snapshotへ派生するpresentationだけを制御し、canonicalな人口、
 収益、店舗割当を変更しない。`speechDurationTicks`は`storeDwellTicks`以下でなければ
 ならない。dummy remarkは1〜24文字のASCII `A`〜`Z`とspaceだけを受理し、
-spaceだけのlineも拒否する。
+spaceだけのlineも拒否する。remarkは表示文ではなくlocalization keyで、
+日本語本文は`data/locale/ja/resident_remarks.json`が持つ (BASE-NPC-LOCALE-01、
+[Japanese speech lines](../feature/npc-conversations-and-placement-feedback.md#japanese-speech-lines))。
+catalogに無いkeyは`GameSession`起動時に拒否する。
 
 loader はunknown key、欠落、重複chain、非finite値、canonicalな10進整数表現でない
 整数field、整数範囲外、baseline不一致を例外として拒否する。

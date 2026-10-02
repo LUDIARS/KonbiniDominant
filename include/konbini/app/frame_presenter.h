@@ -8,6 +8,8 @@
 #include "konbini/render/prepared_frame.h"
 #include "konbini/render/hud_text_geometry.h"
 #include "konbini/render/isometric_camera.h"
+#include "konbini/render/npc_presentation_draws.h"
+#include "konbini/render/resident_pose_tracker.h"
 #include "konbini/render/world_draw_list.h"
 #include "konbini/sim/render_snapshot.h"
 
@@ -37,9 +39,17 @@ public:
     [[nodiscard]] const render::WorldDrawListSpec& drawListSpec()
         const noexcept;
     [[nodiscard]] const render::HudTextStyle& hudStyle() const noexcept;
+    // Bubble culling counters of the last composed frame.
+    [[nodiscard]] const render::SpeechBubbleCullResult& lastBubbleCull()
+        const noexcept;
 
 private:
     adapters::ergo::ConstructionPresentation construction_;
+    // Resident poses for the NPC runtime objects (KD-NPC-002): observed per
+    // completed tick, blended per frame, never written back.
+    render::ResidentPoseTracker residents_;
+    render::NpcPresentationSpec npcSpec_;
+    render::SpeechBubbleCullResult lastBubbleCull_;
     render::WorldDrawListSpec drawListSpec_;
     render::HudTextStyle hudStyle_;
 };

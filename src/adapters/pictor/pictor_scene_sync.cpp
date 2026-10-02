@@ -123,7 +123,9 @@ SceneSyncReport PictorSceneSync::apply(
         }
     }
 
-    if (registry_->total_object_count() != bindings_.size() ||
+    // The registry also holds presentation objects, so the whole-registry
+    // count is checked by the frame bridge; this sync checks its own maps.
+    if (registry_->total_object_count() < bindings_.size() ||
         tints_.size() != bindings_.size()) {
         throw std::logic_error(
             "Pictor scene registry holds objects without a facility mapping");

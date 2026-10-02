@@ -80,6 +80,7 @@ def main(content_version: int = 4, label: str = "Phase1-4") -> None:
              "README-ja.txt": root / ("data/distribution/README-phase1-ja.txt" if content_version == 3 else "data/distribution/README-ja.txt"),
              "data/content/first-playable.json": release / "data/content/first-playable.json"}
     files["licenses/RobotoMono-OFL.txt"] = root / "data/fonts/RobotoMono/OFL.txt"
+    files["licenses/NotoSansJP-OFL.txt"] = root / "data/fonts/NotoSansJP/OFL.txt"
     for shader in SHADERS:
         source = release / "shaders" / shader
         if source.read_bytes()[:4] != b"\x03\x02\x23\x07":

@@ -5,6 +5,7 @@
 #include <map>
 #include <optional>
 
+#include "konbini/adapters/pictor/gpu_mesh_key.h"
 #include "konbini/adapters/pictor/gpu_mesh_uploader.h"
 #include "konbini/render/world_mesh.h"
 #include "konbini/sim/figmentum_facility_key.h"
@@ -23,7 +24,7 @@ namespace konbini::adapters::pictor {
 // One resident mesh. `bounds` is the world-space AABB of the uploaded
 // vertices; Pictor culls objects that use this mesh with it.
 struct GpuMeshAsset {
-    sim::FigmentumFacilityKey key{};
+    GpuMeshKey key{};
     ::pictor::MeshHandle handle = ::pictor::INVALID_MESH;
     GpuMeshBuffers buffers;
     ::pictor::AABB bounds{};
@@ -45,7 +46,8 @@ struct GpuAssetStoreStats {
 // (pictor-rendering.md#GpuAssetStore).
 //
 // - Owns the vertex / index buffers through the borrowed uploader.
-// - Maps the Figmentum stable key to a `MeshHandle`. Handles are never
+// - Maps a `GpuMeshKey` (Figmentum facility key, or a shared presentation
+//   mesh) to a `MeshHandle`. Handles are never
 //   reused, so a stale handle resolves to nothing instead of another mesh.
 // - The upload is complete when `insert()` returns, so every published handle
 //   is resident: an object can only reference a mesh that is already
@@ -76,10 +78,14 @@ public:
     // Validates and uploads `mesh`. A duplicate key is `std::logic_error`;
     // empty, non-triangle-list, out-of-range or non-finite meshes are
     // `std::invalid_argument`. Nothing is published when the upload throws.
+    ::pictor::MeshHandle insert(GpuMeshKey key, const render::WorldMesh& mesh);
     ::pictor::MeshHandle insert(
         sim::FigmentumFacilityKey key, const render::WorldMesh& mesh);
 
+    [[nodiscard]] bool contains(GpuMeshKey key) const noexcept;
     [[nodiscard]] bool contains(sim::FigmentumFacilityKey key) const noexcept;
+    [[nodiscard]] std::optional<::pictor::MeshHandle> find(
+        GpuMeshKey key) const noexcept;
     [[nodiscard]] std::optional<::pictor::MeshHandle> find(
         sim::FigmentumFacilityKey key) const noexcept;
 
@@ -108,7 +114,7 @@ private:
     ::pictor::MeshHandle nextHandle_ = 0;
     // Handles increase monotonically, so map order is insertion order.
     std::map<::pictor::MeshHandle, GpuMeshAsset> assets_;
-    std::map<sim::FigmentumFacilityKey, ::pictor::MeshHandle> handleByKey_;
+    std::map<GpuMeshKey, ::pictor::MeshHandle> handleByKey_;
     std::uint64_t uploads_ = 0;
     std::uint64_t evictions_ = 0;
 };

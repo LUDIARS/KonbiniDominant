@@ -512,14 +512,16 @@
     {
       "source": "src/adapters/pictor/gpu_asset_store.cpp",
       "tests": [
-        "tests/adapters/pictor_bridge_test.cpp"
+        "tests/adapters/pictor_bridge_test.cpp",
+        "tests/adapters/pictor_presentation_sync_test.cpp"
       ],
       "contracts": []
     },
     {
       "source": "include/konbini/adapters/pictor/gpu_asset_store.h",
       "tests": [
-        "tests/adapters/pictor_bridge_test.cpp"
+        "tests/adapters/pictor_bridge_test.cpp",
+        "tests/adapters/pictor_presentation_sync_test.cpp"
       ],
       "contracts": []
     },
@@ -540,28 +542,32 @@
     {
       "source": "src/adapters/pictor/pictor_scene_sync.cpp",
       "tests": [
-        "tests/adapters/pictor_bridge_test.cpp"
+        "tests/adapters/pictor_bridge_test.cpp",
+        "tests/adapters/pictor_presentation_sync_test.cpp"
       ],
       "contracts": []
     },
     {
       "source": "include/konbini/adapters/pictor/pictor_scene_sync.h",
       "tests": [
-        "tests/adapters/pictor_bridge_test.cpp"
+        "tests/adapters/pictor_bridge_test.cpp",
+        "tests/adapters/pictor_presentation_sync_test.cpp"
       ],
       "contracts": []
     },
     {
       "source": "src/adapters/pictor/pictor_batch_plan.cpp",
       "tests": [
-        "tests/adapters/pictor_bridge_test.cpp"
+        "tests/adapters/pictor_bridge_test.cpp",
+        "tests/adapters/pictor_presentation_sync_test.cpp"
       ],
       "contracts": []
     },
     {
       "source": "include/konbini/adapters/pictor/pictor_batch_plan.h",
       "tests": [
-        "tests/adapters/pictor_bridge_test.cpp"
+        "tests/adapters/pictor_bridge_test.cpp",
+        "tests/adapters/pictor_presentation_sync_test.cpp"
       ],
       "contracts": []
     },
@@ -784,6 +790,251 @@
       "source": "tests/cmake/sim_platform_isolation_test.cmake",
       "tests": [
         "tests/cmake/sim_platform_isolation_test.cmake"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/render/presentation_draw.h",
+      "tests": [
+        "tests/render/npc_runtime_presentation_test.cpp",
+        "tests/adapters/pictor_presentation_sync_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/render/presentation_transform.h",
+      "tests": [
+        "tests/render/npc_runtime_presentation_test.cpp",
+        "tests/adapters/pictor_presentation_sync_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/render/presentation_object_keys.h",
+      "tests": [
+        "tests/render/npc_runtime_presentation_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/render/presentation_meshes.h",
+      "tests": [
+        "tests/render/npc_runtime_presentation_test.cpp",
+        "tests/adapters/pictor_presentation_sync_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/render/presentation_meshes.cpp",
+      "tests": [
+        "tests/render/npc_runtime_presentation_test.cpp",
+        "tests/adapters/pictor_presentation_sync_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/render/resident_pose_tracker.h",
+      "tests": [
+        "tests/render/npc_runtime_presentation_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/render/resident_pose_tracker.cpp",
+      "tests": [
+        "tests/render/npc_runtime_presentation_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/render/speech_bubble_cull.h",
+      "tests": [
+        "tests/render/npc_runtime_presentation_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/render/speech_bubble_cull.cpp",
+      "tests": [
+        "tests/render/npc_runtime_presentation_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/render/speech_bubble_layout.h",
+      "tests": [
+        "tests/render/npc_runtime_presentation_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/render/speech_bubble_layout.cpp",
+      "tests": [
+        "tests/render/npc_runtime_presentation_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/render/speech_glyph_atlas.h",
+      "tests": [
+        "tests/render/npc_runtime_presentation_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/render/speech_glyph_atlas.cpp",
+      "tests": [
+        "tests/render/npc_runtime_presentation_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/render/speech_line_catalog.h",
+      "tests": [
+        "tests/render/npc_runtime_presentation_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/render/speech_line_catalog.cpp",
+      "tests": [
+        "tests/render/npc_runtime_presentation_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/render/speech_text_data.cpp",
+      "tests": [
+        "tests/render/npc_runtime_presentation_test.cpp",
+        "tests/tools/speech_font_assets_test.py"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/render/speech_text_data.h",
+      "tests": [
+        "tests/render/npc_runtime_presentation_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/render/npc_presentation_draws.h",
+      "tests": [
+        "tests/render/npc_runtime_presentation_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/render/npc_presentation_draws.cpp",
+      "tests": [
+        "tests/render/npc_runtime_presentation_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/render/world_draw_list.h",
+      "tests": [
+        "tests/render/npc_runtime_presentation_test.cpp",
+        "tests/adapters/pictor_presentation_sync_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/adapters/pictor/gpu_mesh_key.h",
+      "tests": [
+        "tests/adapters/pictor_presentation_sync_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/adapters/pictor/object_tint_source.h",
+      "tests": [
+        "tests/adapters/pictor_presentation_sync_test.cpp",
+        "tests/adapters/pictor_bridge_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/adapters/pictor/presentation_object_sync.h",
+      "tests": [
+        "tests/adapters/pictor_presentation_sync_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/adapters/pictor/presentation_object_sync.cpp",
+      "tests": [
+        "tests/adapters/pictor_presentation_sync_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/adapters/pictor/presentation_geometry_loader.h",
+      "tests": [
+        "tests/adapters/pictor_presentation_sync_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/adapters/pictor/presentation_geometry_loader.cpp",
+      "tests": [
+        "tests/adapters/pictor_presentation_sync_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/adapters/pictor/pictor_frame_bridge.h",
+      "tests": [
+        "tests/adapters/pictor_presentation_sync_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/adapters/pictor/pictor_frame_bridge.cpp",
+      "tests": [
+        "tests/adapters/pictor_presentation_sync_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/app/frame_presenter.h",
+      "tests": [
+        "tests/render/npc_runtime_presentation_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/app/frame_presenter.cpp",
+      "tests": [
+        "tests/render/npc_runtime_presentation_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "tools/bake_speech_glyphs.py",
+      "tests": [
+        "tests/tools/speech_font_assets_test.py"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "tools/package_game.py",
+      "tests": [
+        "tests/tools/speech_font_assets_test.py"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "tools/package_web.py",
+      "tests": [
+        "tests/tools/speech_font_assets_test.py"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/render/generated/noto_sans_jp_speech_mesh.inc",
+      "tests": [
+        "tests/tools/speech_font_assets_test.py"
       ],
       "contracts": []
     }

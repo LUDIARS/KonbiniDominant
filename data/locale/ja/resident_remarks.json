@@ -1,0 +1,9 @@
+{
+  "locale": "ja",
+  "font": "data/fonts/NotoSansJP/source.json",
+  "lines": [
+    {"key": "NICE AND CLOSE", "text": "近くて便利！"},
+    {"key": "EASY TO REACH", "text": "すぐ行けるね"},
+    {"key": "HANDY LOCATION", "text": "いい場所だな"}
+  ]
+}

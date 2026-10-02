@@ -1,6 +1,6 @@
 {
   "name": "resident-presentation",
-  "description": "Presentation-only resident projection and Visia primitives: content v2 resident profile, deterministic ambient residents, placement cues, CPU box/annulus geometry, bitmap speech bubbles and the store placement animation sampler, and resident walking along the Figmentum pedestrian path with explicit unreachable states.",
+  "description": "Presentation-only resident projection and Visia primitives: content v2 resident profile, deterministic ambient residents, placement cues, CPU box/annulus geometry, bitmap speech bubbles and the store placement animation sampler, resident walking along the Figmentum pedestrian path with explicit unreachable states, and the KD-NPC-002 runtime: resident pose sync with retarget blending, culled Japanese speech bubbles from the Noto Sans JP subset atlas, and resident / landing-effect / bubble objects on shared Pictor meshes.",
   "presetRules": [],
   "templateRules": [],
   "membership": [
@@ -32,6 +32,33 @@
       "pathPattern": "(^|/)src/render/(bitmap_font|landing_effect_geometry|resident_primitive_geometry|resident_visual_geometry|speech_bubble_geometry|store_placement_animation|visia|visia_geometry|visia_geometry_support)\\.(cpp|h)$"
     },
     {
+      "pathPattern": "(^|/)include/konbini/render/(npc_presentation_draws|presentation_draw|presentation_meshes|presentation_object_keys|presentation_transform|resident_pose_tracker|speech_bubble_cull|speech_bubble_layout|speech_glyph_atlas|speech_line_catalog)\\.h$"
+    },
+    {
+      "pathPattern": "(^|/)src/render/(npc_presentation_draws|presentation_meshes|resident_pose_tracker|speech_bubble_cull|speech_bubble_layout|speech_glyph_atlas|speech_line_catalog|speech_text_data)\\.(cpp|h)$"
+    },
+    {
+      "pathPattern": "(^|/)src/render/generated/noto_sans_jp_speech_mesh\\.inc$"
+    },
+    {
+      "pathPattern": "(^|/)(include/konbini|src)/adapters/pictor/(presentation_object_sync|presentation_geometry_loader|gpu_mesh_key|object_tint_source)\\.(cpp|h)$"
+    },
+    {
+      "pathPattern": "(^|/)tests/adapters/pictor_presentation_sync_test\\.cpp$"
+    },
+    {
+      "pathPattern": "(^|/)data/locale/ja/resident_remarks\\.json$"
+    },
+    {
+      "pathPattern": "(^|/)data/fonts/NotoSansJP/[^/]+$"
+    },
+    {
+      "pathPattern": "(^|/)tools/bake_speech_glyphs\\.py$"
+    },
+    {
+      "pathPattern": "(^|/)tests/tools/speech_font_assets_test\\.py$"
+    },
+    {
       "pathPattern": "(^|/)tests/render/"
     },
     {
@@ -55,12 +82,18 @@
     "cpu-primitive-geometry",
     "distance-culled-speech-bubbles",
     "store-placement-sampler",
-    "stable-edge-key-route-tie-break"
+    "stable-edge-key-route-tie-break",
+    "retarget-pose-blend",
+    "shared-mesh-presentation-objects",
+    "subset-glyph-atlas-localization"
   ],
   "specRefs": [
     "REQ-NPC-01",
     "REQ-PLACE-FEEDBACK-01",
     "REQ-VISIA-01",
-    "spec/ux/product.md"
+    "spec/ux/product.md",
+    "UX-KD-W1",
+    "UX-KD-W4",
+    "spec/interface/pictor-rendering.md"
   ]
 }

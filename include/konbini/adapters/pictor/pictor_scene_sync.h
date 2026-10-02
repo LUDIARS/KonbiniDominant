@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "konbini/adapters/pictor/object_tint_source.h"
 #include "konbini/render/world_draw_list.h"
 #include "konbini/render/world_palette.h"
 #include "konbini/sim/entity_id.h"
@@ -69,11 +70,14 @@ struct SceneSyncReport {
 // run with the first object's mesh, so the material key must separate
 // meshes; objects that share a mesh become one instanced draw.
 //
+// The registry is shared with `PresentationObjectSync`; the frame bridge
+// checks that the registry holds exactly the objects both syncs map.
+//
 // `registry` and `assets` are borrowed and must outlive this sync.
-class PictorSceneSync {
+class PictorSceneSync final : public IObjectTintSource {
 public:
     PictorSceneSync(::pictor::SceneRegistry& registry, GpuAssetStore& assets);
-    ~PictorSceneSync();
+    ~PictorSceneSync() override;
 
     PictorSceneSync(const PictorSceneSync&) = delete;
     PictorSceneSync& operator=(const PictorSceneSync&) = delete;
@@ -94,7 +98,7 @@ public:
         sim::FacilityId facility) const noexcept;
     // Per-instance tint of a registered object, nullptr when unknown.
     [[nodiscard]] const render::WorldColor* tintFor(
-        ::pictor::ObjectId object) const noexcept;
+        ::pictor::ObjectId object) const noexcept override;
 
 private:
     struct Binding {

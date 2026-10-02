@@ -6,6 +6,7 @@
 #include "konbini/render/store_construction_visual.h"
 #include <vector>
 
+#include "konbini/render/presentation_draw.h"
 #include "konbini/render/selection_overlay_geometry.h"
 #include "konbini/render/store_marker_geometry.h"
 #include "konbini/render/world_mesh.h"
@@ -54,6 +55,10 @@ struct WorldDrawList {
     std::vector<WorldFacilityDraw> overlayFacilities;
     WorldMesh storeMesh;
     WorldMesh overlayMesh;
+    // Resident / landing effect / speech bubble objects on shared meshes
+    // (pictor-rendering.md#Presentation objects). `buildWorldDrawList` leaves
+    // it empty; the frame presenter fills it from presentation state.
+    std::vector<PresentationDraw> presentation;
 };
 
 // `overlayMesh` は ZOC → selection の固定順で結合する。

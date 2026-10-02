@@ -8,6 +8,7 @@
 #include <optional>
 
 #include "konbini/adapters/pictor/pictor_scene_sync.h"
+#include "konbini/adapters/pictor/presentation_object_sync.h"
 #include "konbini/render/world_draw_list.h"
 
 #ifndef NOGDI
@@ -29,6 +30,8 @@ struct PictorFrameStats {
     // Render frames prepared since initialization.
     std::uint64_t frameSerial = 0;
     std::uint32_t objects = 0;
+    // Resident / landing effect / bubble objects among `objects`.
+    std::uint32_t presentationObjects = 0;
     std::uint32_t visibleObjects = 0;
     std::uint32_t batches = 0;
     std::uint32_t drawCalls = 0;
@@ -42,7 +45,9 @@ struct PictorFrameStats {
 // Owns Pictor's `SceneRegistry` / `CullingSystem` / `BatchBuilder` /
 // `CompiledBatchRecorder` and drives them from the immutable snapshot:
 //
-//   consume()      snapshot draw list → FacilityId ↔ ObjectId diff, camera
+//   consume()      snapshot draw list → FacilityId ↔ ObjectId diff,
+//                  presentation draws → PresentationObjectKey ↔ ObjectId
+//                  diff (pictor-rendering.md#Presentation objects), camera
 //   prepareFrame() frustum cull → batch → instance data upload (flight N)
 //   recordOpaque() / recordTranslucent()
 //                  bind instance set + camera, hand batches to the recorder
@@ -83,9 +88,10 @@ public:
     [[nodiscard]] bool isAttached() const noexcept;
     [[nodiscard]] VkRenderPass renderPass() const noexcept;
 
-    // Applies the snapshot's facility draws and the camera used for culling
-    // and recording. Throws before touching the scene when the draw list
-    // references a mesh the asset store does not hold.
+    // Applies the snapshot's facility draws, the frame's presentation draws
+    // and the camera used for culling and recording. Throws before touching
+    // the scene when the draw list references a mesh the asset store does not
+    // hold. Afterwards the registry holds exactly the mapped objects.
     SceneSyncReport consume(
         const render::WorldDrawList& drawList,
         const std::array<float, 16>& viewProjection);
@@ -104,6 +110,11 @@ public:
     [[nodiscard]] std::size_t objectCount() const noexcept;
     [[nodiscard]] std::optional<::pictor::ObjectId> objectFor(
         sim::FacilityId facility) const noexcept;
+    [[nodiscard]] std::size_t presentationObjectCount() const noexcept;
+    [[nodiscard]] std::optional<::pictor::ObjectId> presentationObjectFor(
+        const render::PresentationObjectKey& key) const noexcept;
+    [[nodiscard]] const PresentationSyncReport& lastPresentationSync()
+        const noexcept;
 
 private:
     struct Impl;

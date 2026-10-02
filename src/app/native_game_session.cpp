@@ -1,6 +1,7 @@
 #include "konbini/app/game_session.h"
 #include "konbini/adapters/ergo/world_frame_graph.h"
 #include "konbini/adapters/figmentum/figmentum_city_adapter.h"
+#include "konbini/adapters/pictor/presentation_geometry_loader.h"
 #include "konbini/adapters/pictor/world_geometry_loader.h"
 #include "konbini/render/world_render_layer.h"
 #include "konbini/render/hud_overlay_layer.h"
@@ -17,6 +18,12 @@ void GameSession::uploadGeometry(adapters::ergo::WorldFrameGraph& graph) {
     const auto report = adapters::pictor::loadCityGeometry(city(), graph.assetStore());
     std::fprintf(stdout, "[konbini] uploaded %zu facility meshes (%zu shared)\n",
                  report.uploaded, report.deduplicated);
+    // Resident / landing ring / bubble / glyph meshes, shared by every
+    // presentation object (pictor-rendering.md#Presentation objects).
+    const auto presentation =
+        adapters::pictor::loadPresentationGeometry(graph.assetStore());
+    std::fprintf(stdout, "[konbini] uploaded %zu presentation meshes\n",
+                 presentation.uploaded);
 }
 void GameSession::frame(FrameInput input, const render::ViewportExtent extent,
                         adapters::ergo::WorldFrameGraph& graph) {

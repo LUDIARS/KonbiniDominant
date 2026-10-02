@@ -28,6 +28,9 @@
 | `konbini_app_tests` | `first_playable_app_test.cpp` | fixed step、camera、選択、command、HUD |
 | `konbini_render_adapter_tests` | `swapchain_recovery_test.cpp` | swapchain分類、layer初期化rollback |
 | `konbini_pictor_bridge_tests` | `adapters/pictor_bridge_test.cpp` | Gate 5 bridgeのasset lifetime、batch resolution、scene差分、instance path |
+| `konbini_pictor_presentation_tests` | `adapters/pictor_presentation_sync_test.cpp` | KD-NPC-002 共有presentation mesh upload、resident / effect / bubble objectのlifecycleとmesh参照解放、resident instancing、bridge consume |
+| `konbini_speech_font_asset_tests` | `tools/speech_font_assets_test.py` | KD-NPC-002 Noto Sans JP subset bakeとja catalogの一致 (stale bake検出)、OFL provenance、配布物のOFL同梱 (Python標準libraryのみ) |
+| `konbini_npc_runtime_presentation_tests` | `render/npc_runtime_presentation_test.cpp` | KD-NPC-002 resident pose補間、bubble cull、日本語catalog / subset atlas、bubble layout、presentation draw、cue取りこぼし時のfinal pose |
 
 `konbini_render_adapter_tests`と`konbini_pictor_bridge_tests`はVulkanの型を使うが
 deviceを作らない。実行はセッションのユーザ指示に従い、起動testとは分けて扱う。

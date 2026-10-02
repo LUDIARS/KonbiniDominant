@@ -64,6 +64,23 @@ konbini_add_test(
   render/store_placement_animation_test.cpp
   konbini_render_domain
 )
+# KD-NPC-002: resident pose sync, bubble culling, Japanese speech atlas and
+# the presentation draw list (game-owned half, no Vulkan).
+konbini_add_test(
+  konbini_npc_runtime_presentation_tests
+  render/npc_runtime_presentation_test.cpp
+  konbini_render_domain
+)
+# KD-NPC-002 speech font assets: the baked Noto Sans JP subset matches the ja
+# catalog, the OFL provenance and the package notices. Standard library only.
+find_package(Python3 COMPONENTS Interpreter)
+if(Python3_Interpreter_FOUND)
+  add_test(
+    NAME konbini_speech_font_asset_tests
+    COMMAND Python3::Interpreter -B
+      "${CMAKE_CURRENT_SOURCE_DIR}/tools/speech_font_assets_test.py"
+  )
+endif()
 
 add_executable(konbini_phase1_tests sim/phase1_game_loop_test.cpp)
 target_link_libraries(konbini_phase1_tests PRIVATE konbini_app_domain konbini_render_domain)
@@ -180,6 +197,29 @@ if(KONBINI_BUILD_RENDER)
     COMMAND konbini_pictor_bridge_tests
   )
   add_dependencies(konbini_review konbini_pictor_bridge_tests)
+
+  # KD-NPC-002 Pictor half: shared presentation mesh upload,
+  # PresentationObjectKey <-> ObjectId lifecycle, instancing through Pictor's
+  # BatchBuilder and the bridge consume path. No Vulkan device.
+  add_executable(
+    konbini_pictor_presentation_tests
+    adapters/pictor_presentation_sync_test.cpp
+    check.h
+  )
+  target_link_libraries(
+    konbini_pictor_presentation_tests
+    PRIVATE
+      konbini_pictor_bridge
+  )
+  if(WIN32)
+    target_compile_definitions(konbini_pictor_presentation_tests PRIVATE NOGDI)
+  endif()
+  konbini_enable_warnings(konbini_pictor_presentation_tests)
+  add_test(
+    NAME konbini_pictor_presentation_tests
+    COMMAND konbini_pictor_presentation_tests
+  )
+  add_dependencies(konbini_review konbini_pictor_presentation_tests)
 endif()
 
 # configure 時の Ergo real render 契約 (desktop / Android / iOS の選択)。

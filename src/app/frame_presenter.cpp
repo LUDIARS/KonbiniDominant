@@ -15,9 +15,19 @@ FramePresenter::FramePresenter(
     render::WorldDrawListSpec drawListSpec, render::HudTextStyle hudStyle)
     : drawListSpec_(drawListSpec), hudStyle_(hudStyle) {}
 
-void FramePresenter::observe(const sim::RenderSnapshot& snapshot) { construction_.observe(snapshot); }
-void FramePresenter::advance(double dt) { construction_.advance(dt); }
-void FramePresenter::reset() { construction_.reset(); }
+void FramePresenter::observe(const sim::RenderSnapshot& snapshot) {
+    construction_.observe(snapshot);
+    residents_.observe(snapshot.residents(), snapshot.completedTicks());
+}
+void FramePresenter::advance(double dt) {
+    construction_.advance(dt);
+    residents_.advance(dt);
+}
+void FramePresenter::reset() {
+    construction_.reset();
+    residents_.reset();
+    lastBubbleCull_ = {};
+}
 
 // @implements spec/feature/ui-ux.md Common HUD
 render::PreparedFrame FramePresenter::compose(
@@ -41,6 +51,12 @@ render::PreparedFrame FramePresenter::compose(
     drawList.overlayMesh.vertices.insert(drawList.overlayMesh.vertices.end(),
                                          particles.vertices.begin(), particles.vertices.end());
     for (const auto index : particles.indices) drawList.overlayMesh.indices.push_back(particleBase + index);
+    // Residents, landing rings and speech bubbles become Pictor objects on
+    // shared meshes (pictor-rendering.md#Presentation objects).
+    auto npc = render::buildNpcPresentationDraws(
+        residents_.poses(), construction_.visuals(), camera, npcSpec_);
+    drawList.presentation = std::move(npc.draws);
+    lastBubbleCull_ = std::move(npc.bubbles);
 
 
     auto mesh=render::buildHudTextMesh(controls.statusLines,controls.statusStyle,camera.extent);
@@ -62,6 +78,11 @@ const render::WorldDrawListSpec& FramePresenter::drawListSpec()
 
 const render::HudTextStyle& FramePresenter::hudStyle() const noexcept {
     return hudStyle_;
+}
+
+const render::SpeechBubbleCullResult& FramePresenter::lastBubbleCull()
+    const noexcept {
+    return lastBubbleCull_;
 }
 
 }  // namespace konbini::app

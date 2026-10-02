@@ -102,6 +102,43 @@ snapshot diff:
 facility破壊・store対消滅・dimension collapse後、次frame snapshotにstale objectを
 残さない。
 
+## Presentation objects
+
+KD-NPC-002。resident、店舗着地effect、発話bubbleは`WorldDrawList::presentation`
+(`render::PresentationDraw`) としてframeごとに組み、`PresentationObjectSync`が
+facilityと同じSceneRegistry / DYNAMIC poolへ同期する。
+
+```text
+PresentationObjectKey { role, owner, part }  →  Pictor ObjectId
+  Resident          owner = population cell id, part = ordinal
+  LandingEffect     owner = StoreId
+  BubbleBackground / BubbleTail / SpeechGlyph   owner / part = resident
+```
+
+- 共有mesh: `render::buildPresentationMeshes()`をstartupで1回だけ
+  `loadPresentationGeometry()`がuploadする。resident Visia mesh、着地ringの
+  baked age frame (`kLandingRingFrameCount` = 16, BASE-NPC-RING-FRAMES-01)、
+  bubble背景quad / tail、speech glyph atlas。frame loopではuploadしない
+- `GpuAssetStore`のkeyは`GpuMeshKey { domain, value }`。Figmentum facility keyは
+  uint64全域を使うので、presentation meshは別domainに置き、予約範囲を作らない
+- 同じmeshを使うobjectはmaterial key (= mesh handle) が等しく、1つのinstanced draw
+  になる。residentは何体いても1 batch
+- diff: Added → mesh解決・acquire・world AABB付きでregister、Removed (resident退出、
+  effect終了、bubble cull) → 同じapplyでunregisterしmesh参照をrelease、mesh / pass
+  変更 → re-register、移動 → `update_transform` + `update_bounds`。ObjectIdは保持し、
+  stable idが続く限り同じPictor objectを使う
+- frameの検証 (重複key、非有限model / tint、未uploadのmesh) はregistry変更前に
+  facility分と合わせて行い、失敗時はsceneを変えない
+- consume後にregistryの総object数 = facility mapping数 + presentation mapping数を
+  検査する。batch planは両syncへtintを問い、どちらも知らないobjectは例外
+- bubble / glyph meshはnormal 0 (unshaded) で、非一様scaleを含むmodelでも陰影が
+  崩れない。resident / ringはrotation + translationのみ
+- 共有meshは常駐で、effect終了で解放されるのはobjectとmesh参照。meshのevictは
+  明示的なowner判断に限る (`GpuAssetStore`の方針と同じ)
+- desktop (`AppRunner`) とmobile (`NativeMobileRuntime`) は同じ
+  `GameSession::uploadGeometry` / `FramePresenter::compose` を通り、同じsnapshot
+  contractで動く。web (Pictor WebGL2) hostは`presentation`をまだ描かない
+
 ## Pictor pools
 
 - distant static facility: `STATIC`

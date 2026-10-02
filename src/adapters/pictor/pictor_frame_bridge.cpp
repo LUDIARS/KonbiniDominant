@@ -28,6 +28,25 @@ namespace {
 // surfaces as "batches without sorted indices", never as dropped objects.
 constexpr std::size_t kFrameAllocatorBytes = 4U * 1024U * 1024U;
 
+// Both syncs register into the same registry; the batch plan asks each one
+// for the tint of the objects it owns.
+class CombinedTintSource final : public IObjectTintSource {
+public:
+    CombinedTintSource(const IObjectTintSource& facilities,
+                       const IObjectTintSource& presentation)
+        : facilities_(&facilities), presentation_(&presentation) {}
+
+    [[nodiscard]] const render::WorldColor* tintFor(
+        const ::pictor::ObjectId object) const noexcept override {
+        const render::WorldColor* const tint = facilities_->tintFor(object);
+        return tint != nullptr ? tint : presentation_->tintFor(object);
+    }
+
+private:
+    const IObjectTintSource* facilities_;
+    const IObjectTintSource* presentation_;
+};
+
 }  // namespace
 
 struct PictorFrameBridge::Impl {
@@ -41,6 +60,8 @@ struct PictorFrameBridge::Impl {
     std::unique_ptr<::pictor::CullingSystem> culling;
     std::unique_ptr<::pictor::BatchBuilder> batches;
     std::unique_ptr<PictorSceneSync> sync;
+    std::unique_ptr<PresentationObjectSync> presentation;
+    std::unique_ptr<CombinedTintSource> tints;
     std::unique_ptr<KonbiniBatchGpuSource> source;
     std::unique_ptr<::pictor::CompiledBatchRecorder> recorder;
 
@@ -56,6 +77,7 @@ struct PictorFrameBridge::Impl {
     std::uint32_t preparedFlight = 0;
     VkDescriptorSet instanceSet = VK_NULL_HANDLE;
     PictorFrameStats stats;
+    PresentationSyncReport presentationReport;
 };
 
 PictorFrameBridge::PictorFrameBridge() : impl_(std::make_unique<Impl>()) {}
@@ -91,6 +113,10 @@ void PictorFrameBridge::initialize(
         impl.culling = std::make_unique<::pictor::CullingSystem>(*impl.registry);
         impl.batches = std::make_unique<::pictor::BatchBuilder>(*impl.registry);
         impl.sync = std::make_unique<PictorSceneSync>(*impl.registry, assets);
+        impl.presentation =
+            std::make_unique<PresentationObjectSync>(*impl.registry, assets);
+        impl.tints = std::make_unique<CombinedTintSource>(
+            *impl.sync, *impl.presentation);
         impl.source = std::make_unique<KonbiniBatchGpuSource>(assets);
         // No MaterialRegistry: the batch's own shader key selects the pipeline.
         impl.recorder =
@@ -98,6 +124,8 @@ void PictorFrameBridge::initialize(
     } catch (...) {
         impl.recorder.reset();
         impl.source.reset();
+        impl.tints.reset();
+        impl.presentation.reset();
         impl.sync.reset();
         impl.batches.reset();
         impl.culling.reset();
@@ -119,9 +147,12 @@ void PictorFrameBridge::shutdown() noexcept {
     Impl& impl = *impl_;
     detachDevice();
     // Release every mesh reference before the asset store goes away.
+    impl.presentation->clear(impl.stats.frameSerial);
     impl.sync->clear(impl.stats.frameSerial);
     impl.recorder.reset();
     impl.source.reset();
+    impl.tints.reset();
+    impl.presentation.reset();
     impl.sync.reset();
     impl.batches.reset();
     impl.culling.reset();
@@ -225,15 +256,26 @@ SceneSyncReport PictorFrameBridge::consume(
     const ::pictor::Frustum frustum = frustumFromViewProjection(viewProjection);
     const std::vector<SceneObjectRequest> requests =
         sceneObjectRequests(drawList);
+    impl.presentation->validate(drawList.presentation);
     const SceneSyncReport report =
         impl.sync->apply(requests, impl.stats.frameSerial);
+    impl.presentationReport = impl.presentation->apply(
+        drawList.presentation, impl.stats.frameSerial);
+    if (impl.registry->total_object_count() !=
+        impl.sync->objectCount() + impl.presentation->objectCount()) {
+        throw std::logic_error(
+            "Pictor scene registry holds objects no sync maps");
+    }
 
     impl.frustum = frustum;
     impl.push.viewProjection = viewProjection;
     impl.hasCamera = true;
     impl.prepared = false;
     impl.stats.snapshotTick = drawList.snapshotTick;
-    impl.stats.objects = static_cast<std::uint32_t>(impl.sync->objectCount());
+    impl.stats.objects = static_cast<std::uint32_t>(
+        impl.sync->objectCount() + impl.presentation->objectCount());
+    impl.stats.presentationObjects =
+        static_cast<std::uint32_t>(impl.presentation->objectCount());
     return report;
 }
 
@@ -255,7 +297,7 @@ void PictorFrameBridge::prepareFrame(const std::uint32_t flightIndex) {
     impl.memory->begin_frame();
     impl.culling->cull(impl.frustum, impl.memory->frame_allocator());
     impl.batches->build(impl.memory->frame_allocator());
-    buildPictorBatchPlan(*impl.registry, *impl.batches, *impl.sync, impl.plan);
+    buildPictorBatchPlan(*impl.registry, *impl.batches, *impl.tints, impl.plan);
     impl.instanceSet = impl.instanceBuffers.upload(flightIndex, impl.plan.instances);
 
     ++impl.stats.frameSerial;
@@ -358,6 +400,23 @@ std::optional<::pictor::ObjectId> PictorFrameBridge::objectFor(
         return std::nullopt;
     }
     return impl_->sync->objectFor(facility);
+}
+
+std::size_t PictorFrameBridge::presentationObjectCount() const noexcept {
+    return isInitialized() ? impl_->presentation->objectCount() : 0U;
+}
+
+std::optional<::pictor::ObjectId> PictorFrameBridge::presentationObjectFor(
+    const render::PresentationObjectKey& key) const noexcept {
+    if (!isInitialized()) {
+        return std::nullopt;
+    }
+    return impl_->presentation->objectFor(key);
+}
+
+const PresentationSyncReport& PictorFrameBridge::lastPresentationSync()
+    const noexcept {
+    return impl_->presentationReport;
 }
 
 }  // namespace konbini::adapters::pictor

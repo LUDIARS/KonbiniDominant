@@ -67,7 +67,10 @@ backgroundとのz-fightingを避ける。
 - input順を維持し、distance cullingの結果だけを除外する
 
 日本語font atlasへ移行した後も、world anchor、distance culling、stable speaker IDは
-この境界を維持する。
+この境界を維持する。native frameの日本語bubbleは
+[Japanese speech lines](../feature/npc-conversations-and-placement-feedback.md#japanese-speech-lines)
+と[Bubble culling](../feature/npc-conversations-and-placement-feedback.md#bubble-culling)
+が正本で、この5x7 helperはCPU検証用に残る。
 
 ## Store placement sampler
 
@@ -92,12 +95,12 @@ first playableの`RenderStorePlacementCue`はtarget positionと明示的な最�
 
 ## Pictor integration boundary
 
-想定する接続は次の通り。
+KD-NPC-001時点の想定接続は次の通り (KD-NPC-002の実装は後述)。
 
 ```text
 RenderSnapshot residents[]
   -> Resident Visia instances
-  -> CPU geometry / future Pictor Visus instances
+  -> CPU geometry / Pictor objects on the shared resident mesh
 
 RenderSnapshot placementCues[]
   -> StorePlacementSample
@@ -105,12 +108,29 @@ RenderSnapshot placementCues[]
 
 resident speech
   -> distance culling
-  -> dummy glyph geometry / future cached Pictor text atlas
+  -> dummy glyph geometry / shared Noto Sans JP glyph atlas
 ```
 
 `buildResidentVisualGeometry`はsnapshot residentのradian yawをVisiaのdegree yawへ
 明示変換し、人型primitiveと発話bubbleを同じ入力から生成する。これはCPU側の
 配置までを閉じるhelperであり、GPU uploadやframe表示の完了を意味しない。
 
-現行mainにはproduction `GpuAssetStore` / `PictorFrameBridge` / text atlas adapterが
-無いため、本taskはgame-owned value、CPU geometry、animation samplerまでを実装範囲とする。
+KD-NPC-001はgame-owned value、CPU geometry、animation samplerまでを実装した。
+KD-NPC-002でnative frameへ接続した。
+
+```text
+ResidentPoseTracker (stable id, retarget blend)
+  -> Resident draw: shared ResidentBody mesh + yaw/translation model
+StoreConstructionVisual.animation.landingEffect
+  -> LandingEffect draw: baked ring age frame (translucent)
+cullSpeechBubbles (distance / off-screen / limit)
+  -> appendSpeechBubbleDraws: background + tail + Noto Sans JP glyph draws
+WorldDrawList::presentation
+  -> PresentationObjectSync (pictor-rendering.md#Presentation objects)
+```
+
+共有meshは`buildPresentationMeshes()`がVisia定義から作る。residentの共有mesh +
+modelは`buildResidentPrimitiveGeometry`のCPU結果と同じ頂点になる (testで照合)。
+着地ringは内径と外径の拡大率が異なり剛体変換で表せないため、age 16 frameへbakeし、
+instanceの`normalizedAge`に最も近いframeを使う (BASE-NPC-RING-FRAMES-01)。
+未解決のVisia IDやframe外のageは例外で、別placeholderへ置き換えない。

@@ -3,7 +3,7 @@
 #include <cstring>
 #include <stdexcept>
 
-#include "konbini/adapters/pictor/pictor_scene_sync.h"
+#include "konbini/adapters/pictor/object_tint_source.h"
 #include "konbini/adapters/pictor/world_shader_keys.h"
 
 // @implements spec/interface/pictor-rendering.md Required bridge
@@ -13,7 +13,7 @@ namespace konbini::adapters::pictor {
 // @implements spec/interface/pictor-rendering.md Pictor pools
 void buildPictorBatchPlan(
     const ::pictor::SceneRegistry& registry,
-    const ::pictor::BatchBuilder& batches, const PictorSceneSync& sync,
+    const ::pictor::BatchBuilder& batches, const IObjectTintSource& tints,
     PictorBatchPlan& plan) {
     plan.opaque.clear();
     plan.translucent.clear();
@@ -66,10 +66,10 @@ void buildPictorBatchPlan(
                 "Pictor sorted index is outside the DYNAMIC pool");
         }
         const ::pictor::ObjectId object = pool.object_ids()[poolIndex];
-        const render::WorldColor* const tint = sync.tintFor(object);
+        const render::WorldColor* const tint = tints.tintFor(object);
         if (tint == nullptr) {
             throw std::logic_error(
-                "Pictor object has no facility mapping in the scene sync");
+                "Pictor object has no facility or presentation mapping");
         }
         WorldInstanceRecord& record = plan.instances[position];
         static_assert(sizeof(record.model) == sizeof(::pictor::float4x4));

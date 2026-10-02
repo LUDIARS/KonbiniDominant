@@ -16,8 +16,18 @@ add_library(
     campaign_floor_view.cpp
     isometric_camera.cpp
     landing_effect_geometry.cpp
+    npc_presentation_draws.cpp
+    presentation_meshes.cpp
+    resident_pose_tracker.cpp
     resident_primitive_geometry.cpp
     resident_visual_geometry.cpp
+    speech_bubble_cull.cpp
+    speech_bubble_layout.cpp
+    speech_glyph_atlas.cpp
+    speech_line_catalog.cpp
+    speech_text_data.cpp
+    speech_text_data.h
+    generated/noto_sans_jp_speech_mesh.inc
     selection_overlay_geometry.cpp
     speech_bubble_geometry.cpp
     store_marker_geometry.cpp
@@ -42,7 +52,17 @@ add_library(
     "${PROJECT_SOURCE_DIR}/include/konbini/render/facility_world_mesh.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/render/hud_text_geometry.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/render/isometric_camera.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/render/npc_presentation_draws.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/render/presentation_draw.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/render/presentation_meshes.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/render/presentation_object_keys.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/render/presentation_transform.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/render/resident_pose_tracker.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/render/resident_visual_geometry.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/render/speech_bubble_cull.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/render/speech_bubble_layout.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/render/speech_glyph_atlas.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/render/speech_line_catalog.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/render/selection_overlay_geometry.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/render/speech_bubble_geometry.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/render/store_marker_geometry.h"

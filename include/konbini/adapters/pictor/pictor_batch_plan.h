@@ -14,7 +14,7 @@
 
 namespace konbini::adapters::pictor {
 
-class PictorSceneSync;
+class IObjectTintSource;
 
 // Per-instance data read by `konbini_world_instanced.vert` as
 // `instances[gl_InstanceIndex]` (std430: mat4 model, vec4 tint).
@@ -48,10 +48,11 @@ struct PictorBatchPlan {
 // current frame. Objects outside the DYNAMIC pool, unknown shader keys, batch
 // ranges outside the sorted indices, a missing sorted index array, and
 // objects without a sync mapping are `std::logic_error` / `std::runtime_error`;
-// none of them is drawn as a guess.
+// none of them is drawn as a guess. `tints` answers for every registered
+// object (facility and presentation syncs).
 void buildPictorBatchPlan(
     const ::pictor::SceneRegistry& registry,
-    const ::pictor::BatchBuilder& batches, const PictorSceneSync& sync,
+    const ::pictor::BatchBuilder& batches, const IObjectTintSource& tints,
     PictorBatchPlan& plan);
 
 }  // namespace konbini::adapters::pictor

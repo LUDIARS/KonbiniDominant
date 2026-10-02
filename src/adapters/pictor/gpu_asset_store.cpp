@@ -100,12 +100,17 @@ std::uint32_t GpuAssetStore::retireLatencyFrames() const noexcept {
 // @implements spec/interface/pictor-rendering.md Failure
 ::pictor::MeshHandle GpuAssetStore::insert(
     const sim::FigmentumFacilityKey key, const render::WorldMesh& mesh) {
+    return insert(GpuMeshKey::facility(key), mesh);
+}
+
+::pictor::MeshHandle GpuAssetStore::insert(
+    const GpuMeshKey key, const render::WorldMesh& mesh) {
     if (!isInitialized()) {
         throw std::logic_error("GPU asset store insert before initialization");
     }
     if (!key.isValid()) {
         throw std::invalid_argument(
-            "GPU asset store rejects the reserved zero facility key");
+            "GPU asset store rejects the reserved zero mesh key");
     }
     if (handleByKey_.find(key) != handleByKey_.end()) {
         throw std::logic_error("GPU asset store already holds this key");
@@ -146,11 +151,20 @@ std::uint32_t GpuAssetStore::retireLatencyFrames() const noexcept {
 
 bool GpuAssetStore::contains(
     const sim::FigmentumFacilityKey key) const noexcept {
+    return contains(GpuMeshKey::facility(key));
+}
+
+bool GpuAssetStore::contains(const GpuMeshKey key) const noexcept {
     return handleByKey_.find(key) != handleByKey_.end();
 }
 
 std::optional<::pictor::MeshHandle> GpuAssetStore::find(
     const sim::FigmentumFacilityKey key) const noexcept {
+    return find(GpuMeshKey::facility(key));
+}
+
+std::optional<::pictor::MeshHandle> GpuAssetStore::find(
+    const GpuMeshKey key) const noexcept {
     const auto entry = handleByKey_.find(key);
     if (entry == handleByKey_.end()) {
         return std::nullopt;

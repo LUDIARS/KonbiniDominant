@@ -61,6 +61,7 @@ def main():
         archive.writestr("README.txt", readme.encode("utf-8"))
         archive.writestr("build-info.json", json.dumps(info, ensure_ascii=False, indent=2).encode("utf-8"))
         archive.write(source / "data/fonts/RobotoMono/OFL.txt", "notices/RobotoMono-OFL.txt")
+        archive.write(source / "data/fonts/NotoSansJP/OFL.txt", "notices/NotoSansJP-OFL.txt")
         archive.write(args.pictor_source.resolve() / "LICENSE", "notices/Pictor-LICENSE.txt")
         archive.write(args.emsdk.resolve() / "upstream/emscripten/LICENSE", "notices/Emscripten-LICENSE.txt")
     print(json.dumps({"file": str(output), "bytes": output.stat().st_size, "sha256": sha256(output)}))

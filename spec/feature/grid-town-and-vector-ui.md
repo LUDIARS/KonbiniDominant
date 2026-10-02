@@ -30,6 +30,9 @@
 - HUDと新しい店舗看板が同じ輪郭データを使う。日本語翻訳や未収録文字の拡張は別途フォント選択とbake対象の更新を要する。
 - bakeにはPythonとfontToolsが必要。通常のC++ビルド・ゲーム実行にPythonやフォントのダウンロードは不要。
 - 配布ZIPにRobotoMono-OFL.txtを同梱する。
+- 住民の日本語吹き出しは別fontのNoto Sans JPを同じ台形分割でsubset bakeする
+  (tools/bake_speech_glyphs.py、[Japanese speech lines](npc-conversations-and-placement-feedback.md#japanese-speech-lines))。
+  配布物にNotoSansJP-OFL.txtを同梱する。
 
 ## Compact UI
 
