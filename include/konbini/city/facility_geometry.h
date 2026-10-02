@@ -1,6 +1,5 @@
 #pragma once
 
-#include <compare>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -48,7 +47,30 @@ struct FacilityGeometryCacheKey {
     std::uint32_t lod = kFirstPlayableFacilityLod;
     std::uint32_t vertexFormatVersion = kFacilityVertexFormatVersion;
 
-    auto operator<=>(const FacilityGeometryCacheKey&) const = default;
+    friend bool operator==(const FacilityGeometryCacheKey&,
+                           const FacilityGeometryCacheKey&) = default;
+    // Explicit lexicographic ordering for std::map, in declaration order. A
+    // defaulted `<=>` is implicitly deleted where std::string has no three-way
+    // comparison (Apple libc++), so compare through each member's `<` only.
+    friend bool operator<(const FacilityGeometryCacheKey& left,
+                          const FacilityGeometryCacheKey& right) {
+        if (left.schemaVersion != right.schemaVersion) {
+            return left.schemaVersion < right.schemaVersion;
+        }
+        if (left.generatorRevision != right.generatorRevision) {
+            return left.generatorRevision < right.generatorRevision;
+        }
+        if (left.recipeHash != right.recipeHash) {
+            return left.recipeHash < right.recipeHash;
+        }
+        if (left.polygonizeResolution != right.polygonizeResolution) {
+            return left.polygonizeResolution < right.polygonizeResolution;
+        }
+        if (left.lod != right.lod) {
+            return left.lod < right.lod;
+        }
+        return left.vertexFormatVersion < right.vertexFormatVersion;
+    }
 };
 
 // @implements spec/interface/figmentum-city-generation.md Geometry generation

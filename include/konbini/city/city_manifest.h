@@ -30,7 +30,7 @@ inline constexpr std::uint64_t kFirstPlayableWorldSeed =
 // 受け入れ可能な Figmentum の revision を 1 点に固定する。upstream が動くと
 // 同じ seed から別 geometry が出るので、revision 不一致は fail-fast させる。
 inline constexpr std::string_view kFigmentumRevision =
-    "d0437cd5cbf8721faec5267cc1e4dd2ce55d6fd0";
+    "ff09a65db1a1db6711537a7ce49f207ca068c8b5";
 
 // @implements spec/interface/figmentum-city-generation.md Facility
 enum class FacilityRole : std::uint8_t {

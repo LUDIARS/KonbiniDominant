@@ -1,6 +1,6 @@
 set(
   KONBINI_FIGMENTUM_REVISION
-  "d0437cd5cbf8721faec5267cc1e4dd2ce55d6fd0"
+  "ff09a65db1a1db6711537a7ce49f207ca068c8b5"
 )
 FetchContent_Declare(
   figmentum

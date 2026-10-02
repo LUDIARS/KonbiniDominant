@@ -224,11 +224,20 @@ endif()
 
 # configure 時の Ergo real render 契約 (desktop / Android / iOS の選択)。
 # toolchain 不要の script mode で評価する。
-# CMake の Pictor / Ergo pin と setup spec / README の依存表の一致。
+# CMake の Pictor / Ergo / Figmentum pin と setup spec / README の依存表、
+# city::kFigmentumRevision の一致。
 add_test(
   NAME konbini_dependency_pin_contract_tests
   COMMAND "${CMAKE_COMMAND}" -P
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependency_pin_contract_test.cmake"
+)
+
+# 浮動小数点 std::from_chars を持たない libc++ (Apple / NDK 18) で shim 無しに
+# build できる契約 (KD-MAC-001)。
+add_test(
+  NAME konbini_portable_libcxx_contract_tests
+  COMMAND "${CMAKE_COMMAND}" -P
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/portable_libcxx_contract_test.cmake"
 )
 
 add_test(

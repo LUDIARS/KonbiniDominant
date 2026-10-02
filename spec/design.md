@@ -28,9 +28,9 @@
 
 実装で固定する参照点は次の commit。
 
-- Pictor `02ea861c1657f1f7f3b4d41c361388e7646cbe47`
+- Pictor `502ba022b66fbba0356b820fc17a064abe37435e`
 - Ergo `7f0d6bbd34dced4fc6664a5f04bce9910e893537`
-- Figmentum `d0437cd5cbf8721faec5267cc1e4dd2ce55d6fd0`
+- Figmentum `ff09a65db1a1db6711537a7ce49f207ca068c8b5`
 - AIFormat `0cb32320e496c85576c5687786835127bd4c8609`
 
 dependency は configure 時に exact revision を検証し、API drift をfail-fastする。

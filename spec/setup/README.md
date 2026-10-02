@@ -3,6 +3,7 @@
 - [native-development.md](native-development.md) — C++ / CMake / Pictor / Ergo /
   Figmentum の native 構成
 - [phase1-portable-build.md](phase1-portable-build.md) — Windows portable build
+- [macos-development.md](macos-development.md) — macOS (Apple Silicon / MoltenVK) の desktop build / test
 - [mobile-development.md](mobile-development.md) — mobile toolchain / platform 境界の要求
 - [mobile-native.md](mobile-native.md) — Android / iOS host の実装 baseline と未検証項目
 

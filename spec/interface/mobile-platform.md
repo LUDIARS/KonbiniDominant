@@ -26,7 +26,7 @@ package形式だけをplatform差分とする。
 ## Inspected dependency capability
 
 固定Pictor
-`02ea861c1657f1f7f3b4d41c361388e7646cbe47` (KD-MOB-002で更新、Pictor #2243)
+`502ba022b66fbba0356b820fc17a064abe37435e` (KD-MOB-002のPictor #2243 にKD-MAC-001でPictor #2309の浮動小数点parseを加えた)
 には次の足場がある。
 
 - platform-neutral `ISurfaceProvider`
@@ -71,7 +71,7 @@ ErgoのgapはErgo repositoryのbranch / PRで直す。KonbiniDominantへ
 Ergo実装をcopyしない。
 
 Figmentum
-`d0437cd5cbf8721faec5267cc1e4dd2ce55d6fd0`の`CityPlan`はrenderer非依存で、
+`ff09a65db1a1db6711537a7ce49f207ca068c8b5`の`CityPlan`はrenderer非依存で、
 同じseed / paramsから端末上でも再生成できる。同期polygonizeをframe loopで
 実行せず、geometry cacheは再生成可能な派生dataとして扱う。
 

@@ -66,6 +66,38 @@ void keySeparatesEveryGeometryInput() {
     CHECK_THROWS(std::invalid_argument, static_cast<void>(cache.insert(geometryWith(vertexFormat))));
 }
 
+// The map key orders through an explicit member-wise `<` (no defaulted `<=>`,
+// which Apple libc++ deletes for std::string members). It must stay a strict
+// weak order that separates every input, compared in declaration order.
+void keyOrderIsStrictWeakInDeclarationOrder() {
+    const FacilityGeometryCacheKey base = baseKey();
+    CHECK(!(base < base));
+
+    FacilityGeometryCacheKey revision = base;
+    revision.generatorRevision = "ffffffffffffffffffffffffffffffffffffffff";
+    FacilityGeometryCacheKey recipe = base;
+    recipe.recipeHash += 1;
+    FacilityGeometryCacheKey resolution = base;
+    resolution.polygonizeResolution += 1;
+    FacilityGeometryCacheKey lod = base;
+    lod.lod += 1;
+    FacilityGeometryCacheKey vertexFormat = base;
+    vertexFormat.vertexFormatVersion += 1;
+    for (const FacilityGeometryCacheKey& larger :
+         {revision, recipe, resolution, lod, vertexFormat}) {
+        CHECK(base < larger);
+        CHECK(!(larger < base));
+    }
+
+    // Earlier members dominate later ones.
+    FacilityGeometryCacheKey olderSchema = revision;
+    olderSchema.schemaVersion -= 1;
+    CHECK(olderSchema < base);
+    FacilityGeometryCacheKey smallerRecipe = vertexFormat;
+    smallerRecipe.recipeHash -= 1;
+    CHECK(smallerRecipe < base);
+}
+
 void policyNeverEvictsPackagedGeometry() {
     const DerivedGeometryCachePolicy policy;
     for (const GeometryEvictionScope scope :
@@ -118,6 +150,7 @@ void cacheEvictsInStages() {
 
 int main() {
     keySeparatesEveryGeometryInput();
+    keyOrderIsStrictWeakInDeclarationOrder();
     policyNeverEvictsPackagedGeometry();
     cacheEvictsInStages();
     return konbini::test::summarize("konbini_derived_geometry_cache_tests");

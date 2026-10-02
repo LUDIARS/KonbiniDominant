@@ -93,12 +93,15 @@ gradlew.bat --no-daemon :app:assembleDebug
 ### NDK libc++ compatibility
 
 NDK r27のlibc++ 18は浮動小数点`std::from_chars`を持たない (libc++ 20で追加)。
-pinned Figmentum (`src/garment/profile.cpp`) とPictor (`src/visus/visus_json.cpp`)
-がこれを使うため、Android buildだけ`mobile/android/compat/libcxx_float_from_chars.h`
-をそれらのtargetへforce-includeし、定義は`konbini_mobile`へcompileする。
-上流sourceは編集しない。KD自身のJSON parserは`__cpp_lib_to_chars`が無い環境で
-classic locale streamを使い、shimに依存しない。NDKのlibc++が20以上になれば
-shimは無効化される。
+KD-MOB-005ではpinned Figmentum (`src/garment/profile.cpp`) とPictor
+(`src/visus/visus_json.cpp`) がこれを使っていたため、Android buildだけ
+`mobile/android/compat/libcxx_float_from_chars.h`をforce-includeしていた。
+KD-MAC-001でPictor #2309 / Figmentum #2308 (どちらもlocale非依存の自前parseへ
+置換) にpinを上げ、KDがbuildする上流targetから浮動小数点`std::from_chars`が
+消えたのでshimと`-include`を削除した。KD自身のJSON parserは
+`__cpp_lib_to_chars`が無い環境でclassic locale streamを使い、整数の
+`std::from_chars`だけを直接呼ぶ。Apple libc++も同じ制約を持つ
+([macOS development](macos-development.md))。
 
 ## iOS
 

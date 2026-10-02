@@ -8,8 +8,8 @@ KonbiniDominantが独立した別city generatorを持たない。
 ## Current upstream
 
 利用revision:
-`LUDIARS/Figmentum@d0437cd5cbf8721faec5267cc1e4dd2ce55d6fd0`
-(Figmentum #2241、pedestrian path network を追加した main merge)
+`LUDIARS/Figmentum@ff09a65db1a1db6711537a7ce49f207ca068c8b5`
+(Figmentum #2241 のpedestrian path networkに、#2308 の浮動小数点parse修正を加えたmain。CityPlan APIは#2241から不変)
 
 利用可能な主API:
 

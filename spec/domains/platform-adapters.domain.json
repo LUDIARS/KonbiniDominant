@@ -31,6 +31,8 @@
     "spec/interface/pictor-rendering.md",
     "spec/setup/native-development.md",
     "spec/feature/web-pictor.md",
-    "spec/interface/figmentum-city-generation.md"
+    "spec/interface/figmentum-city-generation.md",
+    "spec/setup/mobile-development.md",
+    "spec/setup/macos-development.md"
   ]
 }

@@ -10,7 +10,7 @@ authoritative population/economy model or to save state.
 
 The Phase 1 city integration is deliberately fixed to:
 
-- Figmentum revision `d0437cd5cbf8721faec5267cc1e4dd2ce55d6fd0`
+- Figmentum revision `ff09a65db1a1db6711537a7ce49f207ca068c8b5`
 - `fg::CityPlanParams{}` without consumer-side placement overrides
 - world seed `42`
 - per-facility marching-cubes resolution `24`

@@ -216,7 +216,8 @@
     {
       "source": "include/konbini/city/city_manifest.h",
       "tests": [
-        "tests/adapters/figmentum_pedestrian_path_test.cpp"
+        "tests/adapters/figmentum_pedestrian_path_test.cpp",
+        "tests/cmake/dependency_pin_contract_test.cmake"
       ],
       "contracts": []
     },
@@ -237,7 +238,8 @@
     {
       "source": "src/adapters/figmentum/CMakeLists.txt",
       "tests": [
-        "tests/adapters/figmentum_pedestrian_path_test.cpp"
+        "tests/adapters/figmentum_pedestrian_path_test.cpp",
+        "tests/cmake/dependency_pin_contract_test.cmake"
       ],
       "contracts": []
     },
@@ -1123,6 +1125,13 @@
       "source": "src/adapters/figmentum/figmentum_facility_mesher.h",
       "tests": [
         "tests/adapters/figmentum_mesh_detail_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "mobile/CMakeLists.txt",
+      "tests": [
+        "tests/cmake/portable_libcxx_contract_test.cmake"
       ],
       "contracts": []
     }

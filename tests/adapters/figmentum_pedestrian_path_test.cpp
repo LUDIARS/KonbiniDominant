@@ -43,7 +43,7 @@ using konbini::test::throwsException;
 void testManifestCarriesThePinnedPathContract() {
     const city::CityManifest manifest = planManifest();
     CHECK(manifest.generatorRevision == city::kFigmentumRevision);
-    CHECK(manifest.generatorRevision == "d0437cd5cbf8721faec5267cc1e4dd2ce55d6fd0");
+    CHECK(manifest.generatorRevision == "ff09a65db1a1db6711537a7ce49f207ca068c8b5");
     CHECK(manifest.canonicalVersion == 2);
     CHECK(manifest.pedestrianPaths.has_value());
     if (!manifest.pedestrianPaths.has_value()) {

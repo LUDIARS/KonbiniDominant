@@ -411,7 +411,7 @@ threshold、draw count、GPU memory、target FPSは `TBD-PERF-01`。
 
 ## Surface / device recovery
 
-固定Pictor `02ea861c1657f1f7f3b4d41c361388e7646cbe47` (Pictor #2243) の
+Pictor `02ea861c1657f1f7f3b4d41c361388e7646cbe47` (Pictor #2243) で入った
 型付きsurface / device recovery契約をKonbiniDominantのapp lifecycleと
 render resource ownerへ対応付ける。再構築順の正本はPictorの
 `spec/feature/portability/mobile-surface-recovery.md` §5。固定Ergo

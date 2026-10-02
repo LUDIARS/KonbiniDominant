@@ -23,9 +23,9 @@ Vulkan非依存でbuildできる設計にする。
 
 | dependency | inspected `origin/main` |
 |---|---|
-| Pictor | `02ea861c1657f1f7f3b4d41c361388e7646cbe47` |
+| Pictor | `502ba022b66fbba0356b820fc17a064abe37435e` |
 | Ergo | `7f0d6bbd34dced4fc6664a5f04bce9910e893537` |
-| Figmentum | `3ee998f487d984f54003c4ec3c4f7ba00b53eec3` |
+| Figmentum | `ff09a65db1a1db6711537a7ce49f207ca068c8b5` |
 
 Pictorの旧pin `c088e8d1b7b9e2625b7a8d923c89d4d684566c16`は2026-07の履歴
 書き換えでremoteから取得できなくなった。`c6b1c7538ad00623221cea041e525342374f6126`
@@ -33,7 +33,13 @@ Pictorの旧pin `c088e8d1b7b9e2625b7a8d923c89d4d684566c16`は2026-07の履歴
 docsだけである (KD-MOB-001で更新)。
 KD-MOB-002でPictorをtyped surface / device recovery契約のmerge
 `02ea861c1657f1f7f3b4d41c361388e7646cbe47` (Pictor #2243) へ更新した。
-CMakeのpinとこの表の一致は`konbini_dependency_pin_contract_tests`が検査する。
+KD-MAC-001でPictorを`502ba022b66fbba0356b820fc17a064abe37435e` (Pictor #2309)、
+Figmentumを`ff09a65db1a1db6711537a7ce49f207ca068c8b5` (Figmentum #2308) へ
+更新した。どちらも浮動小数点`std::from_chars`を自前のlocale非依存parseへ
+置き換えたmergeで、Apple libc++ / NDK libc++ 18でもbuildできる
+([macOS development](macos-development.md))。
+CMakeのpin (Pictor / Ergo / Figmentum) とこの表、READMEの表、
+`city::kFigmentumRevision`の一致は`konbini_dependency_pin_contract_tests`が検査する。
 
 floating `main` は使わない。Figmentum は `FetchContent` でpopulateした後、
 exact HEADとclean worktreeを検証してからdependency CMakeを評価する。
