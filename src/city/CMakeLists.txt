@@ -9,10 +9,12 @@ add_library(
     city_manifest.cpp
     city_manifest_canonical.cpp
     city_manifest_projection.cpp
+    pedestrian_path_contract.cpp
     facility_geometry_cache.cpp
     "${PROJECT_SOURCE_DIR}/include/konbini/city/city_manifest.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/city/city_manifest_canonical.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/city/city_manifest_projection.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/city/pedestrian_path_contract.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/city/building_recipe_fingerprint.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/city/facility_geometry.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/city/facility_geometry_cache.h"

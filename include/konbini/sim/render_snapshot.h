@@ -9,6 +9,7 @@
 #include "konbini/sim/chain_economy_table.h"
 #include "konbini/sim/facility_table.h"
 #include "konbini/sim/first_playable_content.h"
+#include "konbini/sim/pedestrian_path_table.h"
 #include "konbini/sim/game_state.h"
 #include "konbini/sim/population_cell_table.h"
 #include "konbini/sim/resident_presentation.h"
@@ -109,7 +110,7 @@ private:
         const GameState&, const FirstPlayableContent&, const FacilityTable&,
         const StoreTable&, const PopulationCellTable&, const ChainEconomyTable&,
         std::span<const RenderStorePlacementCue>, std::span<const DominantTriangle>,
-        std::span<const Encirclement>);
+        std::span<const Encirclement>, const PedestrianPathTable*);
 
     std::uint64_t completedTicks_ = 0;
     std::vector<RenderFacility> facilities_;
@@ -128,6 +129,7 @@ private:
     const ChainEconomyTable& economy,
     std::span<const RenderStorePlacementCue> placementCues,
     std::span<const DominantTriangle> triangles = {},
-    std::span<const Encirclement> encirclements = {});
+    std::span<const Encirclement> encirclements = {},
+    const PedestrianPathTable* pedestrianPaths = nullptr);
 
 }  // namespace konbini::sim

@@ -35,9 +35,9 @@ std::shared_ptr<const city::FacilityGeometry> bindToFacility(
 // @implements spec/interface/figmentum-city-generation.md Required game-side boundary
 city::CityManifest FigmentumCityAdapter::planFirstPlayableCity(
     sim::GenerationalIdPool<sim::FacilityId>& facilityIds) const {
-    const fg::CityPlan plan =
-        fg::planCity(fg::CityPlanParams{}, city::kFirstPlayableWorldSeed);
-    return projectCityPlan(plan, facilityIds);
+    const fg::CityPlanParams params{};
+    const fg::CityPlan plan = fg::planCity(params, city::kFirstPlayableWorldSeed);
+    return projectCityPlan(params, plan, facilityIds);
 }
 
 // @implements spec/interface/figmentum-city-generation.md Geometry generation

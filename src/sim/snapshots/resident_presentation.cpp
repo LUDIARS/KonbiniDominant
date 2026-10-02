@@ -3,14 +3,19 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <map>
 #include <stdexcept>
 #include <utility>
+#include <variant>
+#include <vector>
 
 #include "konbini/sim/counter_rng.h"
+#include "konbini/sim/pedestrian_route.h"
 
 // @implements spec/feature/npc-conversations-and-placement-feedback.md Ambient resident baseline
 // @implements spec/interface/visia-presentation.md Pictor integration boundary
 // @implements spec/interface/pictor-rendering.md `RenderSnapshot`
+// @implements spec/feature/npc-conversations-and-placement-feedback.md Pedestrian path walking
 
 namespace konbini::sim {
 
@@ -33,9 +38,8 @@ namespace {
 }
 
 [[nodiscard]] std::uint64_t walkingTicks(
-    const Vec3 home, const Vec3 store, const std::uint32_t ticksPerSecond,
+    const double distance, const std::uint32_t ticksPerSecond,
     const double speedMetersPerSecond) {
-    const double distance = std::hypot(store.x - home.x, store.z - home.z);
     const double ticks =
         std::ceil((distance / speedMetersPerSecond) * ticksPerSecond);
     constexpr std::uint64_t kMaximumWalkingTicks =
@@ -59,18 +63,6 @@ namespace {
         return remainder - untilWrap;
     }
     return remainder + phaseOffset;
-}
-
-[[nodiscard]] Vec3 interpolateXZ(const Vec3 start, const Vec3 end,
-                                 const std::uint64_t elapsedTicks,
-                                 const std::uint64_t durationTicks) noexcept {
-    const double progress = static_cast<double>(elapsedTicks) /
-                            static_cast<double>(durationTicks);
-    return {
-        .x = start.x + ((end.x - start.x) * progress),
-        .y = start.y,
-        .z = start.z + ((end.z - start.z) * progress),
-    };
 }
 
 [[nodiscard]] double facingYaw(const Vec3 start, const Vec3 end) noexcept {
@@ -141,17 +133,138 @@ void validateResidentSourceCell(const PopulationCellRow& cell) {
     return candidate;
 }
 
+// The trip as a planar polyline from the home point to the store point.
+// `cumulativeMeters[i]` is the walked distance at `waypoints[i]`.
 struct ResidentCycle {
     StoreId targetStore{};
-    Vec3 destination{};
+    ResidentRouteState route = ResidentRouteState::DirectLine;
+    std::vector<Vec3> waypoints;
+    std::vector<double> cumulativeMeters;
     std::uint64_t travelTicks = 0;
     std::uint64_t storeStart = 0;
     std::uint64_t returnStart = 0;
     std::uint64_t cycleTicks = 0;
-    double outboundYaw = 0.0;
 };
 
+struct TripSample {
+    Vec3 position{};
+    double yawRadians = 0.0;
+};
+
+[[nodiscard]] double lengthMeters(const ResidentCycle& cycle) noexcept {
+    return cycle.cumulativeMeters.back();
+}
+
+// Facing along the first segment with extent; a zero-length trip faces +Z.
+[[nodiscard]] double outboundYaw(const ResidentCycle& cycle) noexcept {
+    for (std::size_t index = 1; index < cycle.waypoints.size(); ++index) {
+        if (cycle.cumulativeMeters[index] > cycle.cumulativeMeters[index - 1]) {
+            return facingYaw(cycle.waypoints[index - 1], cycle.waypoints[index]);
+        }
+    }
+    return 0.0;
+}
+
+// Facing on arrival at the store, i.e. along the last segment with extent.
+[[nodiscard]] double arrivalYaw(const ResidentCycle& cycle) noexcept {
+    for (std::size_t index = cycle.waypoints.size(); index > 1; --index) {
+        if (cycle.cumulativeMeters[index - 1] >
+            cycle.cumulativeMeters[index - 2]) {
+            return facingYaw(cycle.waypoints[index - 2],
+                             cycle.waypoints[index - 1]);
+        }
+    }
+    return 0.0;
+}
+
+// Position and facing after walking `elapsedTicks` of `durationTicks`, from
+// the home end or (when `returning`) from the store end. The resident faces
+// along the segment it is on, in its walking direction.
+[[nodiscard]] TripSample sampleTrip(const ResidentCycle& cycle,
+                                    const std::uint64_t elapsedTicks,
+                                    const std::uint64_t durationTicks,
+                                    const bool returning) noexcept {
+    const std::size_t segments = cycle.waypoints.size() - 1;
+    if (segments == 0) {
+        return {.position = cycle.waypoints.front(), .yawRadians = 0.0};
+    }
+    const double progress = static_cast<double>(elapsedTicks) /
+                            static_cast<double>(durationTicks);
+    if (segments == 1) {
+        // One straight segment keeps the exact BASE-NPC-PATH-01 expression.
+        const Vec3 start = returning ? cycle.waypoints[1] : cycle.waypoints[0];
+        const Vec3 end = returning ? cycle.waypoints[0] : cycle.waypoints[1];
+        return {
+            .position = {
+                .x = start.x + ((end.x - start.x) * progress),
+                .y = start.y,
+                .z = start.z + ((end.z - start.z) * progress),
+            },
+            .yawRadians = facingYaw(start, end),
+        };
+    }
+
+    const double walked =
+        (returning ? 1.0 - progress : progress) * lengthMeters(cycle);
+    std::size_t segment = 0;
+    while (segment + 1 < segments &&
+           cycle.cumulativeMeters[segment + 1] <= walked) {
+        ++segment;
+    }
+    const Vec3 start = cycle.waypoints[segment];
+    const Vec3 end = cycle.waypoints[segment + 1];
+    const double segmentLength =
+        cycle.cumulativeMeters[segment + 1] - cycle.cumulativeMeters[segment];
+    const double fraction = segmentLength > 0.0
+        ? std::clamp((walked - cycle.cumulativeMeters[segment]) / segmentLength,
+                     0.0,
+                     1.0)
+        : 0.0;
+    return {
+        .position = {
+            .x = start.x + ((end.x - start.x) * fraction),
+            .y = start.y,
+            .z = start.z + ((end.z - start.z) * fraction),
+        },
+        .yawRadians = returning ? facingYaw(end, start) : facingYaw(start, end),
+    };
+}
+
 [[nodiscard]] ResidentCycle makeResidentCycle(
+    const ResidentRouteState route, std::vector<Vec3> waypoints,
+    const StoreId targetStore, const std::uint32_t ticksPerSecond,
+    const ResidentPresentationContent& content) {
+    ResidentCycle cycle{
+        .targetStore = targetStore,
+        .route = route,
+        .waypoints = std::move(waypoints),
+    };
+    cycle.cumulativeMeters.reserve(cycle.waypoints.size());
+    cycle.cumulativeMeters.push_back(0.0);
+    for (std::size_t index = 1; index < cycle.waypoints.size(); ++index) {
+        cycle.cumulativeMeters.push_back(
+            cycle.cumulativeMeters.back() +
+            std::hypot(cycle.waypoints[index].x - cycle.waypoints[index - 1].x,
+                       cycle.waypoints[index].z - cycle.waypoints[index - 1].z));
+    }
+    cycle.travelTicks = walkingTicks(lengthMeters(cycle),
+                                     ticksPerSecond,
+                                     content.walkingSpeedMetersPerSecond);
+    cycle.storeStart = checkedAdd(content.homeDwellTicks,
+                                  cycle.travelTicks,
+                                  "resident outbound trip duration overflow");
+    cycle.returnStart = checkedAdd(cycle.storeStart,
+                                   content.storeDwellTicks,
+                                   "resident store dwell duration overflow");
+    cycle.cycleTicks = checkedAdd(cycle.returnStart,
+                                  cycle.travelTicks,
+                                  "resident trip cycle duration overflow");
+    return cycle;
+}
+
+// BASE-NPC-PATH-01: the straight XZ line used when the city has no
+// pedestrian network (grid town).
+[[nodiscard]] ResidentCycle makeDirectLineCycle(
     const PopulationCellRow& cell, const StoreRow& target,
     const std::uint32_t ticksPerSecond,
     const ResidentPresentationContent& content) {
@@ -160,31 +273,71 @@ struct ResidentCycle {
         .y = cell.positionMeters.y,
         .z = target.positionMeters.z,
     };
-    const std::uint64_t travelTicks = walkingTicks(
-        cell.positionMeters,
-        destination,
-        ticksPerSecond,
-        content.walkingSpeedMetersPerSecond);
-    const std::uint64_t storeStart = checkedAdd(
-        content.homeDwellTicks,
-        travelTicks,
-        "resident outbound trip duration overflow");
-    const std::uint64_t returnStart = checkedAdd(
-        storeStart,
-        content.storeDwellTicks,
-        "resident store dwell duration overflow");
-    return {
-        .targetStore = target.id,
-        .destination = destination,
-        .travelTicks = travelTicks,
-        .storeStart = storeStart,
-        .returnStart = returnStart,
-        .cycleTicks = checkedAdd(
-            returnStart,
-            travelTicks,
-            "resident trip cycle duration overflow"),
-        .outboundYaw = facingYaw(cell.positionMeters, destination),
-    };
+    std::vector<Vec3> waypoints{cell.positionMeters};
+    if (destination.x != cell.positionMeters.x ||
+        destination.z != cell.positionMeters.z) {
+        waypoints.push_back(destination);
+    }
+    return makeResidentCycle(ResidentRouteState::DirectLine,
+                             std::move(waypoints),
+                             target.id,
+                             ticksPerSecond,
+                             content);
+}
+
+[[nodiscard]] FigmentumFacilityKey facilityKey(const FacilityTable& facilities,
+                                               const FacilityId id) {
+    const std::optional<std::size_t> index = facilities.find(id);
+    if (!index.has_value()) {
+        throw std::logic_error(
+            "resident trip references a facility missing from the facility table");
+    }
+    return facilities.row(*index).figmentumKey;
+}
+
+using RouteCache = std::map<std::pair<FigmentumFacilityKey, FigmentumFacilityKey>,
+                            PedestrianRoute>;
+
+// Trip along the pedestrian network, or the explicit reason it cannot be
+// walked. Routes are memoised per projection because cells share stores.
+[[nodiscard]] std::variant<ResidentCycle, ResidentRouteState> makePathCycle(
+    const PopulationCellRow& cell, const StoreRow& target,
+    const ResidentPathContext& paths, RouteCache& routes,
+    const std::uint32_t ticksPerSecond,
+    const ResidentPresentationContent& content) {
+    const FigmentumFacilityKey home =
+        facilityKey(paths.facilities, cell.facilityId);
+    const FigmentumFacilityKey store =
+        facilityKey(paths.facilities, target.facilityId);
+    auto cached = routes.find({home, store});
+    if (cached == routes.end()) {
+        cached = routes
+                     .emplace(std::pair{home, store},
+                              selectPedestrianRoute(paths.paths, home, store))
+                     .first;
+    }
+    const PedestrianRoute& route = cached->second;
+    switch (route.status) {
+        case PedestrianRouteStatus::Routed:
+            break;
+        case PedestrianRouteStatus::MissingEntrance:
+            return ResidentRouteState::MissingEntrance;
+        case PedestrianRouteStatus::Unreachable:
+            return ResidentRouteState::Unreachable;
+    }
+    // Residents walk on the population cell's ground plane, as the
+    // straight-line baseline does.
+    std::vector<Vec3> waypoints;
+    waypoints.reserve(route.waypointsMeters.size());
+    for (const Vec3 point : route.waypointsMeters) {
+        waypoints.push_back(
+            {.x = point.x, .y = cell.positionMeters.y, .z = point.z});
+    }
+    return makeResidentCycle(ResidentRouteState::PedestrianPath,
+                             std::move(waypoints),
+                             target.id,
+                             ticksPerSecond,
+                             content);
 }
 
 [[nodiscard]] ResidentPresentation makeResidentPresentation(
@@ -207,6 +360,7 @@ void sampleResidentPhase(
     const std::uint64_t worldSeed,
     const ResidentPresentationContent& content) {
     resident.targetStore = cycle.targetStore;
+    resident.route = cycle.route;
     const std::uint64_t phaseOffset = counterRandom({
         .worldSeed = worldSeed,
         .stream = RandomStreamId::FirstPlayableResidentSchedule,
@@ -218,23 +372,24 @@ void sampleResidentPhase(
         cycleTick(completedTicks, phaseOffset, cycle.cycleTicks);
 
     if (activeCycleTick < content.homeDwellTicks) {
-        resident.yawRadians = cycle.outboundYaw;
+        resident.positionMeters = cycle.waypoints.front();
+        resident.yawRadians = outboundYaw(cycle);
         return;
     }
     if (activeCycleTick < cycle.storeStart) {
         resident.phase = ResidentTripPhase::WalkingToStore;
-        resident.positionMeters = interpolateXZ(
-            cell.positionMeters,
-            cycle.destination,
-            activeCycleTick - content.homeDwellTicks,
-            cycle.travelTicks);
-        resident.yawRadians = cycle.outboundYaw;
+        const TripSample sample = sampleTrip(cycle,
+                                             activeCycleTick - content.homeDwellTicks,
+                                             cycle.travelTicks,
+                                             false);
+        resident.positionMeters = sample.position;
+        resident.yawRadians = sample.yawRadians;
         return;
     }
     if (activeCycleTick < cycle.returnStart) {
         resident.phase = ResidentTripPhase::AtStore;
-        resident.positionMeters = cycle.destination;
-        resident.yawRadians = cycle.outboundYaw;
+        resident.positionMeters = cycle.waypoints.back();
+        resident.yawRadians = arrivalYaw(cycle);
         const std::uint64_t storeElapsed =
             activeCycleTick - cycle.storeStart;
         if (storeElapsed < content.speechDurationTicks) {
@@ -245,12 +400,10 @@ void sampleResidentPhase(
     }
 
     resident.phase = ResidentTripPhase::WalkingHome;
-    resident.positionMeters = interpolateXZ(
-        cycle.destination,
-        cell.positionMeters,
-        activeCycleTick - cycle.returnStart,
-        cycle.travelTicks);
-    resident.yawRadians = facingYaw(cycle.destination, cell.positionMeters);
+    const TripSample sample = sampleTrip(
+        cycle, activeCycleTick - cycle.returnStart, cycle.travelTicks, true);
+    resident.positionMeters = sample.position;
+    resident.yawRadians = sample.yawRadians;
 }
 
 void validateResidentProjection(const ResidentPresentation& resident) {
@@ -265,12 +418,14 @@ void validateResidentProjection(const ResidentPresentation& resident) {
 
 // @implements spec/feature/npc-conversations-and-placement-feedback.md Ambient resident baseline
 // @implements spec/feature/npc-conversations-and-placement-feedback.md Determinism and ownership
+// @implements spec/feature/npc-conversations-and-placement-feedback.md Pedestrian path walking
 // @implements spec/interface/pictor-rendering.md `RenderSnapshot`
 std::vector<ResidentPresentation> projectResidentPresentations(
     const std::uint64_t completedTicks, const std::uint64_t worldSeed,
     const std::uint32_t ticksPerSecond,
     const ResidentPresentationContent& content,
-    const PopulationCellTable& populationCells, const StoreTable& stores) {
+    const PopulationCellTable& populationCells, const StoreTable& stores,
+    const ResidentPathContext* const paths) {
     validateResidentPresentationContent(content);
     if (ticksPerSecond == 0) {
         throw std::invalid_argument(
@@ -284,6 +439,7 @@ std::vector<ResidentPresentation> projectResidentPresentations(
 
     std::vector<PopulationCellRow> cells =
         sortedPopulationCells(populationCells);
+    RouteCache routes;
 
     std::vector<ResidentPresentation> residents;
     residents.reserve(cells.size() * content.samplesPerPopulationCell);
@@ -291,17 +447,31 @@ std::vector<ResidentPresentation> projectResidentPresentations(
         validateResidentSourceCell(cell);
         const std::optional<StoreRow> target =
             resolveResidentTarget(cell, stores);
-        const std::optional<ResidentCycle> cycle = target.has_value()
-            ? std::optional<ResidentCycle>(makeResidentCycle(
-                  cell, *target, ticksPerSecond, content))
-            : std::nullopt;
+        std::optional<ResidentCycle> cycle;
+        ResidentRouteState blockedRoute = ResidentRouteState::NoTrip;
+        if (target.has_value() && paths == nullptr) {
+            cycle = makeDirectLineCycle(cell, *target, ticksPerSecond, content);
+        } else if (target.has_value()) {
+            auto routed = makePathCycle(
+                cell, *target, *paths, routes, ticksPerSecond, content);
+            if (auto* const value = std::get_if<ResidentCycle>(&routed)) {
+                cycle = std::move(*value);
+            } else {
+                blockedRoute = std::get<ResidentRouteState>(routed);
+            }
+        }
 
         for (std::uint32_t ordinal = 0;
              ordinal < content.samplesPerPopulationCell;
              ++ordinal) {
             ResidentPresentation resident =
                 makeResidentPresentation(cell, ordinal, content);
-            if (cycle.has_value()) {
+            if (blockedRoute != ResidentRouteState::NoTrip) {
+                // Explicit "cannot walk there": stay home, no speech, and
+                // never substitute a straight line.
+                resident.targetStore = target->id;
+                resident.route = blockedRoute;
+            } else if (cycle.has_value()) {
                 sampleResidentPhase(resident,
                                     cell,
                                     *cycle,

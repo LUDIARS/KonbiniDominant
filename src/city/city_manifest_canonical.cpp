@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <optional>
 #include <stdexcept>
 #include <utility>
 
@@ -36,6 +37,37 @@ void writeRecipe(CanonicalBytes& writer, const BuildingRecipe& recipe) {
     writer.f64(recipe.roofBlendMeters);
     writer.i32(recipe.roofSteps);
     writer.u32(recipe.seed);
+}
+
+// 検証前の manifest も hash できるよう、ここでは並べ替えず入力順に書く。
+// 順序の正しさは validatePedestrianPathContract が保証する。
+void writePedestrianPaths(CanonicalBytes& writer,
+                          const std::optional<PedestrianPathContract>& paths) {
+    writer.u8(paths.has_value() ? 1U : 0U);
+    if (!paths.has_value()) {
+        return;
+    }
+    writer.u32(paths->schemaVersion);
+    writer.u32(paths->recipeVersion);
+    writer.u64(paths->nodes.size());
+    for (const PedestrianPathNode& node : paths->nodes) {
+        writer.u64(node.key);
+        writePosition(writer, node.positionMeters);
+    }
+    writer.u64(paths->edges.size());
+    for (const PedestrianPathEdge& edge : paths->edges) {
+        writer.u64(edge.key);
+        writer.u64(edge.fromNode);
+        writer.u64(edge.toNode);
+        writer.f64(edge.lengthMeters);
+    }
+    writer.u64(paths->entrances.size());
+    for (const PedestrianPathEntrance& entrance : paths->entrances) {
+        writer.u64(entrance.facility.value());
+        writer.u8(static_cast<std::uint8_t>(entrance.side));
+        writePosition(writer, entrance.positionMeters);
+        writer.u64(entrance.node);
+    }
 }
 
 }  // namespace
@@ -88,6 +120,7 @@ std::vector<std::byte> serializeCityManifestCanonical(
         writeBounds(writer, facility->boundsMeters);
         writer.u8(facility->isBuildable ? 1U : 0U);
     }
+    writePedestrianPaths(writer, manifest.pedestrianPaths);
     return std::move(writer).finish();
 }
 

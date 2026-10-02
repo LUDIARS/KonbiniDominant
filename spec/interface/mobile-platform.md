@@ -69,7 +69,7 @@ ErgoのgapはErgo repositoryのbranch / PRで直す。KonbiniDominantへ
 Ergo実装をcopyしない。
 
 Figmentum
-`3ee998f487d984f54003c4ec3c4f7ba00b53eec3`の`CityPlan`はrenderer非依存で、
+`d0437cd5cbf8721faec5267cc1e4dd2ce55d6fd0`の`CityPlan`はrenderer非依存で、
 同じseed / paramsから端末上でも再生成できる。同期polygonizeをframe loopで
 実行せず、geometry cacheは再生成可能な派生dataとして扱う。
 

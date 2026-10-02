@@ -30,7 +30,7 @@
 
 - Pictor `02ea861c1657f1f7f3b4d41c361388e7646cbe47`
 - Ergo `7f0d6bbd34dced4fc6664a5f04bce9910e893537`
-- Figmentum `3ee998f487d984f54003c4ec3c4f7ba00b53eec3`
+- Figmentum `d0437cd5cbf8721faec5267cc1e4dd2ce55d6fd0`
 - AIFormat `0cb32320e496c85576c5687786835127bd4c8609`
 
 dependency は configure 時に exact revision を検証し、API drift をfail-fastする。

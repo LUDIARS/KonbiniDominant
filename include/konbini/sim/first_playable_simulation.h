@@ -2,10 +2,12 @@
 
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include "konbini/sim/canonical_snapshot.h"
 #include "konbini/sim/command_queue.h"
+#include "konbini/sim/pedestrian_path_table.h"
 #include "konbini/sim/placement_system.h"
 #include "konbini/sim/population_initializer.h"
 #include "konbini/sim/render_snapshot.h"
@@ -36,9 +38,14 @@ struct CompletedTick {
 
 class FirstPlayableSimulation {
 public:
+    // `pedestrianPaths` is the read-only walking graph for resident
+    // presentation. It is not simulation state: it is never staged, saved,
+    // or included in the canonical snapshot.
     FirstPlayableSimulation(FirstPlayableContent content,
                             FacilityTable facilities,
-                            WorldEntityIds identities);
+                            WorldEntityIds identities,
+                            std::optional<PedestrianPathTable> pedestrianPaths =
+                                std::nullopt);
 
     void submit(PlayerCommand command);
     [[nodiscard]] CompletedTick completeNextTick();
@@ -48,6 +55,7 @@ public:
     [[nodiscard]] const StoreTable& stores() const noexcept;
     [[nodiscard]] const PopulationCellTable& populationCells() const noexcept;
     [[nodiscard]] const ChainEconomyTable& economy() const noexcept;
+    [[nodiscard]] const PedestrianPathTable* pedestrianPaths() const noexcept;
 
 private:
     FirstPlayableContent content_;
@@ -60,6 +68,7 @@ private:
     CommandQueue commands_;
     std::vector<DominantTriangle> triangles_;
     std::vector<Encirclement> encirclements_;
+    std::optional<PedestrianPathTable> pedestrianPaths_;
 };
 
 }  // namespace konbini::sim

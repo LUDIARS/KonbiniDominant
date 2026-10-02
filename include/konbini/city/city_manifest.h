@@ -1,10 +1,12 @@
 #pragma once
 
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
 
+#include "konbini/city/pedestrian_path_contract.h"
 #include "konbini/sim/entity_id.h"
 #include "konbini/sim/figmentum_facility_key.h"
 #include "konbini/sim/game_state.h"
@@ -12,11 +14,13 @@
 
 // @implements spec/interface/figmentum-city-generation.md Output: `CityManifest`
 // @implements spec/interface/figmentum-city-generation.md Required game-side boundary
+// @implements spec/interface/figmentum-city-generation.md Pedestrian path contract
 
 namespace konbini::city {
 
 inline constexpr std::uint32_t kCityManifestSchemaVersion = 1;
-inline constexpr std::uint32_t kCityManifestCanonicalVersion = 1;
+// 2: pedestrian path contract を canonical bytes に含める。
+inline constexpr std::uint32_t kCityManifestCanonicalVersion = 2;
 inline constexpr std::uint32_t kSupportedFigmentumPlanSchemaVersion = 1;
 inline constexpr std::uint32_t kSupportedFigmentumRecipeVersion = 1;
 // seed の正本は sim 側。city が独自の 42 を持つと、GameState と manifest が
@@ -26,7 +30,7 @@ inline constexpr std::uint64_t kFirstPlayableWorldSeed =
 // 受け入れ可能な Figmentum の revision を 1 点に固定する。upstream が動くと
 // 同じ seed から別 geometry が出るので、revision 不一致は fail-fast させる。
 inline constexpr std::string_view kFigmentumRevision =
-    "3ee998f487d984f54003c4ec3c4f7ba00b53eec3";
+    "d0437cd5cbf8721faec5267cc1e4dd2ce55d6fd0";
 
 // @implements spec/interface/figmentum-city-generation.md Facility
 enum class FacilityRole : std::uint8_t {
@@ -86,6 +90,9 @@ struct CityManifest {
     sim::Vec3 stationAnchorMeters{};
     sim::Bounds3 boundsMeters{};
     std::vector<ManifestFacility> facilities;
+    // Figmentum の歩行者 semantic path。Figmentum 由来の manifest では必須、
+    // 歩行者 network を持たない grid town では空。
+    std::optional<PedestrianPathContract> pedestrianPaths;
 };
 
 // @implements spec/interface/figmentum-city-generation.md Error contract

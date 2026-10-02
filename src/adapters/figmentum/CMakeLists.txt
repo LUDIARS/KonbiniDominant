@@ -1,6 +1,6 @@
 set(
   KONBINI_FIGMENTUM_REVISION
-  "3ee998f487d984f54003c4ec3c4f7ba00b53eec3"
+  "d0437cd5cbf8721faec5267cc1e4dd2ce55d6fd0"
 )
 FetchContent_Declare(
   figmentum
@@ -34,6 +34,8 @@ add_library(
     figmentum_facility_mesher.cpp
     figmentum_mesh_cleanup.h
     figmentum_mesh_cleanup.cpp
+    figmentum_pedestrian_projection.h
+    figmentum_pedestrian_projection.cpp
     figmentum_plan_projection.h
     figmentum_plan_projection.cpp
     "${PROJECT_SOURCE_DIR}/include/konbini/adapters/figmentum/figmentum_city_adapter.h"

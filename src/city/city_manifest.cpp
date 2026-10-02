@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <set>
 #include <stdexcept>
+#include <vector>
 
 #include "konbini/city/city_manifest_canonical.h"
 #include "konbini/city/grid_town.h"
@@ -116,6 +117,19 @@ void validateCityManifest(const CityManifest& manifest) {
     } else if (stationCount != 1) {
         throw std::invalid_argument(
             "CityManifest must contain exactly one station facility");
+    } else if (!manifest.pedestrianPaths.has_value()) {
+        // A Figmentum city without its path contract would leave residents
+        // with nothing but a straight line; reject instead of degrading.
+        throw std::invalid_argument(
+            "Figmentum CityManifest requires a pedestrian path contract");
+    }
+    if (manifest.pedestrianPaths.has_value()) {
+        std::vector<sim::FigmentumFacilityKey> facilityKeys;
+        facilityKeys.reserve(manifest.facilities.size());
+        for (const ManifestFacility& facility : manifest.facilities) {
+            facilityKeys.push_back(facility.figmentumKey);
+        }
+        validatePedestrianPathContract(*manifest.pedestrianPaths, facilityKeys);
     }
     if (manifest.canonicalHash != cityManifestCanonicalHash(manifest)) {
         throw std::invalid_argument("CityManifest canonical hash mismatch");

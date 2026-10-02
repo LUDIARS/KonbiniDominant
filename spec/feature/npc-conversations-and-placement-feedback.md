@@ -28,11 +28,12 @@ AtHome
 
 - 行先はZOC systemが`PopulationCellRow::assignedStore`へ確定したactive store
 - 未割当cellのsampleは自宅位置に留まり、発話しない
-- 出発地はpopulation cellの施設位置、目的地はstore位置
-- 現行Figmentum `CityPlan`には道路／歩道anchorが無いため、BASE-NPC-PATH-01は
-  XZ平面の直線往復とする
-- 道路沿い歩行はFigmentum側でsemantic pedestrian pathをversion付きで公開した後に
-  別taskで置き換える。Konbini側に偽の道路正本を追加しない
+- Figmentum都市では [Pedestrian path walking](#pedestrian-path-walking) に従い、
+  home entranceからstore entranceまで歩行者pathに沿って往復する
+- 歩行者networkを持たない都市 (grid town) だけは、BASE-NPC-PATH-01として
+  population cellの施設位置からstore位置までXZ平面の直線往復とする。
+  この場合も`ResidentRouteState::DirectLine`として明示する
+- Konbini側に偽の道路正本を追加しない
 - 配置済み店舗と同位置のcellなど距離0でも停止・来店状態を正しく扱う
 
 BASE-NPC-CONTENT-01は`contentVersion = 2`の
@@ -89,6 +90,41 @@ VisiaはPictorの`Visus`を置き換える型ではない。VisiaからVisus／t
 resourceへ解決する責務はadapter側に置く。詳細は
 [Visia presentation contract](../interface/visia-presentation.md)を正本とする。
 
+## Pedestrian path walking
+
+KD-NPC-003。価値: UX-KD-W1 (都市俯瞰で住民と店舗支配の関係を読める)、
+UX-KD-W2 (同じseedとcommand streamから同じ表示)。
+道路graphの正本はFigmentumで、契約は
+[Pedestrian path contract](../interface/figmentum-city-generation.md#pedestrian-path-contract)。
+
+経路選択 (`selectPedestrianRoute`):
+
+- home facilityのentranceからassigned storeのfacilityのentranceまで。
+  facilityはFigmentum keyで引くので、dimension複製されたfacilityも同じentranceを使う
+- costはedge長を整数mmにした和。最小costのrouteを選ぶ
+- 同costの候補があるnodeでは、直前edgeのstable edge keyが小さい方を採る。
+  edge costは正なので探索順に依存しない
+- waypointは `home entrance → node列 → store entrance`。歩行距離はwaypoint間の
+  XZ距離の和 (entranceとnodeの間も含む)
+- 同じfacility同士は entrance 1点・距離0
+
+resident snapshot:
+
+- `AtHome`はhome entrance、`AtStore`はstore entranceに立つ。yはpopulation cellの高さ
+- 歩行中の位置は経過tickに比例した歩行距離で、そのsegment上を線形補間する
+- yawは今いるsegmentの進行方向。帰路は逆向き。`AtHome`は最初のsegment、
+  `AtStore`は最後のsegmentの向き
+- `ResidentPresentation::route`は `NoTrip` / `DirectLine` / `PedestrianPath` /
+  `MissingEntrance` / `Unreachable`
+
+到達不能:
+
+- entranceが無い (`MissingEntrance`) か、graph上で非連結 (`Unreachable`) のときは
+  その状態を返し、住民はhomeの施設位置に留まり発話しない
+- 直線へfallbackしない
+- 人口、店舗割当、収益、canonical snapshotは変えない。path tableは
+  `FirstPlayableSimulation`が保持するread-only入力で、stageもsaveもしない
+
 ## Determinism and ownership
 
 - scheduleとremarkは専用counter RNG streamを使い、stateful RNGを使わない
@@ -107,3 +143,6 @@ resourceへ解決する責務はadapter側に置く。詳細は
 - residentと着地effectがVisia primitive geometryとして生成できる
 - placement sampleが360度回転・浮上・滞空・急落を表現し、着地時に土煙が出る
 - 同じauthoritative stateからcanonical snapshotは機能追加前と同じ規則で生成される
+- Figmentum都市のresidentはpedestrian path上を歩き、同costのrouteはstable edge keyで
+  決まる。到達不能は明示状態になり、直線に落ちない
+- pedestrian pathの有無でcanonical snapshot、人口、収益が変わらない

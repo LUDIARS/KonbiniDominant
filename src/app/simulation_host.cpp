@@ -20,7 +20,8 @@ SimulationHost::SimulationHost(
         throw std::runtime_error("generated city has no facilities");
     }
     simulation_.emplace(
-        content_, city::projectFacilityTable(city_.manifest), identities_);
+        content_, city::projectFacilityTable(city_.manifest), identities_,
+        city::projectPedestrianPathTable(city_.manifest));
     latestSnapshot_ = snapshot();
 }
 
@@ -29,10 +30,12 @@ void SimulationHost::retry() {
         throw std::logic_error("retry is available only after a match ends");
     }
     sim::FirstPlayableSimulation replacement(
-        content_, city::projectFacilityTable(city_.manifest), identities_);
+        content_, city::projectFacilityTable(city_.manifest), identities_,
+        city::projectPedestrianPathTable(city_.manifest));
     auto firstSnapshot = sim::makeRenderSnapshot(
         replacement.state(), content_, replacement.facilities(), replacement.stores(),
-        replacement.populationCells(), replacement.economy(), {});
+        replacement.populationCells(), replacement.economy(), {}, {}, {},
+        replacement.pedestrianPaths());
     // Construct both replacements before releasing the previous match.
     simulation_ = std::move(replacement);
     latestSnapshot_ = std::move(firstSnapshot);
@@ -67,7 +70,7 @@ std::shared_ptr<const sim::RenderSnapshot> SimulationHost::snapshot() const {
     return sim::makeRenderSnapshot(
         simulation_->state(), content_, simulation_->facilities(),
         simulation_->stores(), simulation_->populationCells(),
-        simulation_->economy(), {});
+        simulation_->economy(), {}, {}, {}, simulation_->pedestrianPaths());
 }
 
 std::uint64_t SimulationHost::completedTicks() const noexcept {

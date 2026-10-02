@@ -116,6 +116,172 @@
         "tests/adapters/swapchain_recovery_test.cpp"
       ],
       "contracts": []
+    },
+    {
+      "source": "include/konbini/sim/pedestrian_path_table.h",
+      "tests": [
+        "tests/sim/pedestrian_path_walking_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/sim/storage/pedestrian_path_table.cpp",
+      "tests": [
+        "tests/sim/pedestrian_path_walking_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/sim/pedestrian_route.h",
+      "tests": [
+        "tests/sim/pedestrian_path_walking_test.cpp",
+        "tests/adapters/figmentum_pedestrian_path_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/sim/snapshots/pedestrian_route.cpp",
+      "tests": [
+        "tests/sim/pedestrian_path_walking_test.cpp",
+        "tests/adapters/figmentum_pedestrian_path_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/sim/resident_presentation.h",
+      "tests": [
+        "tests/sim/pedestrian_path_walking_test.cpp",
+        "tests/sim/resident_presentation_projection_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/sim/snapshots/resident_presentation.cpp",
+      "tests": [
+        "tests/sim/pedestrian_path_walking_test.cpp",
+        "tests/sim/resident_presentation_projection_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/sim/snapshots/render_snapshot.cpp",
+      "tests": [
+        "tests/sim/pedestrian_path_walking_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/sim/first_playable_simulation.cpp",
+      "tests": [
+        "tests/sim/pedestrian_path_walking_test.cpp",
+        "tests/sim/phase1_game_loop_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/city/pedestrian_path_contract.h",
+      "tests": [
+        "tests/adapters/figmentum_pedestrian_path_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/city/pedestrian_path_contract.cpp",
+      "tests": [
+        "tests/adapters/figmentum_pedestrian_path_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/city/city_manifest.cpp",
+      "tests": [
+        "tests/adapters/figmentum_pedestrian_path_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/city/city_manifest_canonical.cpp",
+      "tests": [
+        "tests/adapters/figmentum_pedestrian_path_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/city/city_manifest_projection.cpp",
+      "tests": [
+        "tests/adapters/figmentum_pedestrian_path_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/city/city_manifest.h",
+      "tests": [
+        "tests/adapters/figmentum_pedestrian_path_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/adapters/figmentum/figmentum_pedestrian_projection.cpp",
+      "tests": [
+        "tests/adapters/figmentum_pedestrian_path_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/adapters/figmentum/figmentum_plan_projection.cpp",
+      "tests": [
+        "tests/adapters/figmentum_pedestrian_path_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/adapters/figmentum/CMakeLists.txt",
+      "tests": [
+        "tests/adapters/figmentum_pedestrian_path_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/city/city_manifest_projection.h",
+      "tests": [
+        "tests/adapters/figmentum_pedestrian_path_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/sim/first_playable_simulation.h",
+      "tests": [
+        "tests/sim/pedestrian_path_walking_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/sim/render_snapshot.h",
+      "tests": [
+        "tests/sim/pedestrian_path_walking_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/adapters/figmentum/figmentum_city_adapter.cpp",
+      "tests": [
+        "tests/adapters/figmentum_pedestrian_path_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/adapters/figmentum/figmentum_plan_projection.h",
+      "tests": [
+        "tests/adapters/figmentum_pedestrian_path_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/adapters/figmentum/figmentum_pedestrian_projection.h",
+      "tests": [
+        "tests/adapters/figmentum_pedestrian_path_test.cpp"
+      ],
+      "contracts": []
     }
   ]
 }

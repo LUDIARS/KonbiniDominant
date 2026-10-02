@@ -32,11 +32,13 @@ namespace konbini::sim {
 // @implements spec/data/content-schema.md Validation
 FirstPlayableSimulation::FirstPlayableSimulation(FirstPlayableContent content,
                                                  FacilityTable facilities,
-                                                 WorldEntityIds identities)
+                                                 WorldEntityIds identities,
+                                                 std::optional<PedestrianPathTable> pedestrianPaths)
     : content_(std::move(content)),
       facilities_(std::move(facilities)),
       economy_(content_),
-      identities_(std::move(identities)) {
+      identities_(std::move(identities)),
+      pedestrianPaths_(std::move(pedestrianPaths)) {
     validateFirstPlayableContent(content_);
     state_.competitive = content_.phase1.has_value();
     state_.campaign.enabled = content_.campaign.has_value();
@@ -74,7 +76,7 @@ CompletedTick FirstPlayableSimulation::completeNextTick() {
         frozen.canonical = makeCanonicalSnapshot(state_, content_, facilities_, stores_,
             populationCells_, economy_, encirclements_);
         frozen.render = makeRenderSnapshot(state_, content_, facilities_, stores_,
-            populationCells_, economy_, {}, triangles_, encirclements_);
+            populationCells_, economy_, {}, triangles_, encirclements_, pedestrianPaths());
         return frozen;
     }
     if (state_.completedTicks == std::numeric_limits<std::uint64_t>::max()) {
@@ -270,7 +272,8 @@ CompletedTick FirstPlayableSimulation::completeNextTick() {
                                        stagedStores,
                                        stagedPopulationCells,
                                        stagedEconomy,
-                                       placementCues, stagedTriangles, stagedEncirclements);
+                                       placementCues, stagedTriangles, stagedEncirclements,
+                                       pedestrianPaths());
 
     static_assert(
         std::is_nothrow_move_assignable_v<GameState> &&
@@ -315,6 +318,11 @@ FirstPlayableSimulation::populationCells() const noexcept {
 
 const ChainEconomyTable& FirstPlayableSimulation::economy() const noexcept {
     return economy_;
+}
+
+// @implements spec/feature/npc-conversations-and-placement-feedback.md Pedestrian path walking
+const PedestrianPathTable* FirstPlayableSimulation::pedestrianPaths() const noexcept {
+    return pedestrianPaths_.has_value() ? &*pedestrianPaths_ : nullptr;
 }
 
 }  // namespace konbini::sim

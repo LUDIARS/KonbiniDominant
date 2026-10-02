@@ -8,7 +8,8 @@ KonbiniDominantが独立した別city generatorを持たない。
 ## Current upstream
 
 利用revision:
-`LUDIARS/Figmentum@3ee998f487d984f54003c4ec3c4f7ba00b53eec3`
+`LUDIARS/Figmentum@d0437cd5cbf8721faec5267cc1e4dd2ce55d6fd0`
+(Figmentum #2241、pedestrian path network を追加した main merge)
 
 利用可能な主API:
 
@@ -18,6 +19,9 @@ KonbiniDominantが独立した別city generatorを持たない。
 - `fg::BuildingParams` → `fg::generateBuilding()` / `fg::buildingBounds()`
 - `fg::RoadNetwork + RoadCityParams` → `fg::generateRoadCity()`
 - `SdfModel` → marching cubes `fg::Mesh`
+- `fg::CityPlanParams + CityPlan` → `fg::planPedestrianNetwork()`
+  (歩行者 node / edge / facility entrance。仕様は Figmentum
+  `spec/feature/pedestrian-path.md`)
 - 単位: `1 unit = 1 m`
 
 `gen-city`は抽象的な区画都市、`gen-roads`は道路network沿いの都市であり、
@@ -126,7 +130,7 @@ term順が変わってもstableでなければならない。
 
 REQ-CITY-GAP-01 は Figmentum
 `3ee998f487d984f54003c4ec3c4f7ba00b53eec3` の `planCity()` /
-`CityPlan` で解消した。KonbiniDominant はこの exact revision を固定し、
+`CityPlan` で解消した (現在の pin は上記 Current upstream)。KonbiniDominant はこの exact revision を固定し、
 `FigmentumCityAdapter` が plan を game-owned `CityManifest` へ変換する。
 
 引き続き次は禁止する。
@@ -177,6 +181,29 @@ Phase 3 / Bossのdimensionも同じcontractを使う。
 - Destroyed dimensionのgeometry cacheは参照解放後にevict可能
 - saveはmeshでなくrecipeとdeltaを保存
 
+## Pedestrian path contract
+
+KD-NPC-003。Figmentum `planPedestrianNetwork(params, plan)` の
+`PedestrianNetwork` (schema 1 / recipe 1、CityPlan schema 1 / recipe 1) を
+`CityManifest::pedestrianPaths` (`PedestrianPathContract`) へ投影する。
+道路 graph の正本は Figmentum で、KD は値を写すだけで独自の道路 graph を持たない。
+
+| 層 | 責務 |
+|---|---|
+| `adapters/figmentum` | network を導出し、version / seed / city version を plan と突き合わせて contract へ変換。`PedestrianPathError` は code 名付き `std::runtime_error` にして world load を止める |
+| `city` | `validatePedestrianPathContract` (version、key 昇順・重複、edge endpoint / entrance node の存在、finite、正の edge 長、manifest facility と entrance の 1 対 1)。`projectPedestrianPathTable` で sim の read-only table へ投影 |
+| `sim` | `PedestrianPathTable` (flat array + CSR) と `selectPedestrianRoute`。Figmentum 型に依存しない |
+
+- Figmentum 由来の manifest は contract を必須とする。歩行者 network を持たない
+  grid town は contract 無し (`projectPedestrianPathTable` は nullopt)
+- contract は canonical bytes に含める (`kCityManifestCanonicalVersion = 2`)。
+  network が変われば別都市として hash が変わる
+- node / edge key は Figmentum の stable key をそのまま使い、bit layout を KD で
+  解釈しない。昇順 = canonical 順だけを前提にする
+- 連結性は contract 検証で要求しない。到達不能は経路選択が明示状態で返す
+  ([Pedestrian path walking](../feature/npc-conversations-and-placement-feedback.md#pedestrian-path-walking))
+- 空 network や施設間直線へ黙って落とさない
+
 ## Error contract
 
 `planFirstPlayableCity()` / `generateFirstPlayableCity()` /
@@ -189,5 +216,9 @@ Phase 3 / Bossのdimensionも同じcontractを使う。
 - stable ID collision
 - polygonize failure / empty mesh
 - cache corruption
+- pedestrian network の version 不一致・plan との食い違い・Figmentum
+  `PedestrianPathErrorCode` (InvalidParams / UnsupportedVersion / PlanMismatch /
+  InvalidKey / NonCanonicalOrder / NonFiniteCoordinate / DegenerateEdge /
+  UnknownNode / Unreachable)
 
 空manifestやplaceholderで続行しない。

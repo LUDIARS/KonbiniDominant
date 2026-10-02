@@ -17,6 +17,7 @@
     "spec/data/world-state.md",
     "spec/feature/full-campaign-baseline.md",
     "spec/feature/phase-1-game-loop.md",
-    "spec/feature/economy-and-population.md"
+    "spec/feature/economy-and-population.md",
+    "spec/feature/npc-conversations-and-placement-feedback.md"
   ]
 }

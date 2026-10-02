@@ -1,6 +1,6 @@
 {
   "name": "resident-presentation",
-  "description": "Presentation-only resident projection and Visia primitives: content v2 resident profile, deterministic ambient residents, placement cues, CPU box/annulus geometry, bitmap speech bubbles and the store placement animation sampler.",
+  "description": "Presentation-only resident projection and Visia primitives: content v2 resident profile, deterministic ambient residents, placement cues, CPU box/annulus geometry, bitmap speech bubbles and the store placement animation sampler, and resident walking along the Figmentum pedestrian path with explicit unreachable states.",
   "presetRules": [],
   "templateRules": [],
   "membership": [
@@ -17,6 +17,12 @@
       "pathPattern": "(^|/)src/sim/snapshots/resident_presentation\\.cpp$"
     },
     {
+      "pathPattern": "(^|/)include/konbini/sim/(pedestrian_path_table|pedestrian_route)\\.h$"
+    },
+    {
+      "pathPattern": "(^|/)src/sim/(storage/pedestrian_path_table|snapshots/pedestrian_route)\\.cpp$"
+    },
+    {
       "pathPattern": "(^|/)src/sim/snapshots/placement_cue_projection\\.cpp$"
     },
     {
@@ -29,7 +35,7 @@
       "pathPattern": "(^|/)tests/render/"
     },
     {
-      "pathPattern": "(^|/)tests/sim/(resident_presentation_content|resident_presentation_projection|placement_cue_projection|presentation_schema_isolation)_test\\.cpp$"
+      "pathPattern": "(^|/)tests/sim/(resident_presentation_content|resident_presentation_projection|placement_cue_projection|presentation_schema_isolation|pedestrian_path_walking)_test\\.cpp$"
     },
     {
       "pathPattern": "(^|/)spec/feature/npc-conversations-and-placement-feedback\\.md$"
@@ -48,7 +54,8 @@
     "counter-rng-presentation-streams",
     "cpu-primitive-geometry",
     "distance-culled-speech-bubbles",
-    "store-placement-sampler"
+    "store-placement-sampler",
+    "stable-edge-key-route-tie-break"
   ],
   "specRefs": [
     "REQ-NPC-01",

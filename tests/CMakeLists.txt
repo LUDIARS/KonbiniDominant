@@ -33,6 +33,14 @@ konbini_add_test(
   sim/placement_cue_projection_test.cpp
   konbini_sim
 )
+add_executable(konbini_pedestrian_path_walking_tests sim/pedestrian_path_walking_test.cpp check.h)
+target_link_libraries(konbini_pedestrian_path_walking_tests PRIVATE konbini_sim)
+target_compile_definitions(konbini_pedestrian_path_walking_tests PRIVATE
+  "KONBINI_PHASE1_CONTENT_FILE=\"${PROJECT_SOURCE_DIR}/data/content/phase1.json\"")
+konbini_enable_warnings(konbini_pedestrian_path_walking_tests)
+add_test(NAME konbini_pedestrian_path_walking_tests COMMAND konbini_pedestrian_path_walking_tests)
+add_dependencies(konbini_review konbini_pedestrian_path_walking_tests)
+
 konbini_add_test(
   konbini_presentation_schema_isolation_tests
   sim/presentation_schema_isolation_test.cpp
@@ -182,4 +190,26 @@ if(KONBINI_BUILD_RENDER)
   konbini_enable_warnings(konbini_construction_tests)
   add_test(NAME konbini_construction_tests COMMAND konbini_construction_tests)
   add_dependencies(konbini_review konbini_construction_tests)
+endif()
+
+if(KONBINI_BUILD_FIGMENTUM_ADAPTER)
+  # pinned Figmentum の CityPlan から pedestrian path contract を投影し、
+  # manifest 検証・canonical hash・経路選択まで通す (KD-NPC-003)。
+  add_executable(
+    konbini_figmentum_pedestrian_path_tests
+    adapters/figmentum_pedestrian_path_test.cpp
+    check.h
+  )
+  target_link_libraries(
+    konbini_figmentum_pedestrian_path_tests
+    PRIVATE
+      konbini_figmentum_adapter
+      figmentum_core
+  )
+  konbini_enable_warnings(konbini_figmentum_pedestrian_path_tests)
+  add_test(
+    NAME konbini_figmentum_pedestrian_path_tests
+    COMMAND konbini_figmentum_pedestrian_path_tests
+  )
+  add_dependencies(konbini_review konbini_figmentum_pedestrian_path_tests)
 endif()

@@ -19,12 +19,14 @@ add_library(
     economy/vertical_build_cost.cpp
     first_playable_simulation.cpp
     snapshots/canonical_snapshot.cpp
+    snapshots/pedestrian_route.cpp
     snapshots/placement_cue_projection.cpp
     snapshots/resident_presentation.cpp
     snapshots/render_snapshot.cpp
     snapshots/campaign_hud.cpp
     storage/chain_economy_table.cpp
     storage/facility_table.cpp
+    storage/pedestrian_path_table.cpp
     storage/population_cell_table.cpp
     storage/store_table.cpp
     storage/store_growth.cpp
@@ -60,6 +62,8 @@ add_library(
     "${PROJECT_SOURCE_DIR}/include/konbini/sim/first_playable_simulation.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/sim/game_state.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/sim/math_types.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/sim/pedestrian_path_table.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/sim/pedestrian_route.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/sim/placement_system.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/sim/placement_cue_projection.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/sim/player_command.h"

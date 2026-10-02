@@ -11,6 +11,7 @@
 #include "figmentum/gen/building.h"
 
 #include "figmentum_conversions.h"
+#include "figmentum_pedestrian_projection.h"
 #include "konbini/city/city_manifest_canonical.h"
 #include "konbini/sim/entity_id.h"
 
@@ -132,8 +133,9 @@ sim::Bounds3 aggregateBounds(const fg::CityPlan& plan) {
 
 // @implements spec/interface/figmentum-city-generation.md Output: `CityManifest`
 // @implements spec/interface/figmentum-city-generation.md Required game-side boundary
+// @implements spec/interface/figmentum-city-generation.md Pedestrian path contract
 city::CityManifest projectCityPlan(
-    const fg::CityPlan& plan,
+    const fg::CityPlanParams& params, const fg::CityPlan& plan,
     sim::GenerationalIdPool<sim::FacilityId>& facilityIds) {
     validatePlan(plan);
 
@@ -164,6 +166,7 @@ city::CityManifest projectCityPlan(
             .isBuildable = role != city::FacilityRole::Station,
         });
     }
+    manifest.pedestrianPaths = projectPedestrianNetwork(params, plan);
     manifest.canonicalHash = city::cityManifestCanonicalHash(manifest);
     city::validateCityManifest(manifest);
     static_assert(std::is_nothrow_move_assignable_v<

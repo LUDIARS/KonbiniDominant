@@ -26,4 +26,14 @@ sim::FacilityTable projectFacilityTable(const CityManifest& manifest,
     return table;
 }
 
+// @implements spec/interface/figmentum-city-generation.md Pedestrian path contract
+std::optional<sim::PedestrianPathTable> projectPedestrianPathTable(
+    const CityManifest& manifest) {
+    validateCityManifest(manifest);
+    if (!manifest.pedestrianPaths.has_value()) {
+        return std::nullopt;
+    }
+    return toPedestrianPathTable(*manifest.pedestrianPaths);
+}
+
 }  // namespace konbini::city

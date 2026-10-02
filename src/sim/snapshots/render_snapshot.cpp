@@ -64,7 +64,8 @@ std::shared_ptr<const RenderSnapshot> makeRenderSnapshot(
     const ChainEconomyTable& economy,
     const std::span<const RenderStorePlacementCue> placementCues,
     const std::span<const DominantTriangle> triangles,
-    const std::span<const Encirclement> encirclements) {
+    const std::span<const Encirclement> encirclements,
+    const PedestrianPathTable* const pedestrianPaths) {
     if (content.simulation.economyPeriodTicks == 0) {
         throw std::invalid_argument("economy period must be positive");
     }
@@ -168,13 +169,20 @@ std::shared_ptr<const RenderSnapshot> makeRenderSnapshot(
             }
         }
     }
+    // Presentation only: the path table never feeds back into canonical
+    // state, population or revenue.
+    const std::optional<ResidentPathContext> residentPaths = pedestrianPaths != nullptr
+        ? std::optional<ResidentPathContext>(
+              ResidentPathContext{.facilities = facilities, .paths = *pedestrianPaths})
+        : std::nullopt;
     snapshot->residents_ = projectResidentPresentations(
         state.completedTicks,
         state.worldSeed,
         content.simulation.ticksPerSecond,
         content.residentPresentation,
         state.campaign.enabled ? visiblePopulation : populationCells,
-        stores);
+        stores,
+        residentPaths.has_value() ? &*residentPaths : nullptr);
     for (const auto& cue : placementCues) {
         const auto index=stores.find(cue.storeId);
         if (index && stores.row(*index).isActive && (!state.campaign.enabled ||
