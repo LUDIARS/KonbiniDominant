@@ -24,6 +24,7 @@ struct NativeMobileRuntime::Impl {
     TouchContacts contacts;
     ::pictor::ISurfaceProvider* surface=nullptr;
     render::ViewportExtent extent;
+    SafeAreaInsets safeArea;
     double density=1,lastSeconds=0;
     unsigned reinitializeWithoutPresent=0;
     void applyPresentationGate() noexcept {device.setPresentationSuspended(lifecycle.presentationSuspended());}
@@ -81,10 +82,18 @@ void NativeMobileRuntime::resize(render::ViewportExtent extent,double density) {
        extent.width && extent.height && extent!=impl_->graph.extent())
         impl_->graph.requestRebuild();
 }
+void NativeMobileRuntime::displayMetrics(const DisplayMetrics& metrics) {
+    validateDisplayMetrics(metrics);
+    impl_->safeArea=metrics.safeArea;
+    resize(metrics.extentPixels,metrics.density);
+}
 void NativeMobileRuntime::pause(bool paused) noexcept {
     impl_->lifecycle.setPaused(paused);
     impl_->applyPresentationGate();
     impl_->holdSimulation();
+}
+void NativeMobileRuntime::touch(const TouchSample& sample) {
+    if(impl_->lifecycle.maySubmit()) impl_->contacts.update(sample);
 }
 void NativeMobileRuntime::touch(std::uint64_t id,TouchPhase phase,double x,double y) {
     if(impl_->lifecycle.maySubmit()) impl_->contacts.update(id,phase,x,y);
@@ -107,7 +116,7 @@ void NativeMobileRuntime::frame(double now) {
         impl_->contacts.cancel();
     } else {
         FrameInput input;
-        input.dtSeconds=dt;input.viewport=impl_->graph.extent();input.uiScale=impl_->density;
+        input.dtSeconds=dt;input.viewport=impl_->graph.extent();input.uiScale=impl_->density;input.safeArea=impl_->safeArea;
         input.pointer=impl_->contacts.consume();
         input.cursorXPixels=input.pointer.xPixels;input.cursorYPixels=input.pointer.yPixels;
         input.cursorInsideViewport=input.cursorXPixels>=0 && input.cursorYPixels>=0 &&

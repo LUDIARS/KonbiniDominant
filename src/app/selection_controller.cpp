@@ -30,10 +30,28 @@ bool SelectionController::isPlacementCandidate(
             (facility.isLotRepresentation && facility.state == sim::FacilityState::Destroyed));
 }
 
-// @implements spec/plan/tasks/first-playable.md Minimal controls
+// @implements spec/feature/ui-ux.md Smartphone interaction
+TapPlacement tapPlacementFor(const bool fromTouch,
+                             const bool gridPhase1) noexcept {
+    if (fromTouch) {
+        return TapPlacement::SelectOnly;
+    }
+    return gridPhase1 ? TapPlacement::PlaceImmediately
+                      : TapPlacement::ConfirmOnRepeat;
+}
+
 SelectionOutcome SelectionController::onPrimaryClick(
     const std::optional<render::FacilityPick>& pick,
     const sim::RenderSnapshot& snapshot, const bool placeImmediately) {
+    return onPrimaryClick(pick, snapshot,
+                          placeImmediately ? TapPlacement::PlaceImmediately
+                                           : TapPlacement::ConfirmOnRepeat);
+}
+
+// @implements spec/plan/tasks/first-playable.md Minimal controls
+SelectionOutcome SelectionController::onPrimaryClick(
+    const std::optional<render::FacilityPick>& pick,
+    const sim::RenderSnapshot& snapshot, const TapPlacement placement) {
     if (!pick.has_value()) {
         // 何も無い場所への click は選択解除。選択を残すと、次の click が
         // 「見えていない選択の確定」になってしまう。
@@ -58,7 +76,9 @@ SelectionOutcome SelectionController::onPrimaryClick(
     const bool confirming =
         selected_.has_value() && *selected_ == facility->id;
     selected_ = facility->id;
-    return {.selected = selected_, .placementRequested = placeImmediately || confirming};
+    const bool place = placement == TapPlacement::PlaceImmediately ||
+                       (placement == TapPlacement::ConfirmOnRepeat && confirming);
+    return {.selected = selected_, .placementRequested = place};
 }
 
 void SelectionController::clear() noexcept {

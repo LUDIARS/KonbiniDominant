@@ -10,10 +10,10 @@
 |---|---|---|
 | チェーン／スキル選択 | カードをクリック | カードをタップ |
 | 区画選択 | 区画をクリック | 区画をタップ |
-| 出店 | 選択後 BUILD、または同じ区画を再クリック | 選択後 BUILD、または同じ区画を再タップ |
+| 出店 | 選択後 PLACE、または同じ区画を再クリック | 選択後 PLACE のみ (タップは選択だけ) |
 | カメラ移動 | 地図を左ボタンでドラッグ | 地図を1本指でドラッグ |
 | 拡大・縮小 | ホイール、ZOOM - / + | 2本指ピンチ、ZOOM - / + |
-| 連続建設 | Phase 2以降で BUILD 長押し | 同左 |
+| 連続建設 | Phase 2以降で PLACE 長押し | 同左 |
 | 階の変更 | FLOORS 内の FLOOR - / +、NEXT FREE、GROUND | 同左 |
 | 次元・能力 | ACTIONS 内の IMAGE、NEXT WORLD、INVERT、ESCAPE | 同左 |
 | 一時停止・説明 | PAUSE / RESUME、HELP / HIDE HELP | 同左 |
@@ -22,14 +22,20 @@
 最初に選んだ1種類のみ出店可能。強化カード表示中のシミュレーション停止は維持。
 建設成功時、選択施設と建設階が現在の選択に一致すれば次の空き階へ移動する。
 既存店舗の上に積み始める場合は FLOORS → NEXT FREE。
-BUILD は押下後0.35秒で連続建設になり、既存の固定tick制限で1tickあたり最大1回要求する。
+PLACE は押下後0.35秒で連続建設になり、既存の固定tick制限で1tickあたり最大1回要求する。
 長押し後の指離しでは追加の単発建設を送らない。資金・土台・上限の最終判定はsimulationが行う。
+
+Phase 1 グリッドのマウスクリックは従来どおり1回で出店する。タッチのタップは
+KD-MOB-004 以降、Phase 1 グリッドを含めて選択だけを行い、明示 PLACE で確定する
+(誤購入防止、[UI / UX](ui-ux.md#smartphone-interaction))。ボタン名は
+2026-10-02 に BUILD から PLACE へ変更した。
 
 ## 入力の契約
 
 - ボタンは同じボタン上で離した時に決定。無効ボタン、操作欄の余白、状態表示欄も接触を占有する。
 - ボタン外へ移動した操作、複数指になった操作は決定しない。地図へ移っても出店しない。
 - 地図操作は10 UI pixel以上動いたらドラッグ。ドラッグ・ピンチ終了は区画クリックに変換しない。
+  一度ドラッグになった接触は押下位置へ戻ってもタップにしない。
 - 押下と解放が同じ描画フレームに入っても、押下位置と両端のイベントを保持する。
 - フォーカス喪失、最小化、描画領域変更、フェーズ／強化候補／表示次元の変更で進行中のジェスチャーを破棄する。
 - クライアント座標をframebuffer座標へ変換。描画と当たり判定は共通の画面モデルを使う。
@@ -40,8 +46,11 @@ BUILD は押下後0.35秒で連続建設になり、既存の固定tick制限で
 
 ## 構成
 
-NativeTouchBridge が Windows の接触を収集し、ErgoInputBridge がマウスと共通の PointerSample にまとめる。
-InputActionMap が座標を正規化し、PointerInputController がドラッグ／ボタン／単発操作へ変換する。
+NativeTouchBridge が Windows の接触を TouchSample へ正規化し、共通の TouchContacts で
+PointerSample にまとめる (Android / iOS host も同じ TouchContacts を使う)。ErgoInputBridge は
+マウスと同じ PointerSample を frame へ載せ、主接触を Ergo の mouse へ inject する。
+InputActionMap が座標を正規化し、PointerInputController が tap / drag / cancel の各 recognizer を
+使ってドラッグ／ボタン／単発操作へ変換する。
 PointerControls は配置・有効状態・説明欄の寸法、pointer_control_geometry は描画を担当する。
 SelectionHud は選択施設の価格・状態の読取りを担当し、simulationを直接書き換えない。
 Windows側の固定32接触配列では最初の2接触をカメラ操作に利用し、容量超過は明示エラーにする。

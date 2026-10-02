@@ -19,12 +19,27 @@ struct SelectionOutcome {
     bool placementRequested = false;
 };
 
+// tap / click が配置まで要求してよいか。
+// - SelectOnly: 選択だけ。配置は明示 Place action (touch の既定)
+// - ConfirmOnRepeat: 同じ有効候補の再 click で配置確定 (mouse)
+// - PlaceImmediately: Phase 1 グリッドの mouse click は 1 回で配置
+enum class TapPlacement { SelectOnly, ConfirmOnRepeat, PlaceImmediately };
+
+// touch の tap は即時購入しない (spec/feature/ui-ux.md Smartphone
+// interaction)。mouse は既存の 2 段操作 / Phase 1 グリッド即時配置を保つ。
+// @implements spec/feature/ui-ux.md Smartphone interaction
+[[nodiscard]] TapPlacement tapPlacementFor(bool fromTouch,
+                                           bool gridPhase1) noexcept;
+
 // 「1 回目の click で選択、同じ有効候補を再 click で配置確定」という 2 段
 // 操作の状態を持つ。Phase 1のグリッドはplaceImmediatelyで1回配置する。
 // picking (ray 交差) は `render::pickFacility` の、
 // 配置可否の正本は simulation の責務で、ここでは重複させない。
 class SelectionController {
 public:
+    [[nodiscard]] SelectionOutcome onPrimaryClick(
+        const std::optional<render::FacilityPick>& pick,
+        const sim::RenderSnapshot& snapshot, TapPlacement placement);
     [[nodiscard]] SelectionOutcome onPrimaryClick(
         const std::optional<render::FacilityPick>& pick,
         const sim::RenderSnapshot& snapshot, bool placeImmediately = false);

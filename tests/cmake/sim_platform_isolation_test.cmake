@@ -28,6 +28,13 @@ foreach(source IN LISTS sim_sources)
   file(STRINGS "${source}" include_lines REGEX "^[ \t]*#[ \t]*(include|import)")
   foreach(line IN LISTS include_lines)
     string(REGEX REPLACE "^[ \t]*#[ \t]*(include|import)[ \t]*[<\"]([^>\"]*)[>\"].*$" "\\2" target "${line}")
+    # Raw touch / gesture values and platform adapters live in app and
+    # adapters; the simulation only sees normalized PlayerCommands.
+    if(target MATCHES "^konbini/(app|adapters)/")
+      file(RELATIVE_PATH relative "${KONBINI_SOURCE_DIR}" "${source}")
+      list(APPEND violations "${relative}: ${target}")
+      continue()
+    endif()
     if(target MATCHES "^konbini/")
       continue()
     endif()

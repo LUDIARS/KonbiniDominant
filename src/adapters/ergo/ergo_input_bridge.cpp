@@ -9,6 +9,7 @@
 #include "ergo/input/input_system.h"
 #include "ergo/input/keyboard_device.h"
 #include "ergo/input/mouse_device.h"
+#include "konbini/adapters/ergo/touch_pointer_injection.h"
 
 // @implements spec/interface/ergo-runtime.md Input adapter
 
@@ -168,6 +169,11 @@ void ErgoInputBridge::beginFrame() {
     if(const auto touch=touch_.consume()) {
         static_cast<app::PointerSample&>(frame_)=*touch;
         frame_.insideWindow=true;
+        // Mirror the primary contact into Ergo's mouse device so Ergo never
+        // holds a pressed pointer after a touch release or cancel.
+        const auto injection=planTouchPointerInjection(*touch,buttons_);
+        system_->mouse()->injectPosition({injection.xPixels,injection.yPixels});
+        system_->mouse()->injectButtonState(injection.buttons);
     }
     int width=1,height=1;
     float xScale=1,yScale=1;

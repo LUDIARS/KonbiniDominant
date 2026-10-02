@@ -109,8 +109,11 @@ first mobile baseline:
 | pause action | simulation pauseとrule説明 |
 
 - hover previewはselection previewへ置き換える
+  (`buildSelectionPreviewLines`: 選択中lotの配置可否・cost・既存storeを
+  pointer位置ではなくselection stateから作る)
 - accidental placementを避けるため、tapだけで即時購入しない
 - safe area、display density、UI scaleをlayout inputとして扱う
+  (`HudLayoutMetrics`。buttonとtextはsafe rect内、capture panelは画面端まで)
 - rotation / resize後もselected facilityとsimulation stateを失わない
 - touch targetの最小値は対象OSのaccessibility guidelineに従い、実機taskで検証する
 - landscapeをfirst mobile baselineとし、portrait対応は

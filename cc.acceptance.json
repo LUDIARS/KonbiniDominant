@@ -578,6 +578,214 @@
         "tests/adapters/pictor_bridge_test.cpp"
       ],
       "contracts": []
+    },
+    {
+      "source": "include/konbini/app/input/touch_sample.h",
+      "tests": [
+        "tests/app/input/touch_gesture_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/app/input/touch_sample.cpp",
+      "tests": [
+        "tests/app/input/touch_gesture_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/app/input/tap_recognizer.h",
+      "tests": [
+        "tests/app/input/touch_gesture_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/app/input/tap_recognizer.cpp",
+      "tests": [
+        "tests/app/input/touch_gesture_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/app/input/drag_recognizer.h",
+      "tests": [
+        "tests/app/input/touch_gesture_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/app/input/drag_recognizer.cpp",
+      "tests": [
+        "tests/app/input/touch_gesture_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/app/input/pinch_recognizer.h",
+      "tests": [
+        "tests/app/input/touch_gesture_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/app/input/pinch_recognizer.cpp",
+      "tests": [
+        "tests/app/input/touch_gesture_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/app/input/gesture_cancel_recognizer.h",
+      "tests": [
+        "tests/app/input/touch_gesture_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/app/input/gesture_cancel_recognizer.cpp",
+      "tests": [
+        "tests/app/input/touch_gesture_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/app/touch_contacts.h",
+      "tests": [
+        "tests/app/input/touch_gesture_test.cpp",
+        "tests/app/first_playable_app_test.cpp",
+        "tests/adapters/touch_pointer_injection_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/app/touch_contacts.cpp",
+      "tests": [
+        "tests/app/input/touch_gesture_test.cpp",
+        "tests/app/first_playable_app_test.cpp",
+        "tests/adapters/touch_pointer_injection_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/app/pointer_sample.h",
+      "tests": [
+        "tests/app/input/touch_gesture_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/app/pointer_input_controller.h",
+      "tests": [
+        "tests/app/input/touch_gesture_test.cpp",
+        "tests/app/touch_hud_layout_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/app/pointer_input_controller.cpp",
+      "tests": [
+        "tests/app/input/touch_gesture_test.cpp",
+        "tests/app/touch_hud_layout_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/app/hud_layout_metrics.h",
+      "tests": [
+        "tests/app/touch_hud_layout_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/app/hud_layout_metrics.cpp",
+      "tests": [
+        "tests/app/touch_hud_layout_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/app/pointer_controls.h",
+      "tests": [
+        "tests/app/touch_hud_layout_test.cpp",
+        "tests/render/grid_town_ui_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/app/pointer_controls.cpp",
+      "tests": [
+        "tests/app/touch_hud_layout_test.cpp",
+        "tests/render/grid_town_ui_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/app/selection_preview_text.h",
+      "tests": [
+        "tests/app/touch_hud_layout_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/app/selection_preview_text.cpp",
+      "tests": [
+        "tests/app/touch_hud_layout_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/app/pointer_hud_text.cpp",
+      "tests": [
+        "tests/app/touch_hud_layout_test.cpp",
+        "tests/render/grid_town_ui_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/app/selection_controller.h",
+      "tests": [
+        "tests/app/touch_hud_layout_test.cpp",
+        "tests/render/grid_town_ui_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/app/selection_controller.cpp",
+      "tests": [
+        "tests/app/touch_hud_layout_test.cpp",
+        "tests/render/grid_town_ui_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/app/frame_input.h",
+      "tests": [
+        "tests/app/input/touch_gesture_test.cpp",
+        "tests/app/touch_hud_layout_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/adapters/ergo/touch_pointer_injection.h",
+      "tests": [
+        "tests/adapters/touch_pointer_injection_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/adapters/ergo/touch_pointer_injection.cpp",
+      "tests": [
+        "tests/adapters/touch_pointer_injection_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "tests/cmake/sim_platform_isolation_test.cmake",
+      "tests": [
+        "tests/cmake/sim_platform_isolation_test.cmake"
+      ],
+      "contracts": []
     }
   ]
 }

@@ -13,6 +13,7 @@ add_library(
     render_lifecycle.cpp
     render_readiness.cpp
     tracked_render_layer.cpp
+    touch_pointer_injection.cpp
     world_frame_graph.cpp
     "${PROJECT_SOURCE_DIR}/include/konbini/adapters/ergo/ergo_input_bridge.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/adapters/ergo/frame_outcome.h"
@@ -23,6 +24,7 @@ add_library(
     "${PROJECT_SOURCE_DIR}/include/konbini/adapters/ergo/render_device_host.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/adapters/ergo/render_readiness.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/adapters/ergo/tracked_render_layer.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/adapters/ergo/touch_pointer_injection.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/adapters/ergo/world_frame_graph.h"
 )
 

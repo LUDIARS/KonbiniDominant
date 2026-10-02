@@ -1,6 +1,7 @@
 #pragma once
 
 #include <optional>
+#include "konbini/app/platform/display_metrics.h"
 #include "konbini/app/pointer_sample.h"
 
 #include "konbini/render/viewport_extent.h"
@@ -20,6 +21,9 @@ struct FrameInput {
     // presentation 側の補間にだけ使う。
     PointerSample pointer;
     double uiScale = 1.0;
+    // OS-reserved edges of the drawable area (notch, home indicator). HUD
+    // layout input only; never reaches the simulation.
+    SafeAreaInsets safeArea{};
     double pinchRatio = 1.0;
     bool buildRequested = false;
     std::optional<std::uint32_t> skillChoice;
@@ -36,6 +40,9 @@ struct FrameInput {
     double cursorYPixels = 0.0;
     bool cursorInsideViewport = false;
     bool primaryClick = false;
+    // The confirmed tap came from touch. Touch taps only select; the store is
+    // placed by the explicit Place action (spec/feature/ui-ux.md).
+    bool primaryClickFromTouch = false;
     bool secondaryClick = false;
     bool cancel = false;
     bool toggleControls = false;

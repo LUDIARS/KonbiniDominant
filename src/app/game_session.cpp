@@ -105,7 +105,11 @@ render::PreparedFrame GameSession::frame(FrameInput input,const render::Viewport
     beforeInput.lastChainFailure=impl_->lastChainFailure;
     beforeInput.lastCampaignFailure=impl_->lastCampaignFailure;
     beforeInput.droppedTicks=impl_->lastDroppedTicks;
-    const auto controls=buildPointerControls(beforeInput,extent,impl_->pointerInput.page(),input.uiScale);
+    beforeInput.tapSelectsOnly=impl_->pointerInput.lastGestureWasTouch();
+    // Display density and safe area are HUD layout input only; a rotation
+    // or resize rebuilds rects and keeps selection and simulation state.
+    const HudLayoutMetrics layout{.extentPixels=extent,.safeArea=input.safeArea,.density=input.uiScale};
+    const auto controls=buildPointerControls(beforeInput,layout,impl_->pointerInput.page());
     const auto context=static_cast<std::uint64_t>(snapshot->hud().phase) |
         (static_cast<std::uint64_t>(snapshot->hud().campaign.skills.pending)<<8) |
         (static_cast<std::uint64_t>(snapshot->hud().campaign.skills.level)<<16) |
@@ -164,8 +168,10 @@ render::PreparedFrame GameSession::frame(FrameInput input,const render::Viewport
             : snapshot->hud().campaign.enabled && snapshot->hud().campaign.reachedPhase >= 2
                 ? render::pickCampaignFloor(ray, *snapshot, impl_->campaignInput.floor())
                 : render::pickFacility(ray, snapshot->facilities());
+        // Touch taps select only; the explicit Place action confirms.
         const SelectionOutcome outcome = impl_->selection.onPrimaryClick(pick, *snapshot,
-            gridTown && snapshot->hud().phase == sim::GamePhase::Phase1);
+            tapPlacementFor(input.primaryClickFromTouch,
+                            gridTown && snapshot->hud().phase == sim::GamePhase::Phase1));
         if (outcome.placementRequested &&
             snapshot->hud().playerChain.has_value() &&
             outcome.selected.has_value()) {
@@ -263,11 +269,12 @@ render::PreparedFrame GameSession::frame(FrameInput input,const render::Viewport
     hudInput.showControls = impl_->showControls;
     hudInput.droppedTicks = impl_->lastDroppedTicks;
     hudInput.isPaused = impl_->isPaused;
+    hudInput.tapSelectsOnly = impl_->pointerInput.lastGestureWasTouch();
 
     return impl_->presenter.compose(
         *snapshot,
         camera, impl_->selection.selected(), hudInput,
-        buildPointerControls(hudInput,extent,impl_->pointerInput.page(),input.uiScale),impl_->pointerInput.pressed());
+        buildPointerControls(hudInput,layout,impl_->pointerInput.page()),impl_->pointerInput.pressed());
 
 }
 }  // namespace konbini::app

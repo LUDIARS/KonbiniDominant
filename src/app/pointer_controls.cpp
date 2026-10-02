@@ -7,9 +7,15 @@
 namespace konbini::app {
 PointerControls buildPointerControls(const HudTextInput& input,const render::ViewportExtent extent,
                                      const PointerPage page,const double uiScale) {
+    return buildPointerControls(input,HudLayoutMetrics{.extentPixels=extent,.density=uiScale},page);
+}
+PointerControls buildPointerControls(const HudTextInput& input,const HudLayoutMetrics& metrics,
+                                     const PointerPage page) {
     PointerControls result;
-    result.uiScale=static_cast<float>(std::min({std::clamp(uiScale,0.75,1.25),
-        extent.width/320.0,extent.height/720.0}));
+    const auto extent=metrics.extentPixels;
+    const auto safe=hudSafeRect(metrics);
+    result.uiScale=static_cast<float>(std::min({std::clamp(metrics.density,0.75,1.25)*metrics.userUiScale,
+        safe.width/320.0,safe.height/720.0}));
     const auto& h=input.hud;
     const bool choosing=h.phase==sim::GamePhase::ChainSelect;
     const bool skills=h.campaign.enabled && h.campaign.skills.pending;
@@ -66,7 +72,7 @@ PointerControls buildPointerControls(const HudTextInput& input,const render::Vie
     } else {
         const bool canBuild=!input.isPaused && input.selectionIsPlacementCandidate &&
             !input.selectedStoreChain && h.cashCredits>=input.selectedBuildCostCredits;
-        add(PointerAction::Build,"BUILD",canBuild,input.selectedFacility
+        add(PointerAction::Place,"PLACE",canBuild,input.selectedFacility
             ? "COST "+std::to_string(input.selectedBuildCostCredits):"SELECT A LOT",
             h.campaign.enabled && h.campaign.reachedPhase>=2);
         add(PointerAction::Cancel,"DESELECT",input.selectedFacility.has_value());
@@ -78,7 +84,10 @@ PointerControls buildPointerControls(const HudTextInput& input,const render::Vie
         add(PointerAction::Pause,input.isPaused?"RESUME":"PAUSE");
         add(PointerAction::Help,input.showControls?"HIDE HELP":"HELP");
     }
-    const float width=static_cast<float>(extent.width),height=static_cast<float>(extent.height);
+    // Buttons and text stay inside the safe rect; capture panels still reach
+    // the screen edge so a contact in the inset never falls through to the world.
+    const float screenWidth=static_cast<float>(extent.width),screenHeight=static_cast<float>(extent.height);
+    const float left=safe.x,topInset=safe.y,width=safe.width,height=safe.height;
     if(result.modal) {
         const float logicalHeight=64+70*static_cast<float>(result.buttons.size())+
             20*static_cast<float>(result.modalLines.size());
@@ -91,31 +100,32 @@ PointerControls buildPointerControls(const HudTextInput& input,const render::Vie
         const float summaryHeight=static_cast<float>(result.modalLines.size())*20*result.uiScale;
         const float headingHeight=42*result.uiScale;
         const float groupHeight=headingHeight+static_cast<float>(result.buttons.size())*(cardHeight+gap)+summaryHeight;
-        const float top=(height-groupHeight)/2+headingHeight;
+        const float top=topInset+(height-groupHeight)/2+headingHeight;
         for(std::size_t i=0;i<result.buttons.size();++i)
-            result.buttons[i].rect={(width-cardWidth)/2,top+static_cast<float>(i)*(cardHeight+gap),cardWidth,cardHeight};
-        result.panel={0,0,width,height};
+            result.buttons[i].rect={left+(width-cardWidth)/2,top+static_cast<float>(i)*(cardHeight+gap),cardWidth,cardHeight};
+        result.panel={0,0,screenWidth,screenHeight};
     } else {
         const auto columns=std::clamp(static_cast<unsigned>((width-2*margin)/(132*result.uiScale)),2U,8U);
         const auto rows=(result.buttons.size()+columns-1)/columns;
         const float buttonWidth=(width-2*margin-(columns-1)*gap)/columns;
         const float buttonHeight=40*result.uiScale;
-        const float top=height-margin-static_cast<float>(rows)*(buttonHeight+gap);
-        result.panel={0,top-gap,width,height-top+gap};
+        const float top=topInset+height-margin-static_cast<float>(rows)*(buttonHeight+gap);
+        result.panel={0,top-gap,screenWidth,screenHeight-top+gap};
         for(std::size_t i=0;i<result.buttons.size();++i)
-            result.buttons[i].rect={margin+static_cast<float>(i%columns)*(buttonWidth+gap),
+            result.buttons[i].rect={left+margin+static_cast<float>(i%columns)*(buttonWidth+gap),
                 top+static_cast<float>(i/columns)*(buttonHeight+gap),buttonWidth,buttonHeight};
     }
     result.statusLines=buildPointerHudLines(input);
     if(!result.statusLines.empty()) {
         auto& style=result.statusStyle;
+        style.originXPixels+=left;style.originYPixels+=topInset;
         style.glyphPixelScale*=result.uiScale;
         style.glyphSpacingPixels*=result.uiScale;
         style.linePaddingPixels*=result.uiScale;
         float maxWidth=1;
         for(const auto& line:result.statusLines) maxWidth=std::max(maxWidth,render::hudTextWidthPixels(line,style));
         const float blockHeight=render::hudLineHeightPixels(style)*static_cast<float>(result.statusLines.size());
-        const float fit=std::min({1.0F,std::max(1.0F,result.panel.y-32)/blockHeight,
+        const float fit=std::min({1.0F,std::max(1.0F,result.panel.y-topInset-32)/blockHeight,
             std::max(1.0F,width*0.8F-32)/maxWidth});
         style.glyphPixelScale*=fit;style.glyphSpacingPixels*=fit;style.linePaddingPixels*=fit;
         result.statusPanel={style.originXPixels-style.panelPaddingPixels,style.originYPixels-style.panelPaddingPixels,

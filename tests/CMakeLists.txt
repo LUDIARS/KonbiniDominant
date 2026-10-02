@@ -238,6 +238,31 @@ konbini_add_test(
   konbini_city
 )
 
+# KD-MOB-004 touch normalization, gesture recognizers and the responsive HUD.
+konbini_add_test(
+  konbini_touch_gesture_tests
+  app/input/touch_gesture_test.cpp
+  konbini_app_domain
+)
+konbini_add_test(
+  konbini_touch_hud_layout_tests
+  app/touch_hud_layout_test.cpp
+  konbini_app_domain
+)
+target_compile_definitions(konbini_touch_hud_layout_tests PRIVATE
+  "KONBINI_PHASE1_CONTENT_FILE=\"${PROJECT_SOURCE_DIR}/data/content/phase1.json\"")
+if(KONBINI_BUILD_RENDER AND NOT KONBINI_MOBILE)
+  # Ergo input injection adapter for touch (pure mapping, no window).
+  konbini_add_test(
+    konbini_touch_pointer_injection_tests
+    adapters/touch_pointer_injection_test.cpp
+    konbini_ergo_adapter
+  )
+  if(WIN32)
+    target_compile_definitions(konbini_touch_pointer_injection_tests PRIVATE NOGDI)
+  endif()
+endif()
+
 # konbini_sim stays free of OS / Pictor / Ergo / Vulkan / Figmentum headers.
 add_test(
   NAME konbini_sim_platform_isolation_tests

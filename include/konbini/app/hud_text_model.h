@@ -24,6 +24,8 @@ struct HudTextInput {
     std::optional<sim::FacilityId> selectedFacility;
     bool selectionIsPlacementCandidate = false;
     bool gridPlacement = false;
+    // The last gesture was touch: taps only select, Place confirms.
+    bool tapSelectsOnly = false;
     std::int64_t selectedBuildCostCredits = 0;
     std::optional<sim::PlacementFailure> lastPlacementFailure;
     std::optional<sim::SelectChainFailure> lastChainFailure;

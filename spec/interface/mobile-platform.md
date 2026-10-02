@@ -63,6 +63,8 @@ consumer側の検査は[Ergo runtime contract](ergo-runtime.md#render-readiness)
 残るgapは次の通りで、後続taskで扱う。
 
 - UI pointerはsingle pointerで、finger ID / pinch / touch cancelを持たない
+  (KD-MOB-004ではgame側のgesture recognizerで補い、Ergoへは主contactだけを
+  mouse pointerとしてinjectする。Ergo touch deviceの追加はErgo側task)
 - asset pathは通常filesystem上のpathを前提にする
 
 ErgoのgapはErgo repositoryのbranch / PRで直す。KonbiniDominantへ
@@ -137,6 +139,26 @@ Ergo input buffer / `InputActionMap`へsemantic actionをinjectする。
 - safe areaとdisplay densityをlayout inputにする
 
 具体的な操作は [UI / UX](../feature/ui-ux.md) を正本とする。
+
+KD-MOB-004で次の責務別型を置いた。`konbini_app_domain`
+(`include/konbini/app/input/` ほか) はOS、Ergo、GLFW headerを含まない。
+
+| 責務 | 型 | 契約 |
+|---|---|---|
+| contact正規化 | `TouchSample` / `normalizeTouchSample` | finger ID、phase、framebuffer position、platform timestamp (秒) を保持する。非有限position / timestamp、負timestamp、非正scaleは`std::invalid_argument`。`Cancel`はpositionを検証しない |
+| contact table | `TouchContacts` | 全host共通 (Windows `WM_TOUCH`、Android、iOS)。1 frame内のpress / release edgeを保持し、同じ2指のmotionだけをdrag deltaへ足す。timestamp逆行・容量超過はgestureを破棄してから例外。cancel後のMove / Upは無視する |
+| tap判定 | `TapRecognizer` | 一度disqualifyされた (drag開始、2本目の指、cancel) sequenceはpress位置へ戻ってもtapにしない |
+| drag判定 | `DragRecognizer` | press位置から`10 * uiScale` pixelを超えるか2本目の指でdragへlatchし、pan deltaを出す |
+| pinch判定 | `PinchRecognizer` | 同じ2指の距離比だけを積む。指の増減でpairが変わったframeはzoomしない |
+| cancel判定 | `recognizeGestureCancel` | contact cancel、focus喪失 / app pause、surface resize / orientation、phase等のcontext変更で進行中gestureを破棄する |
+| UI routing | `PointerInputController` | 押下時にUI captureを決め、captureしたgestureからworld click / pan / pinchを作らない。touch tapは`primaryClickFromTouch` |
+| Ergo injection | `adapters::ergo::planTouchPointerInjection` | 主contactをErgo mouse位置と左buttonへ写す。release / cancel後は左buttonを残さない。gestureの意味はErgoへ渡さない |
+| HUD layout input | `HudLayoutMetrics` / `hudLayoutFromDisplay` | `DisplayMetrics`のextent、safe area、densityとplayer UI scale (0.75〜1.5) |
+
+`NativeMobileRuntime::touch(TouchSample)`はpresentationがsubmit不可 (pause、
+background、surface loss) の間contactを捨て、`pause` / `resize` /
+`displayMetrics`はcontactとgestureを破棄する。selectionとsimulation stateは
+触らない。
 
 ### Assets and generated geometry
 

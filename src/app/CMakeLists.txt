@@ -11,6 +11,13 @@ add_library(
     playtest_expansion_action.cpp
     playtest_report.cpp
     touch_contacts.cpp
+    input/touch_sample.cpp
+    input/tap_recognizer.cpp
+    input/drag_recognizer.cpp
+    input/pinch_recognizer.cpp
+    input/gesture_cancel_recognizer.cpp
+    hud_layout_metrics.cpp
+    selection_preview_text.cpp
     pointer_hud_text.cpp
     pointer_controls.cpp
     pointer_control_geometry.cpp
@@ -46,6 +53,13 @@ add_library(
     "${PROJECT_SOURCE_DIR}/include/konbini/app/command_composer.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/app/fixed_step_driver.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/app/frame_input.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/app/hud_layout_metrics.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/app/selection_preview_text.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/app/input/touch_sample.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/app/input/tap_recognizer.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/app/input/drag_recognizer.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/app/input/pinch_recognizer.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/app/input/gesture_cancel_recognizer.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/app/hud_text_model.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/app/selection_controller.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/app/simulation_host.h"

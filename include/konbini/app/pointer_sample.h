@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 namespace konbini::app {
 // Raw contact state in framebuffer pixels after the adapter's coordinate conversion.
 struct PointerSample {
@@ -6,5 +7,9 @@ struct PointerSample {
     double deltaXPixels=0, deltaYPixels=0, pinchRatio=1;
     bool down=false, pressed=false, released=false, cancelled=false;
     bool isTouch=false, multipleContacts=false;
+    // Touch only: the finger that started the sequence and the platform
+    // timestamps of its press and of the latest event. Presentation-only.
+    std::uint64_t fingerId=0;
+    double pressTimestampSeconds=0, timestampSeconds=0;
 };
 }

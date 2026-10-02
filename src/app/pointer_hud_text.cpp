@@ -1,6 +1,8 @@
 // @implements spec/feature/pointer-controls.md
 #include "konbini/app/pointer_hud_text.h"
 #include "konbini/app/skill_text.h"
+#include "konbini/app/selection_preview_text.h"
+#include <utility>
 namespace konbini::app {
 std::vector<std::string> buildPointerHudLines(const HudTextInput& input) {
     const auto& h=input.hud;const auto& c=h.campaign;
@@ -31,9 +33,8 @@ std::vector<std::string> buildPointerHudLines(const HudTextInput& input) {
     if(c.reachedPhase>=3) for(const auto& d:c.dimensions) if(d.id==c.visibleDimension)
         lines.push_back("OWN "+std::to_string(d.playerStores)+" RIVALS "+std::to_string(d.rivalStores)+" AION "+std::to_string(d.bossStores));
     if(input.selectedAntiStore) lines.emplace_back("ANTI STORE - MATCH D0 AT THIS FLOOR");
-    if(input.selectedStoreChain) lines.push_back(hudChainLabel(*input.selectedStoreChain)+" FAITH "+std::to_string(input.selectedFaith));
-    else if(input.gridPlacement && h.phase==sim::GamePhase::Phase1) lines.emplace_back("TAP EMPTY GRID TO BUILD");
-    else lines.emplace_back(input.selectedFacility?"TAP BUILD TO PLACE A STORE":"TAP A LOT TO SELECT");
+    for(auto& line:buildSelectionPreviewLines(input)) lines.push_back(std::move(line));
+    if(!input.selectedStoreChain) lines.push_back(placementHintLine(input));
     if(h.threatenedPlayerStores) lines.push_back("ENCIRCLED "+std::to_string(h.threatenedPlayerStores));
     if(input.lastPlacementFailure && *input.lastPlacementFailure!=sim::PlacementFailure::None)
         lines.emplace_back(hudPlacementFailureText(*input.lastPlacementFailure));
@@ -42,9 +43,9 @@ std::vector<std::string> buildPointerHudLines(const HudTextInput& input) {
     if(input.droppedTicks) lines.push_back("DROPPED TICKS "+std::to_string(input.droppedTicks));
     if(input.showControls) {
         lines.emplace_back("DRAG CITY TO MOVE / PINCH TO ZOOM");
-        lines.emplace_back(input.gridPlacement && h.phase==sim::GamePhase::Phase1
+        lines.emplace_back(input.gridPlacement && h.phase==sim::GamePhase::Phase1 && !input.tapSelectsOnly
             ? "TAP EMPTY GRID TO BUILD / ADJACENT STORES CONNECT"
-            : "TAP A LOT THEN BUILD / HOLD BUILD TO STACK");
+            : "TAP A LOT THEN PLACE / HOLD PLACE TO STACK");
         lines.emplace_back("FLOORS - CHANGE LEVEL / NEXT FREE / GROUND");
         lines.emplace_back("ACTIONS - IMAGE / WORLD / INVERT / ESCAPE");
         if(c.reachedPhase==1) lines.emplace_back("DOMINATE OR SURVIVE TO ADVANCE");
