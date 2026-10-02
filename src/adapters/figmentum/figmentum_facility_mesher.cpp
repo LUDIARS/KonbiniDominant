@@ -123,6 +123,7 @@ PreparedFacilityGeometry prepareFacilityGeometry(
                     city::buildingRecipeFingerprint(facility.recipe),
                 .polygonizeResolution =
                     city::kFirstPlayableFacilityPolygonizeResolution,
+                .lod = city::kFirstPlayableFacilityLod,
                 .vertexFormatVersion = city::kFacilityVertexFormatVersion,
             },
         .recipe = recipe,

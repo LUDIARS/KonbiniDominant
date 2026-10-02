@@ -176,6 +176,42 @@ cancel可能なbackground generationを使い、memory / thermal pressureで
 - graphics profile、render scale、safe areaはcanonical saveへ含めない
 - autosave / checkpointはtick境界のimmutable stateだけを永続化する
 
+### Runtime boundary owners
+
+KD-MOB-003で上記境界をOS / GPU非依存のgame側型として置いた。すべて
+`konbini_app_domain` (`include/konbini/app/platform/`) と`konbini_city`にあり、
+OS、Pictor、Ergo、Vulkan headerを含まない。汎用`PlatformManager`へは集約しない。
+
+| 責務 | 型 | 契約 |
+|---|---|---|
+| lifecycle queue | `LifecycleEventQueue` | OS callback threadから`push` (noexcept、事前確保の有界queue)。app owner threadだけが`drain`し、push順で返す。overflowはlatchし、次の`drain`で`LifecycleQueueOverflow` |
+| lifecycle適用 | `LifecycleState` | eventを順に適用し`LifecycleEffects`を返す。simulation stateは所有もresetもしない |
+| tick / command gate | `planLifecycleTicks` / `admitGameCommand` | pause / background / surface loss中はfixed tickを0にし、accumulatorを捨てる。新規game commandは拒否し、resume後へ持ち越さない |
+| safe checkpoint | `SafeCheckpointLedger` | 完了tickごとのcanonical snapshotをimmutableな`SafeCheckpoint`として保持し、要求には最後のtick境界を返す |
+| display metrics value | `DisplayMetrics` | extent、density、safe area、orientationの値。空extent、非正density、usable領域0は`std::invalid_argument` |
+| display通知 | `DisplayMetricsChannel` | 値が変わった時だけ、購読順 (render → UI) に変更前後を通知する |
+| read-only asset reader | `IAssetReader` / `DirectoryAssetReader` | package相対名でbytesを読む。絶対path、drive、`\`、`.` / `..`、空segmentは拒否。`requireAssets`は欠落を全件列挙して失敗する |
+| writable path provider | `WritablePathProvider` | save / replay / settings / cache / diagnosticのrootをhostが注入する。空、相対、非directoryのrootは`WritableRootUnavailable`。再生成可能なのはcacheだけ |
+| derived geometry cache policy | `DerivedGeometryCachePolicy` | packaged low LODは対象外。memory pressure moderateは未使用の再生成geometry、criticalは再生成geometry全件をevictする |
+
+| event | state | `LifecycleEffects` |
+|---|---|---|
+| `Pause` / `Resume` | paused切替 | tickとcommandだけ止める。直前frameの表示は許す |
+| `EnterBackground` | suspended | 遷移時だけ`checkpointRequested`と`gpuSubmissionStopped` |
+| `EnterForeground` | suspended解除 | — |
+| `SurfaceAvailable` | surfaceあり | metrics検証、`renderRebuildRequested`、`display` |
+| `SurfaceLost` | surfaceなし | `gpuSubmissionStopped`。simulation stateは保持 |
+| `DisplayChanged` | — | metrics検証、`display`。surfaceがある時だけ`renderRebuildRequested` |
+| `MemoryPressure` | — | batch内で最も重いlevel |
+| `ThermalPressure` | — | batch内で最後のlevel。simulation ruleは読まない |
+
+fixed tickとgame commandは`!paused && !suspended && surfaceAvailable`の時だけ進む。
+GPU submissionは`!suspended && surfaceAvailable`。
+
+Figmentum geometry cache keyは`schemaVersion` (recipe/schema version、3)、
+`generatorRevision`、`recipeHash`、`polygonizeResolution`、`lod`、
+`vertexFormatVersion`を持つ。first playableのLODは0 (最精細) だけである。
+
 ## Build and package contract
 
 toolchainとpackage layoutは

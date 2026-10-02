@@ -15,18 +15,23 @@
 namespace konbini::city {
 
 inline constexpr std::int32_t kFirstPlayableFacilityPolygonizeResolution = 24;
-inline constexpr std::uint32_t kFacilityGeometryCacheSchemaVersion = 2;
+// LOD 0 is the finest level. The first playable polygonizes one level only.
+inline constexpr std::uint32_t kFirstPlayableFacilityLod = 0;
+// 3: the key carries an explicit LOD (KD-MOB-003).
+inline constexpr std::uint32_t kFacilityGeometryCacheSchemaVersion = 3;
 inline constexpr std::uint32_t kFacilityVertexFormatVersion = 1;
 
-// recipe hash だけでなく generator revision / 解像度 / vertex format も key に
-// 含める。どれか 1 つでも動くと同じ recipe から別 mesh が出るため、古い
+// recipe hash だけでなく generator revision / 解像度 / LOD / vertex format も
+// key に含める。どれか 1 つでも動くと同じ recipe から別 mesh が出るため、古い
 // geometry を再利用してはいけない。
+// @implements spec/interface/mobile-platform.md Assets and generated geometry
 // @implements spec/interface/figmentum-city-generation.md Geometry generation
 struct FacilityGeometryCacheKey {
     std::uint32_t schemaVersion = kFacilityGeometryCacheSchemaVersion;
     std::string generatorRevision;
     std::uint64_t recipeHash = 0;
     std::int32_t polygonizeResolution = 0;
+    std::uint32_t lod = kFirstPlayableFacilityLod;
     std::uint32_t vertexFormatVersion = kFacilityVertexFormatVersion;
 
     auto operator<=>(const FacilityGeometryCacheKey&) const = default;

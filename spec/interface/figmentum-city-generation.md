@@ -154,7 +154,11 @@ FacilityRecipe
 
 - polygonizeは `(resolution+1)^3` gridを同期評価するためper-frame禁止
 - startup / background job / disk cacheで生成
-- cache keyはgenerator revision + recipe hash + LOD + vertex format
+- cache keyはschema version + generator revision + recipe hash + polygonize resolution
+  + LOD + vertex format (`FacilityGeometryCacheKey`、schema 3でLODを明示)
+- geometry cacheは再生成可能な派生data。memory pressure時の段階evictionは
+  [mobile platform](mobile-platform.md#runtime-boundary-owners)の
+  `DerivedGeometryCachePolicy`に従い、packaged low LODはevictしない
 - `fg::Mesh`にnormalが無いためadapterで決定的に生成
 - failed geometryをcubeへsilent fallbackしない。errorを返してworld loadを止める
 - `BuildingParams`のyaw制約を確認し、表現できない向きはrecipeに嘘の値を持たせない

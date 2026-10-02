@@ -282,6 +282,232 @@
         "tests/adapters/figmentum_pedestrian_path_test.cpp"
       ],
       "contracts": []
+    },
+    {
+      "source": "include/konbini/app/platform/display_metrics.h",
+      "tests": [
+        "tests/app/platform/display_metrics_test.cpp",
+        "tests/app/platform/lifecycle_runtime_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/app/platform/display_metrics.cpp",
+      "tests": [
+        "tests/app/platform/display_metrics_test.cpp",
+        "tests/app/platform/lifecycle_runtime_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/app/platform/display_metrics_channel.h",
+      "tests": [
+        "tests/app/platform/display_metrics_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/app/platform/display_metrics_channel.cpp",
+      "tests": [
+        "tests/app/platform/display_metrics_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/app/platform/memory_pressure.h",
+      "tests": [
+        "tests/app/platform/lifecycle_runtime_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/app/platform/memory_pressure.cpp",
+      "tests": [
+        "tests/app/platform/lifecycle_runtime_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/app/platform/lifecycle_event.h",
+      "tests": [
+        "tests/app/platform/lifecycle_runtime_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/app/platform/lifecycle_event.cpp",
+      "tests": [
+        "tests/app/platform/lifecycle_runtime_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/app/platform/lifecycle_event_queue.h",
+      "tests": [
+        "tests/app/platform/lifecycle_runtime_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/app/platform/lifecycle_event_queue.cpp",
+      "tests": [
+        "tests/app/platform/lifecycle_runtime_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/app/platform/lifecycle_state.h",
+      "tests": [
+        "tests/app/platform/lifecycle_runtime_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/app/platform/lifecycle_state.cpp",
+      "tests": [
+        "tests/app/platform/lifecycle_runtime_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/app/platform/lifecycle_simulation_gate.h",
+      "tests": [
+        "tests/app/platform/lifecycle_runtime_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/app/platform/lifecycle_simulation_gate.cpp",
+      "tests": [
+        "tests/app/platform/lifecycle_runtime_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/app/platform/safe_checkpoint.h",
+      "tests": [
+        "tests/app/platform/lifecycle_runtime_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/app/platform/safe_checkpoint.cpp",
+      "tests": [
+        "tests/app/platform/lifecycle_runtime_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/app/platform/relative_resource_name.h",
+      "tests": [
+        "tests/app/platform/asset_boundary_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/app/platform/relative_resource_name.cpp",
+      "tests": [
+        "tests/app/platform/asset_boundary_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/app/platform/asset_reader.h",
+      "tests": [
+        "tests/app/platform/asset_boundary_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/app/platform/asset_reader.cpp",
+      "tests": [
+        "tests/app/platform/asset_boundary_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/app/platform/directory_asset_reader.h",
+      "tests": [
+        "tests/app/platform/asset_boundary_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/app/platform/directory_asset_reader.cpp",
+      "tests": [
+        "tests/app/platform/asset_boundary_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/app/platform/required_packaged_assets.h",
+      "tests": [
+        "tests/app/platform/asset_boundary_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/app/platform/required_packaged_assets.cpp",
+      "tests": [
+        "tests/app/platform/asset_boundary_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/app/platform/writable_paths.h",
+      "tests": [
+        "tests/app/platform/asset_boundary_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/app/platform/writable_paths.cpp",
+      "tests": [
+        "tests/app/platform/asset_boundary_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/city/derived_geometry_cache_policy.h",
+      "tests": [
+        "tests/city/derived_geometry_cache_policy_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/city/derived_geometry_cache_policy.cpp",
+      "tests": [
+        "tests/city/derived_geometry_cache_policy_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/city/facility_geometry_cache.h",
+      "tests": [
+        "tests/city/derived_geometry_cache_policy_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/city/facility_geometry_cache.cpp",
+      "tests": [
+        "tests/city/derived_geometry_cache_policy_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "include/konbini/city/facility_geometry.h",
+      "tests": [
+        "tests/city/derived_geometry_cache_policy_test.cpp"
+      ],
+      "contracts": []
+    },
+    {
+      "source": "src/sim/CMakeLists.txt",
+      "tests": [
+        "tests/cmake/sim_platform_isolation_test.cmake"
+      ],
+      "contracts": []
     }
   ]
 }

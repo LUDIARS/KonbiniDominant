@@ -28,6 +28,19 @@ add_library(
     campaign_input_controller.cpp
     selection_controller.cpp
     simulation_host.cpp
+    platform/display_metrics.cpp
+    platform/display_metrics_channel.cpp
+    platform/memory_pressure.cpp
+    platform/lifecycle_event.cpp
+    platform/lifecycle_event_queue.cpp
+    platform/lifecycle_state.cpp
+    platform/lifecycle_simulation_gate.cpp
+    platform/safe_checkpoint.cpp
+    platform/relative_resource_name.cpp
+    platform/asset_reader.cpp
+    platform/directory_asset_reader.cpp
+    platform/required_packaged_assets.cpp
+    platform/writable_paths.cpp
     "${PROJECT_SOURCE_DIR}/include/konbini/app/app_paths.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/app/camera_controller.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/app/command_composer.h"
@@ -36,6 +49,19 @@ add_library(
     "${PROJECT_SOURCE_DIR}/include/konbini/app/hud_text_model.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/app/selection_controller.h"
     "${PROJECT_SOURCE_DIR}/include/konbini/app/simulation_host.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/app/platform/display_metrics.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/app/platform/display_metrics_channel.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/app/platform/memory_pressure.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/app/platform/lifecycle_event.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/app/platform/lifecycle_event_queue.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/app/platform/lifecycle_state.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/app/platform/lifecycle_simulation_gate.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/app/platform/safe_checkpoint.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/app/platform/relative_resource_name.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/app/platform/asset_reader.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/app/platform/directory_asset_reader.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/app/platform/required_packaged_assets.h"
+    "${PROJECT_SOURCE_DIR}/include/konbini/app/platform/writable_paths.h"
 )
 
 target_include_directories(

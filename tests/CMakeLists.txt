@@ -192,6 +192,37 @@ if(KONBINI_BUILD_RENDER)
   add_dependencies(konbini_review konbini_construction_tests)
 endif()
 
+# KD-MOB-003 mobile runtime / asset boundary. OS-, Vulkan- and Ergo-free, so
+# these run with KONBINI_BUILD_RENDER off as well.
+konbini_add_test(
+  konbini_lifecycle_runtime_tests
+  app/platform/lifecycle_runtime_test.cpp
+  konbini_app_domain
+)
+konbini_add_test(
+  konbini_display_metrics_tests
+  app/platform/display_metrics_test.cpp
+  konbini_app_domain
+)
+konbini_add_test(
+  konbini_asset_boundary_tests
+  app/platform/asset_boundary_test.cpp
+  konbini_app_domain
+)
+konbini_add_test(
+  konbini_derived_geometry_cache_tests
+  city/derived_geometry_cache_policy_test.cpp
+  konbini_city
+)
+
+# konbini_sim stays free of OS / Pictor / Ergo / Vulkan / Figmentum headers.
+add_test(
+  NAME konbini_sim_platform_isolation_tests
+  COMMAND "${CMAKE_COMMAND}"
+    "-DKONBINI_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+    -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/sim_platform_isolation_test.cmake"
+)
+
 if(KONBINI_BUILD_FIGMENTUM_ADAPTER)
   # pinned Figmentum の CityPlan から pedestrian path contract を投影し、
   # manifest 検証・canonical hash・経路選択まで通す (KD-NPC-003)。

@@ -15,6 +15,7 @@
     "spec/ux/product.md",
     "spec/design.md",
     "spec/interface/figmentum-city-generation.md",
-    "spec/feature/grid-town-and-vector-ui.md"
+    "spec/feature/grid-town-and-vector-ui.md",
+    "spec/interface/mobile-platform.md"
   ]
 }

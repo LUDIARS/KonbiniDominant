@@ -12,12 +12,13 @@ std::shared_ptr<const FacilityGeometry> FacilityGeometryCache::find(
     const FacilityGeometryCacheKey& key) const {
     std::scoped_lock lock(mutex_);
     const auto found = entries_.find(key);
-    return found == entries_.end() ? nullptr : found->second;
+    return found == entries_.end() ? nullptr : found->second.geometry;
 }
 
 // @implements spec/interface/figmentum-city-generation.md Geometry generation
 std::shared_ptr<const FacilityGeometry> FacilityGeometryCache::insert(
-    std::shared_ptr<const FacilityGeometry> geometry) {
+    std::shared_ptr<const FacilityGeometry> geometry,
+    const GeometryOrigin origin) {
     if (geometry == nullptr ||
         geometry->cacheKey.schemaVersion !=
             kFacilityGeometryCacheSchemaVersion ||
@@ -35,8 +36,29 @@ std::shared_ptr<const FacilityGeometry> FacilityGeometryCache::insert(
     std::scoped_lock lock(mutex_);
     // An equal cache key must map to one shared geometry, so an existing entry
     // wins and the caller gets the canonical instance back.
-    const auto entry = entries_.emplace(key, std::move(geometry)).first;
-    return entry->second;
+    const auto entry =
+        entries_.emplace(key, Entry{std::move(geometry), origin}).first;
+    return entry->second.geometry;
+}
+
+// @implements spec/interface/mobile-platform.md Assets and generated geometry
+std::size_t FacilityGeometryCache::evict(
+    const DerivedGeometryCachePolicy& policy,
+    const GeometryEvictionScope scope) {
+    std::scoped_lock lock(mutex_);
+    std::size_t evicted = 0;
+    for (auto it = entries_.begin(); it != entries_.end();) {
+        // use_count is exact here: the cache's copy is the only one this
+        // mutex guards, and an outside holder can only add references.
+        const bool heldOutsideCache = it->second.geometry.use_count() > 1;
+        if (policy.shouldEvict(it->second.origin, heldOutsideCache, scope)) {
+            it = entries_.erase(it);
+            ++evicted;
+        } else {
+            ++it;
+        }
+    }
+    return evicted;
 }
 
 // @implements spec/interface/figmentum-city-generation.md Geometry generation
