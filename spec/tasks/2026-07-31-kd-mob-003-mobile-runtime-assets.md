@@ -24,6 +24,11 @@ value_ids:
 KonbiniDominantへOS非依存のlifecycle、display、asset、writable path境界を追加し、
 desktop / Android / iOS hostが同じapp ownerへeventを渡せるようにする。
 
+> **iOS は Metal へ変更 (2026-10-03)**: neco決定によりiOSはMoltenVKを使わずPictor
+> Metal backendでMetal直描画する ([mobile-platform](../interface/mobile-platform.md#ios描画方針-2026-10-03-決定)、
+> [KD-MOB-006](2026-07-31-kd-mob-006-ios-package-integration.md#前提-上流タスク))。
+> 本taskのlifecycle / display / asset / writable path境界はgraphics APIに依存せず、iOS Metalでもそのまま使う。iOS bundle版`IAssetReader`の接続はKD-MOB-006。完了済みの内容は変えない。
+
 ## 前提
 
 - KD-MOB-001 / KD-MOB-002のreview済みAPIを固定revisionで利用する

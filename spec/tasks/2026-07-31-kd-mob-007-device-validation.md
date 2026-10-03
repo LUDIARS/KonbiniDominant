@@ -23,6 +23,11 @@ review済みAndroid / iOS package candidateを実端末で確認し、
 「スマホでも出来る」を
 install、操作、復帰、決定性、性能の証跡で成立させる。
 
+> **iOS は Metal へ変更 (2026-10-03)**: neco決定によりiOSはMoltenVKを使わずPictor
+> Metal backendでMetal直描画する ([mobile-platform](../interface/mobile-platform.md#ios描画方針-2026-10-03-決定)、
+> [KD-MOB-006](2026-07-31-kd-mob-006-ios-package-integration.md#前提-上流タスク))。
+> iOS実機ではMetal描画で検証する。required capability欠落はMetal device / featureの不足として明示errorにする。Metal / Vulkanの見た目差の許容範囲は`TBD-IOS-METAL-VISUAL-01`。Androidの検証内容は変えない。
+
 ## 前提
 
 - KD-MOB-005 / KD-MOB-006がmerge済み
@@ -51,7 +56,7 @@ worktree、複製folder、直接binary起動を使用しない。
 - background / resumeとsurface再生成でsimulation stateを失わない
 - memory pressure時にauthoritative stateを破棄しない
 - window / app終了後にGPU / native resource leak警告がない
-- required capability欠落時は明示errorになる
+- required capability欠落時は明示errorになる (Android: Vulkan、iOS: Metal)
 
 ## Determinism acceptance
 

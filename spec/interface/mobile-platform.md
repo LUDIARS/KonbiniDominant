@@ -8,13 +8,54 @@ Android / iOSへ展開するためのplatform境界を定義する。
 Androidを最初の実装・実機検証対象とし、その過程で確立した共通C++境界を
 iOSへ接続する。Android専用game ruleやiOS専用simulationを作らない。
 
+## iOS描画方針 (2026-10-03 決定)
+
+neco決定 (2026-10-03):「iOS は Metal で描画するようにします」。iOSはPictorの
+Metal backend (`pictor::MetalContext`) で直接描画し、MoltenVK (Vulkan
+portability over Metal) は使わない。Androidは従来どおりVulkanのまま変えない。
+
+理由と根拠:
+
+- Pictor自身が同じ方針を持つ (Pictor `spec/feature/metal-backend-design.md`
+  「iOS surface は Metal 直呼び。Android は既存 Vulkan を維持」)。KDだけが
+  MoltenVKを抱えると、Pictor上流が保証しない経路をgame側が保守することになる
+- Pictor main `502ba022` の`include/pictor/surface/metal_context.h`に
+  `MetalContext` (`initialize(CAMetalLayer*)` / `acquire_frame` /
+  `present_frame` (`FrameResult`) / `recover_surface` / `recover_device` /
+  `upload_mesh`) がある
+
+制約 (2026-10-03時点):
+
+- Pictor `PC-FEAT-PLAT-05` (`spec/feature/platform-feature-matrix.md`) により
+  `MetalContext`はmesh upload / drawと復旧APIだけで、各描画効果のMetal実装を
+  意味しない。iOSのbuild・実機はPictor側でも未確認
+  (Pictor `spec/tasks/2026-09-10-ios-metal-validation.md`)
+- KDの描画 (Gate 5 bridge、presentation objects、offscreen world composition、
+  HUD) はPictorのVulkan pipelineとVulkan handleに直接乗っており、Metalには無い
+- Ergoの描画契約 (`ergo_render`の`RenderBackend`、
+  `cmake/ErgoRenderBackend.cmake`) はiOSを「pictorのみ / MoltenVK、
+  `ERGO_RENDER_PLATFORM_IOS=1`」としてVulkan前提で扱う
+
+このため、iOS packageは上流 (Pictor Metal backendの拡張、Ergo描画契約への
+iOS Metal追加、Pictor iOS Metal validation) の完了を前提とする。前提と
+KD側で外すMoltenVK資産は
+[KD-MOB-006](../tasks/2026-07-31-kd-mob-006-ios-package-integration.md#前提-上流タスク)
+を正本とし、未決の判断は[open questions](../faq/open-questions.md)の
+`TBD-IOS-METAL-*`に置く。
+
+旧方針 (2026-07-31〜2026-10-02): iOSはPictor Vulkan + MoltenVK +
+`CAMetalLayer`で描画し、game-owned portability adapter
+(`mobile/ios/vulkan_portability.cpp`) でMoltenVKのportability extensionを
+有効化する。KD-MOB-006の実装で撤去するまでコードには残る (下記
+[Build and package contract](#build-and-package-contract))。
+
 ## Product scope
 
 | platform | role | graphics host |
 |---|---|---|
 | Windows | 現行first playable / desktop基線 | GLFW + Pictor Vulkan |
 | Android | first mobile target | native host + `AndroidSurfaceProvider` |
-| iOS | Android後のmobile parity target | native host + `IOSSurfaceProvider` + MoltenVK |
+| iOS | Android後のmobile parity target | native host + `CAMetalLayer` + Pictor `MetalContext` (Metal直描画。2026-10-03に旧方針MoltenVKから変更) |
 
 mobile版はdesktop版と同じPhase、content、DoD simulation、Figmentum recipe、
 save / replay contractを使う。画面密度、safe area、入力、描画profile、
@@ -31,7 +72,8 @@ package形式だけをplatform差分とする。
 
 - platform-neutral `ISurfaceProvider`
 - `AndroidSurfaceProvider` / `IOSSurfaceProvider` (host所有のまま)
-- Android Vulkan / iOS MoltenVK向けCMake分岐
+- Android Vulkan向けCMake分岐 (iOS MoltenVK分岐もあるが、KDのiOS描画経路には使わない)
+- iOS `MetalContext` (mesh upload / drawと復旧APIのみ。`PC-FEAT-PLAT-05`)
 - pause / resume / suspend / surface loss
 - memory pressure / thermal state
 - `MobileLow` / `MobileHigh` profile
@@ -40,8 +82,8 @@ package形式だけをplatform差分とする。
   `swapchain_recreated`
 - `VulkanContext::set_presentation_suspended()`による停止中のGPU submission抑止
 - `ContextInitStatus` (`SurfaceUnavailable` / `MissingInstanceExtension` /
-  `MissingDeviceExtension` / `MissingCapability` ほか) とMoltenVK
-  portabilityのcapability検査
+  `MissingDeviceExtension` / `MissingCapability` ほか)。MoltenVK
+  portabilityのcapability検査も持つが、KDのiOS経路では使わない (旧方針)
 
 KDでの対応付けは
 [Pictor rendering contract](pictor-rendering.md#surface--device-recovery)。
@@ -56,6 +98,8 @@ touch入力、asset packaging、actual-device成功を意味しない。
   公開render headerは`GlfwSurfaceProvider`具象型を要求しない
 - real render pathの判定はPictorの`PICTOR_HAS_VULKAN`を正本とし、
   Android / iOSでdesktop `Vulkan::Vulkan`不在だけでrenderを無効化しない
+  (iOSは`ERGO_RENDER_PLATFORM_IOS=1`でもVulkanを要求する。iOS Metalを描画契約へ
+  加えるのはErgo側の前提task。[KD-MOB-006](../tasks/2026-07-31-kd-mob-006-ios-package-integration.md#前提-上流タスク))
 - 実描画不可は`RenderBackendError`の型付き値で返し、mobile configureは
   real render不成立を構成errorにする
 
@@ -100,7 +144,10 @@ phase等のgame stateを直接変更しない。
 
 ### Surface and renderer
 
-- game domainへ`ANativeWindow`、`CAMetalLayer`、GLFW、Vulkan handleを漏らさない
+- game domainへ`ANativeWindow`、`CAMetalLayer`、GLFW、Vulkan handle、
+  Metal object (`MTLDevice` / `MTLCommandBuffer` 等) を漏らさない
+- iOSのMetal呼び出しはPictor `MetalContext`とその上流拡張だけが持つ。KDは
+  Pictorを迂回してMetalを直接呼ばない
 - Ergoは`ISurfaceProvider`をborrowし、具象providerを所有しない
 - `SurfaceLost`、`RecreateSwapchain`、`DeviceLost`を異なる結果として扱う
 - surface消失中はGPU workをsubmitしない
@@ -283,15 +330,22 @@ polygonizeしない。`FacilityMeshDetail`はcache keyの`polygonizeResolution` 
 toolchainとpackage layoutは
 [mobile development setup](../setup/mobile-development.md)を正本とする。
 
-host shader compilerと端末runtime Vulkanを同じdependencyとして扱わない。
-SPIR-Vはhost buildで生成または検証済みartifactをpackageし、端末上で`glslc`を
-要求しない。
+host shader compilerと端末runtime graphics APIを同じdependencyとして扱わない。
+Android / desktopのSPIR-Vはhost buildで生成または検証済みartifactをpackageし、
+端末上で`glslc`を要求しない。iOSのMetal shader (`.metallib`) の生成・同梱経路は
+Pictor Metal backendの拡張に従い、KD-MOB-006で確定する (`TBD-IOS-METAL-SHADER-01`)。
+
+現行コードには旧方針のiOS MoltenVK分岐 (`cmake/MobileVulkan.cmake`のiOS分岐、
+`mobile/ios/vulkan_portability.cpp`、`mobile/CMakeLists.txt`のiOS
+`vkCreateInstance` / `vkCreateDevice`置換) が残る。2026-10-03時点では変更せず、
+KD-MOB-006の実装で外す。
 
 ## Failure policy
 
 次を成功扱いしない。
 
-- required Vulkan / MoltenVK capability不在
+- required Vulkan (Android / desktop) / Metal (iOS) capability不在
+- iOSでMetal backendが未実装の描画機能を、黙って省略して起動成功に見せること
 - providerとnative surface typeの不一致
 - packaged shader / content不在
 - writable save / cache rootを取得できない

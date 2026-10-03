@@ -18,6 +18,9 @@ kind: design
 | `TBD-MOBILE-OS-01` | Android / iOSの最低OS、device tier | 未設定 | tech |
 | `TBD-MOBILE-PERF-01` | mobile FPS / frame time / GPU memory / thermal budget | 30 FPS、10 TPSをfirst probe baseline | tech |
 | `TBD-MOBILE-ORIENTATION-01` | portraitを製品要件に含めるか | first mobileはlandscape | neco / design |
+| `TBD-IOS-METAL-FEATURE-01` | iOS Metal backendが未対応の描画機能 (Gate 5 batch、presentation objects、offscreen composition、HUD等。[KD-MOB-006](../tasks/2026-07-31-kd-mob-006-ios-package-integration.md#前提-上流タスク)) をiOSでどう扱うか: 上流対応を待つ / iOSだけ簡略描画を許す / 機能を外す | 全機能を上流Pictorで対応するまでiOS packageを出さない。silent省略は禁止 | neco / tech |
+| `TBD-IOS-METAL-VISUAL-01` | MetalとVulkanの見た目差の許容範囲 (色空間、RGBA16F→composite、depth精度、alpha blend、text edge) | 未設定。gameplay判断に要る情報 (ZOC、選択、HUD文字) の欠落は不可 | neco / design |
+| `TBD-IOS-METAL-SHADER-01` | iOS Metal shaderの生成方法 (GLSL/SPIR-Vからの変換 / MSL手書き / Pictor共通shader) とbundle形式 | Pictor Metal backendの方式に従う | tech / Pictor |
 | `TBD-DIM-COORD-01` | 別dimensionの同位置 | explicit anchor map | design |
 | `TBD-TRI-CAPTURE-01` | 囲み破壊 | Encircled後の発火方式未決 | neco |
 | `TBD-DEPS-01` | dependency pin方式 | reproducible pin必須 | tech |
@@ -86,3 +89,4 @@ baselineが書かれていることをowner確定とみなさない。
 | 2026-07-31 | N-KXi表記を標準化（原文の`N-Kxi`揺れを統一） |
 | 2026-07-31 | 個別住民でなくPopulationCell集約をbaseline |
 | 2026-07-31 | neco指示によりsmartphone対応を製品要件へ追加。Android先行、iOS後続 |
+| 2026-10-03 | neco決定「iOS は Metal で描画するようにします」。iOSはMoltenVKをやめPictor Metal backendでMetal直描画。Androidは Vulkanのまま ([mobile-platform](../interface/mobile-platform.md#ios描画方針-2026-10-03-決定)) |

@@ -111,14 +111,20 @@ KD-MAC-001でPictor #2309 / Figmentum #2308 (どちらもlocale非依存の自�
 - CMake iOS toolchainまたはXcode統合
 - Objective-C++のthin host
 - `UIView` / `CAMetalLayer`
-- MoltenVK packageと明示link
+- Metal / QuartzCore framework (iOS SDK同梱。MoltenVK / Vulkan loaderは使わない)
+- KDの描画機能をカバーしたPictor Metal backendのpin
+  ([KD-MOB-006の前提](../tasks/2026-07-31-kd-mob-006-ios-package-integration.md#前提-上流タスク))
 - bundle asset reader
 - Application Support / Caches等のwritable path adapter
 - signing / bundle identifierの外部設定
 
-Pictor `IOSSurfaceProvider`へ`CAMetalLayer`を渡し、game domainからMetalを
-直接扱わない。MoltenVK portability extension / device capabilityは
-configureだけでなくruntimeにも検査し、不足を通常surface失敗へ畳まない。
+iOSはMetalで直接描画する (neco決定 2026-10-03。Androidは変えない)。
+`CAMetalLayer`をPictor `MetalContext`へ渡し、game domainからMetalを直接扱わない。
+Metal device / feature capabilityはconfigureだけでなくruntimeにも検査し、
+不足を通常surface失敗へ畳まない。
+
+旧方針 (〜2026-10-02) はPictor `IOSSurfaceProvider` + MoltenVKで、portability
+extension / capabilityを検査していた。その資産はKD-MOB-006の実装で撤去する。
 
 minimum iOS version、device tier、signing ownerは`TBD-MOBILE-OS-01`で確定する。
 secretや個人team IDをrepositoryへcommitしない。
@@ -126,7 +132,7 @@ secretや個人team IDをrepositoryへcommitしない。
 ## Vulkan and shader split
 
 desktopの単一`find_package(Vulkan REQUIRED COMPONENTS glslc)`をmobileへ
-そのまま適用しない。
+そのまま適用しない。iOSはVulkanを使わない。
 
 ```text
 HostShaderTools
@@ -135,11 +141,11 @@ HostShaderTools
 RuntimeGraphics
   Windows: Vulkan::Vulkan
   Android: NDK vulkan
-  iOS: MoltenVK
+  iOS: Metal (Pictor MetalContext。Vulkanを要求しない)
 ```
 
 game側targetはplatformごとのruntime graphics targetをlinkし、shader生成targetは
-host toolだけを使う。必須shaderがpackageに無ければ起動をfail-fastする。
+host toolだけを使う。iOSのMetal shader library生成は`TBD-IOS-METAL-SHADER-01`。必須shaderがpackageに無ければ起動をfail-fastする。
 
 ## Assets
 

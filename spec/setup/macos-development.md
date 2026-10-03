@@ -14,6 +14,8 @@ KD-MAC-001 (2026-10-03)。macOS desktopでKonbiniDominantをconfigure / build /
 - Vulkan loader + MoltenVK (Vulkan portability driver over Metal)
 - generator: Ninja、configuration: Release
 
+MoltenVKはこのmacOS desktop build専用である。iOSは2026-10-03の決定でMetal直描画へ
+変わり、MoltenVKを使わない ([mobile-platform](../interface/mobile-platform.md#ios描画方針-2026-10-03-決定))。
 iOS packageは別手順 ([mobile-native](mobile-native.md#xcode--ios)) で、
 Xcode本体とiOS SDKの選択が別途必要になる。このページのCommand Line Toolsだけの
 hostではiOS buildはできない。

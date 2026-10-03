@@ -179,14 +179,16 @@ task-workflowを作業単位とする。
 - app lifecycle、surface loss、asset reader、writable pathをplatform adapter化
 - touch / safe area / density-aware HUD
 - Android native host、package、Figmentum geometry cache
-- iOS native host、MoltenVK portability、package
+- iOS native host、Pictor Metal backendによるMetal直描画、package
+  (2026-10-03に旧方針MoltenVK portabilityから変更。上流前提は
+  [KD-MOB-006](../tasks/2026-07-31-kd-mob-006-ios-package-integration.md#前提-上流タスク))
 - actual deviceでresume、memory / thermal pressure、性能を検証
 
 Acceptance:
 
 - Windows first playableのruleとcanonical stateを変更しない
 - 同じseedと正規化command列でplatform間のcanonical snapshotが一致
-- Android / iOSともPictor経由でFigmentum都市を描画する
+- Android / iOSともPictor経由でFigmentum都市を描画する (Android: Vulkan、iOS: Metal)
 - background中はfixed tickとGPU submissionを進めない
 - surface再生成でsimulation stateを失わない
 - capability profile変更は観測可能で、silent fallbackしない

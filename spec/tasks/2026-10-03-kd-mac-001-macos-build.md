@@ -21,6 +21,10 @@ build / `ctest`できるようにし、手順を
 [macos-development](../setup/macos-development.md) に記録する。Macでの初回
 buildは次の3件で止まっていた。
 
+MoltenVKはmacOS desktop build用である。iOSは2026-10-03の決定でMetal直描画へ
+変わり、MoltenVKを使わない
+([mobile-platform](../interface/mobile-platform.md#ios描画方針-2026-10-03-決定))。
+
 1. KD `FacilityGeometryCacheKey`のdefaulted `operator<=>`が暗黙に削除される
 2. Pictor `src/visus/visus_json.cpp`の浮動小数点`std::from_chars`
 3. Figmentum `src/garment/profile.cpp`の浮動小数点`std::from_chars`

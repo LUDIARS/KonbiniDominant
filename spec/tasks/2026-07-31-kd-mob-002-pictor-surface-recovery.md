@@ -24,6 +24,11 @@ value_ids:
 KonbiniDominantへ固定し、Android / iOSでsimulationを失わず描画を復旧できる
 consumer境界へ接続する。
 
+> **iOS は Metal へ変更 (2026-10-03)**: neco決定によりiOSはMoltenVKを使わずPictor
+> Metal backendでMetal直描画する ([mobile-platform](../interface/mobile-platform.md#ios描画方針-2026-10-03-決定)、
+> [KD-MOB-006](2026-07-31-kd-mob-006-ios-package-integration.md#前提-上流タスク))。
+> 本taskのiOS記述 (MoltenVK portability検査、`vulkan_portability.cpp` shim) は旧方針。shimの撤去とMetal経路はKD-MOB-006で扱う。Android / desktopの内容と完了済みの実装結果は変えない。
+
 ## Upstream prerequisite
 
 Pictor側の実装は、着手時に`LUDIARS/Pictor/spec/tasks/`へtask-workflow 2.1形式で

@@ -23,6 +23,11 @@ platform-neutral render contractを持つreview済みErgo revisionを
 KonbiniDominantへ固定し、Windows / Android / iOS hostが同じconsumer境界を
 利用できるようにする。
 
+> **iOS は Metal へ変更 (2026-10-03)**: neco決定によりiOSはMoltenVKを使わずPictor
+> Metal backendでMetal直描画する ([mobile-platform](../interface/mobile-platform.md#ios描画方針-2026-10-03-決定)、
+> [KD-MOB-006](2026-07-31-kd-mob-006-ios-package-integration.md#前提-上流タスク))。
+> 本taskのiOS記述 (Pictor runtime Vulkan contract、`ERGO_RENDER_HAS_VULKAN=1`での`IOS`検査) は旧方針。Ergo描画契約へiOS Metalを加える作業はKD-MOB-006の前提 (b) で扱う。Android / desktopの内容と完了済みの実装結果は変えない。
+
 ## Upstream prerequisite
 
 Ergo側の実装は、着手時に`LUDIARS/Ergo/spec/tasks/`へtask-workflow 2.1形式で

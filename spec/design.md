@@ -135,7 +135,8 @@ Ergo は入力イベント、frame clock、render host、UI/audio等の共通機
 REQ-PLATFORM-01: Windows版に加えてスマートフォンでも同じgameplayを
 プレイ可能にする。Androidを最初のmobile実装対象とし、共通境界を確立した後に
 iOSへ接続する。現行Windows first playableの完了条件へmobile packagingや実機確認を
-混ぜず、後続taskとして進める。
+混ぜず、後続taskとして進める。描画はAndroidがVulkan、iOSがPictor Metal backendによる
+Metal直描画 (2026-10-03決定。[mobile-platform](interface/mobile-platform.md#ios描画方針-2026-10-03-決定))。
 
 mobile差分はsurface、input、app lifecycle、asset / writable path、packageに閉じ込める。
 `konbini_sim`、Figmentum `CityPlan`、content schema、canonical save / replayは

@@ -142,7 +142,7 @@ KonbiniDominantはこのcontractを次のconsumer境界で使う。
 | 境界 | contract | owner |
 |---|---|---|
 | surface | `RenderContext::surface`は`pictor::ISurfaceProvider*`を借用する。desktopは`GlfwSurfaceProvider`、Android / iOSはnative hostのproviderを同じ境界で渡す | `RenderDeviceHost` |
-| configure | `ERGO_RENDER_REQUIRE_REAL=ON`で起動し、`ergo_render`の`ERGO_RENDER_HAS_VULKAN=1`と期待platform (`DESKTOP` / `ANDROID` / `IOS`) を検査する | `cmake/RequireErgoRealRender.cmake` |
+| configure | `ERGO_RENDER_REQUIRE_REAL=ON`で起動し、`ergo_render`の`ERGO_RENDER_HAS_VULKAN=1`と期待platform (`DESKTOP` / `ANDROID` / `IOS`) を検査する。iOSのVulkan要求は旧方針 (MoltenVK) で、iOS Metal (2026-10-03決定) ではErgo描画契約の更新に合わせてKD-MOB-006で改める | `cmake/RequireErgoRealRender.cmake` |
 | startup | `render_backend_contract()`が実描画有効かつ期待platformであること、`check_render_requirements(context)`が`None`であることを要求する | `requireRenderReady()` |
 | composer | `FrameComposer::initialize()`の`RenderBackendError`を捨てない。`None`以外ならcomposerをshutdownして明示errorにする | `WorldFrameGraph` |
 

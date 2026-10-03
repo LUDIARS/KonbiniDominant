@@ -1,6 +1,6 @@
 {
   "name": "platform-adapters",
-  "description": "外部との接続。Pictor／Ergo／Figmentumと、Windows touch・Android NativeActivity・iOS UIKit/Vulkan surfaceの差を吸収する。",
+  "description": "外部との接続。Pictor／Ergo／Figmentumと、Windows touch・Android NativeActivity・iOS UIKit/CAMetalLayer (Metal直描画、2026-10-03決定) の差を吸収する。",
   "presetRules": [],
   "templateRules": [],
   "membership": [
